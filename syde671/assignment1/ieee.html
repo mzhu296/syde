@@ -1,0 +1,210 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="IEEE-style report for SYDE 671 Assignment 1: Prokudin-Gorskii glass-plate colour reconstruction.">
+  <title>SYDE 671 Assignment 1 — IEEE Review Copy</title>
+  <style>
+    :root { --ink:#111; --muted:#4b5563; --rule:#9ca3af; --light-rule:#d1d5db; --accent:#075985; --paper:#fff; --canvas:#e9edf1; --soft:#f4f7f9; --result:#eef6fa; }
+    * { box-sizing:border-box; }
+    html { scroll-behavior:smooth; scroll-padding-top:4.5rem; }
+    body { margin:0; color:var(--ink); background:var(--canvas); font-family:"Times New Roman",Times,serif; font-size:16px; line-height:1.52; }
+    a { color:var(--accent); text-underline-offset:.16em; }
+    a:hover { color:#9a3412; }
+    img { max-width:100%; }
+    .review-bar { position:sticky; top:0; z-index:20; display:flex; justify-content:space-between; align-items:center; gap:1rem; padding:.65rem max(1rem,calc((100% - 1120px)/2)); border-bottom:1px solid #cbd5e1; background:rgba(248,250,252,.96); font-family:Arial,Helvetica,sans-serif; font-size:.86rem; backdrop-filter:blur(10px); }
+    .review-bar strong { letter-spacing:.04em; text-transform:uppercase; }
+    .review-bar nav { display:flex; flex-wrap:wrap; justify-content:flex-end; gap:.75rem; }
+    .review-bar a { font-weight:700; text-decoration:none; }
+    .paper { width:min(1120px,calc(100% - 2rem)); margin:2rem auto 4rem; padding:clamp(2rem,6vw,4.75rem); background:var(--paper); box-shadow:0 16px 44px rgba(15,23,42,.14); }
+    .paper-header { text-align:center; }
+    .paper-header .course { margin:0 0 .75rem; font-family:Arial,Helvetica,sans-serif; font-size:.78rem; font-weight:700; letter-spacing:.13em; text-transform:uppercase; }
+    h1 { max-width:820px; margin:0 auto .85rem; font-size:clamp(1.85rem,4.4vw,2.7rem); font-weight:400; line-height:1.12; }
+    .author-line { margin:0; font-size:1rem; }
+    .version-line { margin:.25rem 0 2rem; color:var(--muted); font-size:.9rem; }
+    .abstract { max-width:880px; margin:0 auto 2rem; padding:1rem 1.25rem; border-top:1.5px solid var(--ink); border-bottom:1px solid var(--rule); text-align:justify; }
+    .abstract p { margin:0 0 .6rem; }
+    .abstract p:last-child { margin-bottom:0; }
+    .label { font-variant:small-caps; font-weight:700; letter-spacing:.04em; }
+    .contents { margin:2rem 0 2.5rem; padding:1rem 1.2rem; border-left:3px solid var(--accent); background:var(--soft); font-family:Arial,Helvetica,sans-serif; font-size:.9rem; }
+    .contents strong { display:block; margin-bottom:.4rem; text-transform:uppercase; letter-spacing:.06em; }
+    .contents ol { columns:2; margin:0; padding-left:1.3rem; }
+    .contents li { margin:.25rem 0; padding-right:1rem; break-inside:avoid; }
+    .contents a { color:#1f2937; }
+    section { margin:0 0 2.5rem; scroll-margin-top:5rem; }
+    h2,h3 { break-after:avoid; }
+    h2 { margin:2.8rem 0 1rem; border-bottom:1px solid var(--ink); font-family:Arial,Helvetica,sans-serif; font-size:1.08rem; line-height:1.35; letter-spacing:.045em; text-align:center; text-transform:uppercase; }
+    h3 { margin:1.8rem 0 .55rem; font-size:1rem; font-style:italic; font-weight:700; }
+    section>p,.prose>p { margin:.55rem 0; text-align:justify; text-indent:1.35rem; }
+    section>p.no-indent,.no-indent { text-indent:0; }
+    .equation { margin:1rem 0; padding:.35rem 1rem; overflow-x:auto; border-left:2px solid var(--rule); font-size:1.02rem; text-align:center; }
+    .result-box { margin:1rem 0; padding:.8rem 1rem; border-top:1.5px solid var(--accent); border-bottom:1px solid var(--accent); background:var(--result); text-align:center; }
+    .method-note { margin:1rem 0; padding:.75rem 1rem; border-left:3px solid #a16207; background:#fffbeb; text-align:justify; }
+    .table-wrap { margin:1.25rem 0 1.8rem; overflow-x:auto; }
+    table { width:100%; border-collapse:collapse; border-top:1.8px solid #000; border-bottom:1.8px solid #000; font-size:.82rem; line-height:1.3; font-variant-numeric:tabular-nums; }
+    caption { padding:0 0 .5rem; font-size:.82rem; line-height:1.25; text-align:center; text-transform:uppercase; }
+    thead { border-bottom:1px solid #000; }
+    th,td { padding:.4rem .42rem; text-align:center; vertical-align:middle; white-space:nowrap; }
+    th { font-weight:700; }
+    tbody tr+tr { border-top:.5px solid var(--light-rule); }
+    .figure-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:1.35rem; margin:1.5rem 0 2rem; }
+    .comparison-grid { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:.75rem; margin:1.3rem 0 2rem; }
+    .gallery { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:1rem; margin:1.5rem 0 2rem; }
+    figure { margin:0; break-inside:avoid; }
+    figure img { display:block; width:100%; height:auto; border:1px solid var(--light-rule); background:white; }
+    .gallery img { aspect-ratio:4/3; object-fit:contain; }
+    figcaption { margin-top:.45rem; font-size:.84rem; line-height:1.35; text-align:justify; }
+    .fig-label { font-variant:small-caps; font-weight:700; }
+    .downloads { display:flex; flex-wrap:wrap; gap:.55rem; margin:1rem 0 1.4rem; font-family:Arial,Helvetica,sans-serif; font-size:.82rem; }
+    .downloads a { display:inline-flex; align-items:center; min-height:2.25rem; padding:.42rem .7rem; border:1px solid #94a3b8; background:#f8fafc; color:#0f172a; font-weight:700; text-decoration:none; }
+    .downloads a:hover { border-color:var(--accent); color:var(--accent); }
+    .small { color:var(--muted); font-size:.88rem; }
+    .references { padding-left:1.4rem; font-size:.92rem; }
+    .references li { margin-bottom:.55rem; }
+    @media (max-width:850px) { .comparison-grid,.gallery { grid-template-columns:repeat(2,minmax(0,1fr)); } }
+    @media (max-width:680px) { .review-bar { align-items:flex-start; flex-direction:column; } .review-bar nav { justify-content:flex-start; } .paper { width:100%; margin:0; padding:1.5rem 1rem 3rem; box-shadow:none; } .contents ol { columns:1; } .figure-grid,.comparison-grid,.gallery { grid-template-columns:1fr; } th,td { min-width:6rem; } }
+    @media print { @page { size:letter; margin:.6in; } body { background:white; font-size:10pt; line-height:1.28; } .review-bar,.contents,.downloads { display:none!important; } .paper { width:auto; margin:0; padding:0; box-shadow:none; } h1 { font-size:20pt; } h2 { font-size:11pt; } section { margin-bottom:1.3rem; } section>p,.prose>p { orphans:3; widows:3; } figure,.table-wrap,.result-box,.equation { page-break-inside:avoid; } .gallery { grid-template-columns:repeat(2,minmax(0,1fr)); } table { font-size:7pt; } a { color:inherit; text-decoration:none; } }
+  </style>
+  <script>window.MathJax={tex:{inlineMath:[['\\(','\\)']],displayMath:[['\\[','\\]']]},options:{skipHtmlTags:['script','noscript','style','textarea','pre','code']}};</script>
+  <script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+</head>
+<body>
+  <div class="review-bar">
+    <strong>IEEE-style review copy</strong>
+    <nav aria-label="Review page links"><a href="../../">Course home</a><a href="#method">Method</a><a href="#results">Results</a><a href="#analysis">Analysis</a><a href="#files">Files</a></nav>
+  </div>
+  <main class="paper">
+    <header class="paper-header">
+      <p class="course">SYDE 671 · Introduction to Computer Vision · Assignment 1</p>
+      <h1>Automatic Colour Reconstruction of Prokudin-Gorskii Glass-Plate Photographs</h1>
+      <p class="author-line">Assignment Report · Part Two</p>
+      <p class="version-line">Single-scale L2 and NCC alignment with coarse-to-fine pyramid acceleration</p>
+    </header>
+
+    <div class="abstract">
+      <p><span class="label">Abstract—</span>This report reconstructs colour photographs from 18 vertically stacked Prokudin-Gorskii glass plates supplied through the course. Each plate is divided into blue, green, and red exposures; green and red are translated to align with blue. Exhaustive single-scale alignment is evaluated with Euclidean distance and normalized cross-correlation, while a hand-built Gaussian pyramid extends NCC alignment to full-resolution plates. Twelve low-resolution plates completed in an average of 0.73 seconds and six full-resolution plates in an average of 59.42 seconds. Pyramid alignment recovered displacements as large as ((76,161)) pixels, beyond the single-scale ([-15,15]) window.</p>
+      <p><span class="label">Index Terms—</span>image alignment, Gaussian pyramid, normalized cross-correlation, Euclidean distance, colour reconstruction, Prokudin-Gorskii.</p>
+    </div>
+
+    <nav class="contents" aria-label="Table of contents"><strong>Contents</strong><ol><li><a href="#problem">Problem and dataset</a></li><li><a href="#method">Alignment method</a></li><li><a href="#single-scale">Single-scale comparison</a></li><li><a href="#pyramid">Image pyramid</a></li><li><a href="#results">Complete results</a></li><li><a href="#analysis">Analysis and limitations</a></li><li><a href="#files">Supporting files</a></li></ol></nav>
+
+    <section id="problem">
+      <h2>I. Problem and Dataset</h2>
+      <p class="no-indent">Each source image contains three monochrome exposures recorded through blue, green, and red filters and stacked vertically in BGR order. If the input height is (H), the program uses ⌊(H/3)⌋ rows per channel, discards any unmatched remainder, and constructs an RGB image after alignment. Blue remains fixed; green and red are independently translated onto it.</p>
+      <p>The course-provided Learn directory contained 18 catalogue-numbered JPEG plates: 12 low-resolution plates with channel heights of 341 pixels and six full-resolution plates with channel heights between 3212 and 3238 pixels. The assignment template mentions named examples and a 20-image rubric, but those files were not included in the supplied dataset; every provided plate was processed.</p>
+      <div class="result-box"><strong>Dataset:</strong> 18 plates · 12 low resolution · 6 full resolution · 72 generated comparison images</div>
+    </section>
+
+    <section id="method">
+      <h2>II. Alignment Method</h2>
+      <h3>A. Translation Search</h3>
+      <p class="no-indent">A candidate displacement ((d_x,d_y)) is applied with array rolling. Scoring excludes a border large enough to prevent wrapped pixels from influencing the comparison. The single-scale implementation searches every integer displacement in ([-15,15]^2), or 961 candidates per moving channel.</p>
+      <h3>B. Euclidean Distance</h3>
+      <div class="equation">\[L_2(I_1,I_2)=\sqrt{\sum_{x,y}[I_1(x,y)-I_2(x,y)]^2}.\]</div>
+      <p>The displacement with the smallest (L_2) score is selected. This metric is direct but sensitive to differences in brightness and contrast between filter exposures.</p>
+      <h3>C. Normalized Cross-Correlation</h3>
+      <div class="equation">\[\operatorname{NCC}(I_1,I_2)=\frac{\langle I_1,I_2\rangle}{\lVert I_1\rVert_2\lVert I_2\rVert_2}.\]</div>
+      <p>The displacement with the largest NCC score is selected. Normalization reduces sensitivity to global magnitude differences, so NCC was chosen for the coarse-to-fine pipeline. Both metrics are still reported at a single scale for comparison.</p>
+      <h3>D. Output Construction</h3>
+      <p>The aligned channels are stacked as ([R,G,B]), clipped to ([0,1]), converted to 8-bit colour, and saved as JPEG. The display crop equals a 20-pixel base margin plus the largest recovered displacement, removing pixels wrapped by the translation.</p>
+    </section>
+
+    <section id="single-scale">
+      <h2>III. Single-Scale Alignment</h2>
+      <p class="no-indent">On low-resolution plates, exhaustive L2 and NCC usually agree exactly or differ by only one pixel. This indicates a well-defined translational optimum despite channel-intensity differences. On full-resolution plates the best single-scale offsets frequently reach the search boundary, demonstrating why a fixed ±15-pixel window cannot recover the true motion.</p>
+      <div class="comparison-grid">
+        <figure><img src="../outputs/00125v_unaligned.jpg" alt="Unaligned RGB reconstruction for 00125v"><figcaption><span class="fig-label">Fig. 1(a).</span> 00125v before alignment.</figcaption></figure>
+        <figure><img src="../outputs/00125v_l2.jpg" alt="Single-scale L2 reconstruction for 00125v"><figcaption><span class="fig-label">Fig. 1(b).</span> L2: G ((2,5)), R ((1,10)).</figcaption></figure>
+        <figure><img src="../outputs/00125v_ncc.jpg" alt="Single-scale NCC reconstruction for 00125v"><figcaption><span class="fig-label">Fig. 1(c).</span> NCC: G ((1,5)), R ((1,10)).</figcaption></figure>
+        <figure><img src="../outputs/00125v_pyramid_ncc.jpg" alt="Pyramid NCC reconstruction for 00125v"><figcaption><span class="fig-label">Fig. 1(d).</span> Pyramid NCC reproduces the single-scale NCC offsets.</figcaption></figure>
+      </div>
+      <p>Across the 12 small plates, L2 and NCC produced identical four-component offset vectors for six images. The remaining six differed by only one to three components, except for the red vertical displacement of 01725u in the deliberately inadequate single-scale search. Visual output and recovered offsets support using NCC as the consistent pyramid metric.</p>
+    </section>
+
+    <section id="pyramid">
+      <h2>IV. Coarse-to-Fine Gaussian Pyramid</h2>
+      <p class="no-indent">Large images are repeatedly blurred with the separable binomial kernel ([1,4,6,4,1]/16) and downsampled by two until the smallest dimension is below twice the 150-pixel threshold. Alignment begins at the coarsest level with a ±15-pixel search. At each finer level, the displacement is doubled and refined within ±2 pixels. The blur and downsampling routines are implemented directly rather than through a high-level pyramid library.</p>
+      <div class="equation">\[(d_x^{\ell-1},d_y^{\ell-1})\leftarrow2(d_x^{\ell},d_y^{\ell})+\operatorname*{arg\,max}_{(u,v)\in[-2,2]^2}\operatorname{NCC}(u,v).\]</div>
+      <div class="comparison-grid">
+        <figure><img src="../outputs/01007a_unaligned.jpg" alt="Unaligned RGB reconstruction for 01007a"><figcaption><span class="fig-label">Fig. 2(a).</span> Full-resolution plate 01007a before alignment.</figcaption></figure>
+        <figure><img src="../outputs/01007a_l2.jpg" alt="Single-scale L2 reconstruction for 01007a"><figcaption><span class="fig-label">Fig. 2(b).</span> L2 is constrained by the ±15 window.</figcaption></figure>
+        <figure><img src="../outputs/01007a_ncc.jpg" alt="Single-scale NCC reconstruction for 01007a"><figcaption><span class="fig-label">Fig. 2(c).</span> NCC is also constrained at a single scale.</figcaption></figure>
+        <figure><img src="../outputs/01007a_pyramid_ncc.jpg" alt="Pyramid NCC reconstruction for 01007a"><figcaption><span class="fig-label">Fig. 2(d).</span> Pyramid NCC recovers G ((6,61)), R ((12,129)).</figcaption></figure>
+      </div>
+      <div class="method-note"><strong>Why NCC for the pyramid?</strong> The red, green, and blue glass-plate exposures can differ substantially in brightness. Normalizing each comparison makes the score more stable across channels while retaining a simple metric required by the assignment.</div>
+    </section>
+
+    <section id="results">
+      <h2>V. Complete Numerical Results</h2>
+      <p class="no-indent">Table I reports displacements as ((d_x,d_y)), where positive values shift right and down. The timing includes loading, all three alignment variants, and writing four JPEG outputs. The median runtime over all plates is 0.61 seconds because two-thirds of the dataset is low resolution.</p>
+      <div class="table-wrap"><table><caption>Table I. Channel displacements and total runtime</caption><thead><tr><th>Plate</th><th>Channel size</th><th>L2 G</th><th>L2 R</th><th>NCC G</th><th>NCC R</th><th>Pyramid G</th><th>Pyramid R</th><th>Time (s)</th></tr></thead><tbody>
+        <tr><td>00056v</td><td>398 × 341</td><td>(1, 6)</td><td>(1, 13)</td><td>(1, 6)</td><td>(1, 13)</td><td>(1, 6)</td><td>(1, 13)</td><td>2.15</td></tr>
+        <tr><td>00125v</td><td>400 × 341</td><td>(2, 5)</td><td>(1, 10)</td><td>(1, 5)</td><td>(1, 10)</td><td>(1, 5)</td><td>(1, 10)</td><td>0.62</td></tr>
+        <tr><td>00163v</td><td>387 × 341</td><td>(1, -3)</td><td>(1, -4)</td><td>(1, -3)</td><td>(1, -4)</td><td>(1, -3)</td><td>(1, -4)</td><td>0.60</td></tr>
+        <tr><td>00458u</td><td>3741 × 3238</td><td>(-6, 15)</td><td>(-1, 14)</td><td>(-6, 15)</td><td>(-2, 11)</td><td>(-2, 42)</td><td>(29, 88)</td><td>61.36</td></tr>
+        <tr><td>00804v</td><td>396 × 341</td><td>(-2, 6)</td><td>(-4, 13)</td><td>(-2, 6)</td><td>(-4, 13)</td><td>(-3, 6)</td><td>(-4, 13)</td><td>0.60</td></tr>
+        <tr><td>01007a</td><td>3800 × 3238</td><td>(-4, 15)</td><td>(-9, 15)</td><td>(-4, 15)</td><td>(-9, 15)</td><td>(6, 61)</td><td>(12, 129)</td><td>59.53</td></tr>
+        <tr><td>01047u</td><td>3741 × 3218</td><td>(2, 15)</td><td>(7, 15)</td><td>(2, 15)</td><td>(7, 15)</td><td>(17, 24)</td><td>(33, 72)</td><td>57.94</td></tr>
+        <tr><td>01164v</td><td>396 × 341</td><td>(1, 6)</td><td>(3, 11)</td><td>(1, 6)</td><td>(3, 11)</td><td>(1, 6)</td><td>(3, 11)</td><td>0.61</td></tr>
+        <tr><td>01269v</td><td>395 × 341</td><td>(2, 6)</td><td>(3, 14)</td><td>(2, 6)</td><td>(2, 13)</td><td>(2, 6)</td><td>(3, 13)</td><td>0.59</td></tr>
+        <tr><td>01522v</td><td>391 × 341</td><td>(2, 6)</td><td>(2, 13)</td><td>(2, 6)</td><td>(2, 13)</td><td>(2, 6)</td><td>(2, 13)</td><td>0.59</td></tr>
+        <tr><td>01597v</td><td>395 × 341</td><td>(1, 7)</td><td>(0, 15)</td><td>(1, 7)</td><td>(0, 15)</td><td>(1, 7)</td><td>(1, 16)</td><td>0.60</td></tr>
+        <tr><td>01598v</td><td>392 × 341</td><td>(0, 8)</td><td>(-1, 15)</td><td>(0, 8)</td><td>(-1, 15)</td><td>(0, 8)</td><td>(-1, 16)</td><td>0.59</td></tr>
+        <tr><td>01657u</td><td>3761 × 3212</td><td>(-8, 15)</td><td>(-15, 15)</td><td>(-8, 15)</td><td>(-15, 15)</td><td>(-6, 55)</td><td>(1, 112)</td><td>57.71</td></tr>
+        <tr><td>01725u</td><td>3731 × 3231</td><td>(7, 15)</td><td>(13, 15)</td><td>(7, 15)</td><td>(13, -10)</td><td>(38, 77)</td><td>(76, 161)</td><td>57.75</td></tr>
+        <tr><td>01728v</td><td>397 × 341</td><td>(1, 8)</td><td>(0, 15)</td><td>(1, 8)</td><td>(1, 15)</td><td>(1, 8)</td><td>(1, 18)</td><td>0.61</td></tr>
+        <tr><td>01861a</td><td>3741 × 3228</td><td>(15, 15)</td><td>(15, 15)</td><td>(15, 15)</td><td>(15, 15)</td><td>(38, 71)</td><td>(62, 148)</td><td>62.22</td></tr>
+        <tr><td>10131v</td><td>400 × 341</td><td>(2, 6)</td><td>(3, 12)</td><td>(2, 6)</td><td>(3, 11)</td><td>(2, 6)</td><td>(3, 12)</td><td>0.61</td></tr>
+        <tr><td>31421v</td><td>398 × 341</td><td>(0, 8)</td><td>(0, 13)</td><td>(0, 8)</td><td>(0, 13)</td><td>(0, 8)</td><td>(0, 13)</td><td>0.61</td></tr>
+      </tbody></table></div>
+
+      <h3>A. Pyramid NCC Gallery</h3>
+      <div class="gallery">
+        <figure><img src="../outputs/00056v_pyramid_ncc.jpg" alt="Pyramid NCC result for 00056v"><figcaption>00056v · G (1, 6), R (1, 13)</figcaption></figure>
+        <figure><img src="../outputs/00125v_pyramid_ncc.jpg" alt="Pyramid NCC result for 00125v"><figcaption>00125v · G (1, 5), R (1, 10)</figcaption></figure>
+        <figure><img src="../outputs/00163v_pyramid_ncc.jpg" alt="Pyramid NCC result for 00163v"><figcaption>00163v · G (1, -3), R (1, -4)</figcaption></figure>
+        <figure><img src="../outputs/00458u_pyramid_ncc.jpg" alt="Pyramid NCC result for 00458u"><figcaption>00458u · G (-2, 42), R (29, 88)</figcaption></figure>
+        <figure><img src="../outputs/00804v_pyramid_ncc.jpg" alt="Pyramid NCC result for 00804v"><figcaption>00804v · G (-3, 6), R (-4, 13)</figcaption></figure>
+        <figure><img src="../outputs/01007a_pyramid_ncc.jpg" alt="Pyramid NCC result for 01007a"><figcaption>01007a · G (6, 61), R (12, 129)</figcaption></figure>
+        <figure><img src="../outputs/01047u_pyramid_ncc.jpg" alt="Pyramid NCC result for 01047u"><figcaption>01047u · G (17, 24), R (33, 72)</figcaption></figure>
+        <figure><img src="../outputs/01164v_pyramid_ncc.jpg" alt="Pyramid NCC result for 01164v"><figcaption>01164v · G (1, 6), R (3, 11)</figcaption></figure>
+        <figure><img src="../outputs/01269v_pyramid_ncc.jpg" alt="Pyramid NCC result for 01269v"><figcaption>01269v · G (2, 6), R (3, 13)</figcaption></figure>
+        <figure><img src="../outputs/01522v_pyramid_ncc.jpg" alt="Pyramid NCC result for 01522v"><figcaption>01522v · G (2, 6), R (2, 13)</figcaption></figure>
+        <figure><img src="../outputs/01597v_pyramid_ncc.jpg" alt="Pyramid NCC result for 01597v"><figcaption>01597v · G (1, 7), R (1, 16)</figcaption></figure>
+        <figure><img src="../outputs/01598v_pyramid_ncc.jpg" alt="Pyramid NCC result for 01598v"><figcaption>01598v · G (0, 8), R (-1, 16)</figcaption></figure>
+        <figure><img src="../outputs/01657u_pyramid_ncc.jpg" alt="Pyramid NCC result for 01657u"><figcaption>01657u · G (-6, 55), R (1, 112)</figcaption></figure>
+        <figure><img src="../outputs/01725u_pyramid_ncc.jpg" alt="Pyramid NCC result for 01725u"><figcaption>01725u · G (38, 77), R (76, 161)</figcaption></figure>
+        <figure><img src="../outputs/01728v_pyramid_ncc.jpg" alt="Pyramid NCC result for 01728v"><figcaption>01728v · G (1, 8), R (1, 18)</figcaption></figure>
+        <figure><img src="../outputs/01861a_pyramid_ncc.jpg" alt="Pyramid NCC result for 01861a"><figcaption>01861a · G (38, 71), R (62, 148)</figcaption></figure>
+        <figure><img src="../outputs/10131v_pyramid_ncc.jpg" alt="Pyramid NCC result for 10131v"><figcaption>10131v · G (2, 6), R (3, 12)</figcaption></figure>
+        <figure><img src="../outputs/31421v_pyramid_ncc.jpg" alt="Pyramid NCC result for 31421v"><figcaption>31421v · G (0, 8), R (0, 13)</figcaption></figure>
+      </div>
+    </section>
+
+    <section id="analysis">
+      <h2>VI. Analysis and Limitations</h2>
+      <h3>A. Alignment Quality</h3>
+      <p class="no-indent">The pyramid results remove the large, obvious channel separation visible in the unaligned full-resolution composites. Fine scene structure—including architectural edges, faces, tree lines, and object contours—generally agrees across channels. No final image shows the gross double-edge failure expected from a wholly incorrect displacement.</p>
+      <p>Plate 00056v retains strong magenta, green, and cyan speckling in the sky and mountain regions. Because the recovered L2, NCC, and pyramid offsets agree exactly, this pattern is more consistent with emulsion damage or channel-specific plate content than with a different translational optimum. Plates 00458u, 01007a, 01047u, 01657u, and 01861a retain narrow coloured source borders; these are boundary artifacts rather than misalignment of the interior scene.</p>
+      <h3>B. Single-Scale versus Pyramid Search</h3>
+      <p class="no-indent">The small plates require displacements no larger than 18 pixels and therefore mostly fit the single-scale window. The large plates require vertical red shifts from 72 to 161 pixels. Their single-scale estimates often stop at (d_y=15), while the pyramid propagates coarse estimates to the original resolution. Plate 01725u is the strongest example: single-scale NCC reports red ((13,-10)), but pyramid NCC finds ((76,161)), producing coherent interior detail.</p>
+      <h3>C. Performance</h3>
+      <p class="no-indent">Low-resolution processing averaged 0.73 seconds per plate, with a 0.61-second median. Full-resolution processing averaged 59.42 seconds and ranged from 57.71 to 62.22 seconds. The batch therefore meets the intended interactive scale for small images and remains close to the assignment's one-minute target for large plates. Most large-image time is spent evaluating full-resolution single-scale L2 and NCC for comparison; the pyramid itself avoids a prohibitively large exhaustive search over the true displacement range.</p>
+      <h3>D. Bells and Whistles</h3>
+      <p class="no-indent">No optional photometric enhancement was applied. The implementation includes anti-aliased Gaussian downsampling and displacement-aware removal of wrapped pixels, but it does not claim automatic border detection, contrast correction, white balance, feature-based alignment, rotation, or scale estimation. This keeps the comparison focused on the required translation model and matching metrics.</p>
+    </section>
+
+    <section id="files">
+      <h2>VII. Reproducibility and Supporting Files</h2>
+      <p class="no-indent">The implementation processes every JPEG in the data directory, saves unaligned, L2, NCC, and pyramid-NCC reconstructions, and records all scores, offsets, runtimes, and failures in a CSV file.</p>
+      <div class="downloads"><a href="../main.py">View Python source</a><a href="../main.py" download>Download Python source</a><a href="../outputs/results.csv" download>Download complete results</a><a href="../SYDE671%20assn1.pdf">View assignment brief</a></div>
+      <div class="method-note"><strong>Run from the SYDE 671 directory:</strong> install NumPy, ImageIO, and Matplotlib, place course JPEG files in <code>data/</code>, then execute <code>python3 main.py</code>. Generated files are written to <code>outputs/</code>.</div>
+    </section>
+
+    <section><h2>VIII. Conclusion</h2><p class="no-indent">Exhaustive translation search is sufficient for low-resolution plates but cannot span the motion present in full-resolution scans. A hand-built coarse-to-fine Gaussian pyramid makes large displacements tractable while retaining the required NCC metric and fixed parameters. Across all 18 supplied plates, the method produces visually coherent colour reconstructions, exposes the limitations of a bounded single-scale search, and records reproducible offsets for every result.</p></section>
+
+    <section><h2>References</h2><ol class="references"><li>SYDE 671, “Assignment 1,” course assignment document.</li><li>Library of Congress, “Prokudin-Gorskii Collection,” digitized glass-plate photographs.</li><li>R. Szeliski, <em>Computer Vision: Algorithms and Applications</em>, discussion of image pyramids and colour processing.</li></ol></section>
+  </main>
+</body>
+</html>

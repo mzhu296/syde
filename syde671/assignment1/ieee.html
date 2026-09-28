@@ -53,6 +53,9 @@
     .gallery { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:1rem; margin:1.5rem 0 2rem; }
     figure { margin:0; break-inside:avoid; }
     figure img { display:block; width:100%; height:auto; border:1px solid var(--light-rule); background:white; }
+    .walkthrough { margin:1.5rem 0 2rem; }
+    .walkthrough img { width:min(100%,900px); margin:0 auto; }
+    .walkthrough figcaption { max-width:900px; margin:.55rem auto 0; }
     .gallery img { aspect-ratio:4/3; object-fit:contain; }
     figcaption { margin-top:.45rem; font-size:.84rem; line-height:1.35; text-align:justify; }
     .fig-label { font-variant:small-caps; font-weight:700; }
@@ -133,6 +136,13 @@
         <figure><img src="../outputs/01007a_pyramid_ncc.jpg" alt="Pyramid NCC reconstruction for 01007a"><figcaption><span class="fig-label">Fig. 2(d).</span> Pyramid NCC recovers G ((6,61)), R ((12,129)).</figcaption></figure>
       </div>
       <div class="method-note"><strong>Why NCC for the pyramid?</strong> The red, green, and blue glass-plate exposures can differ substantially in brightness. Normalizing each comparison makes the score more stable across channels while retaining a simple metric required by the assignment.</div>
+      <h3>A. Animated Alignment Walkthrough</h3>
+      <p class="no-indent">Figure 3 follows plate 01007a through the complete reconstruction pipeline. It first separates the vertically stacked scan into blue, green, and red exposures, then shows the unaligned colour composite. The L2 and NCC heatmaps visualize every displacement tested inside the single-scale ±15-pixel window: each pixel in a heatmap represents one candidate shift, and the marked optimum is the shift selected by that metric.</p>
+      <figure class="walkthrough">
+        <img src="../visualizations/01007a/01007a_detailed_alignment.gif" alt="Animated walkthrough of L2, NCC, and Gaussian-pyramid alignment for plate 01007a">
+        <figcaption><span class="fig-label">Fig. 3.</span> Detailed alignment of 01007a. After the single-scale comparisons, the animation constructs the Gaussian pyramids and follows NCC refinement from level 4 to level 0. Each finer level doubles the preceding displacement estimate and searches a small local neighbourhood. The side-by-side images show the colour separation disappearing as the estimates converge to G ((6,61)) and R ((12,129)). The final frame compares the original unaligned composite with the aligned reconstruction.</figcaption>
+      </figure>
+      <p>The animation displays the meaningful optimization stages rather than all 961 candidate comparisons individually. This preserves the relationship between the score surfaces, the selected displacements, and the coarse-to-fine trajectory without slowing the walkthrough to the full computation time.</p>
     </section>
 
     <section id="results">
@@ -198,7 +208,7 @@
     <section id="files">
       <h2>VII. Reproducibility and Supporting Files</h2>
       <p class="no-indent">The implementation processes every JPEG in the data directory, saves unaligned, L2, NCC, and pyramid-NCC reconstructions, and records all scores, offsets, runtimes, and failures in a CSV file.</p>
-      <div class="downloads"><a href="../main.py">View Python source</a><a href="../main.py" download>Download Python source</a><a href="../outputs/results.csv" download>Download complete results</a><a href="../SYDE671%20assn1.pdf">View assignment brief</a></div>
+      <div class="downloads"><a href="../main.py">View Python source</a><a href="../main.py" download>Download Python source</a><a href="../outputs/results.csv" download>Download complete results</a><a href="../visualizations/01007a/01007a_detailed_alignment.gif" download>Download alignment GIF</a><a href="../create_detailed_alignment_gif.py">View GIF generator</a><a href="../SYDE671%20assn1.pdf">View assignment brief</a></div>
       <div class="method-note"><strong>Run from the SYDE 671 directory:</strong> install NumPy, ImageIO, and Matplotlib, place course JPEG files in <code>data/</code>, then execute <code>python3 main.py</code>. Generated files are written to <code>outputs/</code>.</div>
     </section>
 

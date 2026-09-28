@@ -1,28 +1,20 @@
-# SYDE 572 Assignment 1
+# SYDE coursework
 
-The assignment is organized by deliverable while keeping one combined project
-webpage at `assignment1/index.html`.
+Coursework portfolio for Systems Design Engineering courses at the University
+of Waterloo.
+
+The GitHub Pages site is organized by course:
 
 ```text
-assignment1/
-├── index.html                 # Combined Part 1 and Part 2 webpage
-├── requirements.txt           # Shared Python dependencies
-├── part1/
-│   ├── A1.py                  # Newton-Raphson distance method
-│   ├── A2.py                  # Golden-section distance method
-│   ├── non_polynomial_examples.py
-│   ├── part1.pdf              # Handwritten analytical work
-│   └── media/                 # Part 1 plots and comparison data
-└── part2/
-    ├── part2_newton.py        # Coordinate-wise multivariate Newton method
-    └── media/                 # Part 2 plots and iteration tables
+syde/
+├── index.html
+├── syde572/
+│   ├── index.html
+│   └── assignment1/
+└── syde671/
+    ├── index.html
+    ├── data/
+    └── outputs/
 ```
 
-Run the plotting programs from the repository root:
-
-```bash
-python3 assignment1/part1/A1.py
-python3 assignment1/part1/A2.py
-python3 assignment1/part1/non_polynomial_examples.py
-python3 assignment1/part2/part2_newton.py
-```
+Visit the published portfolio at <https://mzhu296.github.io/syde/>.

@@ -278,10 +278,12 @@
         <li><a href="#part-one">Part I: Distance minimization</a></li>
         <li><a href="#p1-analytical">Analytical formulation</a></li>
         <li><a href="#p1-numerical">Numerical methods</a></li>
+        <li><a href="#p1-hand">Numerical methods by hand</a></li>
         <li><a href="#p1-functions">Additional functions</a></li>
         <li><a href="#part-two">Part II: Function fitting</a></li>
         <li><a href="#p2-analytical">Analytical fits</a></li>
         <li><a href="#p2-newton">Coordinate-wise Newton method</a></li>
+        <li><a href="#p2-hand">Newton sweeps by hand</a></li>
         <li><a href="#files">Supporting files</a></li>
       </ol>
     </nav>
@@ -354,6 +356,69 @@
         </table>
       </div>
 
+      <h3 id="p1-hand">C. Worked Hand Calculations for \(y=x^2+5\)</h3>
+      <h4>1) Newton–Raphson by hand</h4>
+      <p class="no-indent">Every supplied point has the form \((x_0,0)\), and \(f(x)=x^2+5\), \(f'(x)=2x\), \(f''(x)=2\). Substituting into the general derivatives gives</p>
+      <div class="equation">
+        \[D'(x)=2(x-x_0)+2(x^2+5)(2x)=4x^3+22x-2x_0,\qquad D''(x)=2+2(2x)^2+2(x^2+5)(2)=12x^2+22,\]
+        \[x_{k+1}=x_k-\frac{4x_k^3+22x_k-2x_0}{12x_k^2+22}.\]
+      </div>
+      <p class="no-indent"><strong>Worked example, \(P=(-4,0)\):</strong> here \(-2x_0=8\), so \(D'(x)=4x^3+22x+8\). Starting from \(x=0\):</p>
+      <div class="equation">
+        \[k=0:\quad D'(0)=8,\quad D''(0)=22,\quad x_1=0-\tfrac{8}{22}=-0.363636\]
+        \[k=1:\quad D'(-0.363636)=4(-0.048084)+22(-0.363636)+8=-0.192337,\quad D''=12(0.132231)+22=23.586777\]
+        \[x_2=-0.363636-\tfrac{-0.192337}{23.586777}=-0.355482\]
+        \[k=2:\quad D'(-0.355482)=-0.000288,\quad D''=23.516409,\quad x_3=-0.355482-\tfrac{-0.000288}{23.516409}=-0.355470\]
+        \[d=\sqrt{(-0.355470+4)^2+(5.126359)^2}=\sqrt{39.562155}=6.28985\]
+      </div>
+      <p class="no-indent">The same update was applied to the other four points. Each column below is one hand iteration from \(x=0\); iteration stops once successive values agree to six decimals.</p>
+      <div class="table-wrap">
+        <table>
+          <caption>Table IV. Hand Newton–Raphson iterates for all supplied points</caption>
+          <thead><tr><th>\(P\)</th><th>\(D'(x)\)</th><th>\(x_1\)</th><th>\(x_2\)</th><th>\(x_3\)</th><th>\(x_4\)</th><th>Distance</th></tr></thead>
+          <tbody>
+            <tr><td>\((0,0)\)</td><td>\(4x^3+22x\)</td><td>0.000000</td><td>—</td><td>—</td><td>—</td><td>5.00000</td></tr>
+            <tr><td>\((-4,0)\)</td><td>\(4x^3+22x+8\)</td><td>−0.363636</td><td>−0.355482</td><td>−0.355470</td><td>−0.355470</td><td>6.28985</td></tr>
+            <tr><td>\((-8,0)\)</td><td>\(4x^3+22x+16\)</td><td>−0.727273</td><td>−0.672992</td><td>−0.672078</td><td>−0.672078</td><td>9.13342</td></tr>
+            <tr><td>\((2,0)\)</td><td>\(4x^3+22x-4\)</td><td>0.181818</td><td>0.180745</td><td>0.180745</td><td>—</td><td>5.35140</td></tr>
+            <tr><td>\((6,0)\)</td><td>\(4x^3+22x-12\)</td><td>0.545455</td><td>0.520068</td><td>0.519904</td><td>0.519904</td><td>7.60313</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="no-indent">For \((0,0)\), \(D'(0)=0\) already, so the initial guess is the minimizer and the first update leaves \(x\) unchanged.</p>
+
+      <h4>2) Golden-section search by hand</h4>
+      <p class="no-indent">With \([a,b]=[-10,10]\) and \(r=0.381966\), the first interior points are \(x_1=-10+0.381966(20)=-2.360680\) and \(x_2=10-0.381966(20)=2.360680\). After each comparison one interior point is reused, so only one new evaluation of \(D(x)=(x-x_0)^2+(x^2+5)^2\) is needed per step, and the bracket shrinks by the factor \(0.618034\).</p>
+      <p class="no-indent"><strong>Worked example, \(P=(-4,0)\):</strong> \(D(x)=(x+4)^2+(x^2+5)^2\).</p>
+      <div class="table-wrap">
+        <table>
+          <caption>Table V. Hand golden-section reductions for \(P=(-4,0)\)</caption>
+          <thead><tr><th>\(k\)</th><th>\([a,b]\)</th><th>\(x_1\)</th><th>\(x_2\)</th><th>\(D(x_1)\)</th><th>\(D(x_2)\)</th><th>Keep</th></tr></thead>
+          <tbody>
+            <tr><td>0</td><td>\([-10.0000,\,10.0000]\)</td><td>−2.3607</td><td>2.3607</td><td>114.4717</td><td>152.2425</td><td>\([a,x_2]\)</td></tr>
+            <tr><td>1</td><td>\([-10.0000,\,2.3607]\)</td><td>−5.2786</td><td>−2.3607</td><td>1081.6804</td><td>114.4717</td><td>\([x_1,b]\)</td></tr>
+            <tr><td>2</td><td>\([-5.2786,\,2.3607]\)</td><td>−2.3607</td><td>−0.5573</td><td>114.4717</td><td>40.0544</td><td>\([x_1,b]\)</td></tr>
+            <tr><td>3</td><td>\([-2.3607,\,2.3607]\)</td><td>−0.5573</td><td>0.5573</td><td>40.0544</td><td>48.9709</td><td>\([a,x_2]\)</td></tr>
+            <tr><td>4</td><td>\([-2.3607,\,0.5573]\)</td><td>−1.2461</td><td>−0.5573</td><td>50.5232</td><td>40.0544</td><td>\([x_1,b]\)</td></tr>
+            <tr><td>5</td><td>\([-1.2461,\,0.5573]\)</td><td colspan="5">width \(=20(0.618034)^5=1.8034\); the bracket contains \(x^*=-0.35547\)</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="no-indent">The bracket width after \(n\) reductions is \(20(0.618034)^n\). Reaching the \(10^{-7}\) tolerance requires \(n\ge\ln(2\times10^{8})/\ln(1.618034)\approx39.7\), so 40 reductions are needed for every point. The first five decisions for all supplied points are summarized below, with L meaning keep \([a,x_2]\) and R meaning keep \([x_1,b]\). At \((0,0)\) the first comparison is an exact tie by symmetry; the rule \(D(x_1)&lt;D(x_2)\) is false, so the right bracket is kept.</p>
+      <div class="table-wrap">
+        <table>
+          <caption>Table VI. Hand golden-section decisions for all supplied points</caption>
+          <thead><tr><th>\(P\)</th><th>Decisions \(k=0\ldots4\)</th><th>Bracket after 5 steps</th><th>\(x^*\) after 40 steps</th><th>Distance</th></tr></thead>
+          <tbody>
+            <tr><td>\((0,0)\)</td><td>R L L R L</td><td>\([-0.5573,\,1.2461]\)</td><td>0.00000</td><td>5.00000</td></tr>
+            <tr><td>\((-4,0)\)</td><td>L R R L R</td><td>\([-1.2461,\,0.5573]\)</td><td>−0.35547</td><td>6.28985</td></tr>
+            <tr><td>\((-8,0)\)</td><td>L R R L R</td><td>\([-1.2461,\,0.5573]\)</td><td>−0.67208</td><td>9.13342</td></tr>
+            <tr><td>\((2,0)\)</td><td>R L L R L</td><td>\([-0.5573,\,1.2461]\)</td><td>0.18074</td><td>5.35140</td></tr>
+            <tr><td>\((6,0)\)</td><td>R L L R L</td><td>\([-0.5573,\,1.2461]\)</td><td>0.51990</td><td>7.60313</td></tr>
+          </tbody>
+        </table>
+      </div>
+
       <div class="method-note"><strong>Method comparison.</strong> Newton–Raphson converges quickly when reliable first and second derivatives are available. Golden-section search is slower but derivative-free and maintains a containing interval. Both methods reproduce the analytical results in Table I to five decimal places.</div>
 
       <div class="downloads" aria-label="Part I source files">
@@ -413,7 +478,7 @@
 
       <div class="table-wrap">
         <table>
-          <caption>Table IV. Comparison of the analytical least-squares models</caption>
+          <caption>Table VII. Comparison of the analytical least-squares models</caption>
           <thead><tr><th>Model</th><th>Best-fit equation</th><th>SSE</th><th>MSE</th></tr></thead>
           <tbody>
             <tr><td>Line</td><td>\(\hat y=2.3x-0.2\)</td><td>2.30</td><td>0.575</td></tr>
@@ -431,6 +496,51 @@
         \[c_j^{\mathrm{new}}=c_j^{\mathrm{old}}-\frac{2A_j^T(A\mathbf c-\mathbf y)}{2A_j^TA_j}.\]
       </div>
       <p>For the line, the intercept and slope updates are \(c_0\leftarrow(26-12c_1)/8\), followed by \(c_1\leftarrow(62-12c_0)/28\). For the parabola, the sequential updates are \(c_0\leftarrow(26-12c_1-28c_2)/8\), \(c_1\leftarrow(62-12c_0-72c_2)/28\), and \(c_2\leftarrow(166-28c_0-72c_1)/196\). Iteration stops when the largest coefficient change in a sweep is below \(10^{-10}\).</p>
+
+      <h3 id="p2-hand">A. Worked Sweeps by Hand</h3>
+      <p class="no-indent"><strong>Deriving the line update.</strong> With \(\mathrm{SSE}(c_0,c_1)=\sum_i(c_0+c_1x_i-y_i)^2\) and \(\sum x_i=6\), \(\sum x_i^2=14\), \(\sum y_i=13\), \(\sum x_iy_i=31\):</p>
+      <div class="equation">
+        \[\frac{\partial\,\mathrm{SSE}}{\partial c_0}=2(4c_0+6c_1-13),\qquad \frac{\partial^2\mathrm{SSE}}{\partial c_0^2}=8,\]
+        \[c_0^{\mathrm{new}}=c_0-\frac{8c_0+12c_1-26}{8}=\frac{26-12c_1}{8}.\]
+      </div>
+      <p class="no-indent">Because SSE is quadratic in each coefficient, a single Newton step lands exactly on the one-dimensional minimum, so each coordinate update is an exact line minimization with the other coefficient held fixed. The slope update \(c_1\leftarrow(62-12c_0)/28\) follows in the same way from \(\partial\,\mathrm{SSE}/\partial c_1=2(6c_0+14c_1-31)\) and \(\partial^2\mathrm{SSE}/\partial c_1^2=28\).</p>
+      <div class="equation">
+        \[\text{Sweep 1:}\quad c_0=\tfrac{26-12(0)}{8}=3.250000,\qquad c_1=\tfrac{62-12(3.25)}{28}=\tfrac{23}{28}=0.821429\]
+        \[\text{Sweep 2:}\quad c_0=\tfrac{26-12(0.821429)}{8}=2.017857,\qquad c_1=\tfrac{62-12(2.017857)}{28}=1.349490\]
+        \[\text{Sweep 3:}\quad c_0=\tfrac{26-12(1.349490)}{8}=1.225765,\qquad c_1=\tfrac{62-12(1.225765)}{28}=1.688958\]
+      </div>
+      <div class="table-wrap">
+        <table>
+          <caption>Table VIII. Hand coordinate-wise sweeps for the line \(\hat y=c_0+c_1x\)</caption>
+          <thead><tr><th>Sweep</th><th>\(c_0\)</th><th>\(c_1\)</th><th>SSE</th><th>MSE</th></tr></thead>
+          <tbody>
+            <tr><td>0</td><td>0.000000</td><td>0.000000</td><td>71.000000</td><td>17.750000</td></tr>
+            <tr><td>1</td><td>3.250000</td><td>0.821429</td><td>19.303571</td><td>4.825893</td></tr>
+            <tr><td>2</td><td>2.017857</td><td>1.349490</td><td>9.326986</td><td>2.331747</td></tr>
+            <tr><td>3</td><td>1.225765</td><td>1.688958</td><td>5.204010</td><td>1.301002</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p class="no-indent"><strong>Parabola.</strong> Using the additional sums \(\sum x_i^3=36\), \(\sum x_i^4=98\), and \(\sum x_i^2y_i=83\), the three coordinate updates are applied in order \(c_0\to c_1\to c_2\), each using the newest values:</p>
+      <div class="equation">
+        \[\text{Sweep 1:}\quad c_0=\tfrac{26}{8}=3.250000,\quad c_1=\tfrac{62-39}{28}=0.821429,\quad c_2=\tfrac{166-91-59.142857}{196}=0.080904\]
+        \[\text{Sweep 2:}\quad c_0=\tfrac{26-9.857143-2.265306}{8}=1.734694,\quad c_1=\tfrac{62-20.816327-5.825073}{28}=1.262807,\quad c_2=\tfrac{166-48.571429-90.921116}{196}=0.135237\]
+        \[\text{Sweep 3:}\quad c_0=\tfrac{26-15.153686-3.786636}{8}=0.882460,\quad c_1=\tfrac{62-10.589516-9.737065}{28}=1.488336,\quad c_2=\tfrac{166-24.708871-107.160221}{196}=0.174137\]
+      </div>
+      <div class="table-wrap">
+        <table>
+          <caption>Table IX. Hand coordinate-wise sweeps for the parabola \(\hat y=c_0+c_1x+c_2x^2\)</caption>
+          <thead><tr><th>Sweep</th><th>\(c_0\)</th><th>\(c_1\)</th><th>\(c_2\)</th><th>SSE</th><th>MSE</th></tr></thead>
+          <tbody>
+            <tr><td>0</td><td>0.000000</td><td>0.000000</td><td>0.000000</td><td>71.000000</td><td>17.750000</td></tr>
+            <tr><td>1</td><td>3.250000</td><td>0.821429</td><td>0.080904</td><td>18.662120</td><td>4.665530</td></tr>
+            <tr><td>2</td><td>1.734694</td><td>1.262807</td><td>0.135237</td><td>6.460793</td><td>1.615198</td></tr>
+            <tr><td>3</td><td>0.882460</td><td>1.488336</td><td>0.174137</td><td>2.695196</td><td>0.673799</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="no-indent">Continuing the same arithmetic, the line converges to \((c_0,c_1)=(-0.2,2.3)\) with MSE \(0.575\), and the parabola to \((0.55,0.05,0.75)\) with MSE \(0.0125\), matching the analytical solutions in Table VII. The parabola needs more sweeps because its coefficients are strongly coupled (the \(x\), \(x^2\) columns are highly correlated), so each coordinate step makes smaller progress along the valley of the MSE surface.</p>
 
       <div class="downloads">
         <a href="./part2/part2_newton.py">View Part II code</a>
@@ -452,7 +562,7 @@
 
       <div class="table-wrap">
         <table>
-          <caption>Table V. Selected coordinate-wise Newton–Raphson states</caption>
+          <caption>Table X. Selected coordinate-wise Newton–Raphson states</caption>
           <thead><tr><th>Model</th><th>Sweep</th><th>Coefficients</th><th>SSE</th><th>MSE</th></tr></thead>
           <tbody>
             <tr><td>Line</td><td>0</td><td>\((0,0)\)</td><td>71.000000</td><td>17.750000</td></tr>

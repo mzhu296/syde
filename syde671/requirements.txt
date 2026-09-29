@@ -1,4 +1,6 @@
-imageio>=2.37
-matplotlib>=3.9
-numpy>=2.0
-pillow>=9.0
+# Tested with Python 3.9.19 (Anaconda base):
+# numpy 1.21.0, imageio 2.33.1, matplotlib 3.7.2, pillow 10.4.0
+imageio>=2.33
+matplotlib>=3.7
+numpy>=1.21
+pillow>=10.0

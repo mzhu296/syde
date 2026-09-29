@@ -123,6 +123,66 @@ def ncc(image1, image2):
 
 
 # ============================================================
+# 6b. Zero-mean NCC
+# ============================================================
+
+def zero_mean_ncc(image1, image2):
+    """
+    NCC after subtracting each image's mean.
+
+    Plain NCC on non-negative pixels scores ~0.95 for almost
+    any shift; removing the mean makes the peak much sharper.
+    """
+
+    a = image1 - image1.mean()
+    b = image2 - image2.mean()
+
+    denominator = (
+        np.linalg.norm(a)
+        * np.linalg.norm(b)
+    )
+
+    if denominator == 0:
+        return -1
+
+    return np.sum(a * b) / denominator
+
+
+# ============================================================
+# 6c. Gradient magnitude (Sobel)
+# ============================================================
+
+def gradient_magnitude(image):
+    """
+    Sobel edge strength.
+
+    Edges line up across B, G, R even when the
+    brightness of each channel is different.
+    """
+
+    p = np.pad(
+        image,
+        1,
+        mode="edge"
+    )
+
+    gx = (
+        (p[:-2, 2:] + 2 * p[1:-1, 2:] + p[2:, 2:])
+        - (p[:-2, :-2] + 2 * p[1:-1, :-2] + p[2:, :-2])
+    )
+
+    gy = (
+        (p[2:, :-2] + 2 * p[2:, 1:-1] + p[2:, 2:])
+        - (p[:-2, :-2] + 2 * p[:-2, 1:-1] + p[:-2, 2:])
+    )
+
+    return np.sqrt(
+        gx ** 2
+        + gy ** 2
+    )
+
+
+# ============================================================
 # 7. Single-scale L2 alignment
 # ============================================================
 
@@ -402,7 +462,8 @@ def search_alignment(
     center_dy=0,
     search_range=15,
     metric="ncc",
-    border=10
+    border=10,
+    crop_fraction=0.0
 ):
 
     min_dx = center_dx - search_range
@@ -419,10 +480,12 @@ def search_alignment(
         abs(max_dy)
     )
 
-    # Avoid np.roll wrapped pixels during scoring
-    margin = (
-        border
-        + largest_shift
+    # Avoid np.roll wrapped pixels during scoring,
+    # and optionally ignore a fixed fraction of each side
+    # (keeps plate borders out of the score at every level)
+    margin = max(
+        border + largest_shift,
+        int(crop_fraction * min(reference.shape))
     )
 
     if (
@@ -446,14 +509,19 @@ def search_alignment(
 
         best_score = float("inf")
 
-    elif metric == "ncc":
+    elif metric in ("ncc", "zncc"):
 
         best_score = -float("inf")
+
+        score_function = (
+            ncc if metric == "ncc"
+            else zero_mean_ncc
+        )
 
     else:
 
         raise ValueError(
-            "metric must be 'l2' or 'ncc'"
+            "metric must be 'l2', 'ncc' or 'zncc'"
         )
 
     best_dx = center_dx
@@ -503,12 +571,12 @@ def search_alignment(
                     best_dy = dy
 
             # ----------------------------------------------
-            # NCC
+            # NCC / zero-mean NCC
             # ----------------------------------------------
 
             else:
 
-                score = ncc(
+                score = score_function(
                     shifted_crop,
                     reference_crop
                 )
@@ -537,8 +605,14 @@ def align_pyramid(
     metric="ncc",
     coarse_search=15,
     refine_search=2,
-    min_size=150
+    min_size=150,
+    features="raw",
+    crop_fraction=0.0
 ):
+    """
+    features="raw"      : score pixel intensities
+    features="gradient" : score Sobel edge strength
+    """
 
     moving_pyramid = build_pyramid(
         moving,
@@ -575,6 +649,18 @@ def align_pyramid(
             reference_pyramid[level]
         )
 
+        # Edges are computed per level, after blurring,
+        # so each level sees edges at its own scale
+        if features == "gradient":
+
+            moving_level = gradient_magnitude(
+                moving_level
+            )
+
+            reference_level = gradient_magnitude(
+                reference_level
+            )
+
         print(
             "\nLevel:",
             level
@@ -600,7 +686,8 @@ def align_pyramid(
                 center_dx=0,
                 center_dy=0,
                 search_range=coarse_search,
-                metric=metric
+                metric=metric,
+                crop_fraction=crop_fraction
             )
 
         # ----------------------------------------------------
@@ -626,7 +713,8 @@ def align_pyramid(
                 center_dx=dx,
                 center_dy=dy,
                 search_range=refine_search,
-                metric=metric
+                metric=metric,
+                crop_fraction=crop_fraction
             )
 
         print(
@@ -873,6 +961,8 @@ def process_one_image(
     # 4. Pyramid NCC
     # ========================================================
 
+    pyramid_start = time.perf_counter()
+
     print(
         "\nPyramid: Green -> Blue"
     )
@@ -934,6 +1024,77 @@ def process_one_image(
         (g_dx_pyr, g_dy_pyr),
         "R:",
         (r_dx_pyr, r_dy_pyr)
+    )
+
+    pyramid_runtime = (
+        time.perf_counter()
+        - pyramid_start
+    )
+
+    # ========================================================
+    # 5. Pyramid on gradients (zero-mean NCC, 10% crop)
+    # ========================================================
+
+    grad_start = time.perf_counter()
+
+    print(
+        "\nGradient pyramid: Green -> Blue"
+    )
+
+    g_dx_grad, g_dy_grad, g_score_grad = (
+        align_pyramid(
+            G,
+            B,
+            metric="zncc",
+            features="gradient",
+            crop_fraction=0.10
+        )
+    )
+
+    print(
+        "\nGradient pyramid: Red -> Blue"
+    )
+
+    r_dx_grad, r_dy_grad, r_score_grad = (
+        align_pyramid(
+            R,
+            B,
+            metric="zncc",
+            features="gradient",
+            crop_fraction=0.10
+        )
+    )
+
+    rgb_grad = np.dstack([
+        shift_image(R, r_dx_grad, r_dy_grad),
+        shift_image(G, g_dx_grad, g_dy_grad),
+        B
+    ])
+
+    grad_crop = shift_crop_border(
+        g_dx_grad,
+        g_dy_grad,
+        r_dx_grad,
+        r_dy_grad
+    )
+
+    save_rgb(
+        rgb_grad,
+        output_dir
+        / f"{stem}_pyramid_grad.jpg",
+        border=grad_crop
+    )
+
+    print(
+        "Gradient pyramid G:",
+        (g_dx_grad, g_dy_grad),
+        "R:",
+        (r_dx_grad, r_dy_grad)
+    )
+
+    grad_runtime = (
+        time.perf_counter()
+        - grad_start
     )
 
     # ========================================================
@@ -1020,6 +1181,31 @@ def process_one_image(
 
         "pyramid_red_score":
             float(r_score_pyr),
+
+        # Pyramid on gradients
+        "pyramid_grad_green_dx":
+            g_dx_grad,
+
+        "pyramid_grad_green_dy":
+            g_dy_grad,
+
+        "pyramid_grad_red_dx":
+            r_dx_grad,
+
+        "pyramid_grad_red_dy":
+            r_dy_grad,
+
+        "pyramid_grad_green_score":
+            float(g_score_grad),
+
+        "pyramid_grad_red_score":
+            float(r_score_grad),
+
+        "pyramid_runtime_seconds":
+            pyramid_runtime,
+
+        "pyramid_grad_runtime_seconds":
+            grad_runtime,
 
         "runtime_seconds":
             runtime,
@@ -1113,6 +1299,18 @@ def main():
 
         "pyramid_green_score",
         "pyramid_red_score",
+
+        "pyramid_grad_green_dx",
+        "pyramid_grad_green_dy",
+
+        "pyramid_grad_red_dx",
+        "pyramid_grad_red_dy",
+
+        "pyramid_grad_green_score",
+        "pyramid_grad_red_score",
+
+        "pyramid_runtime_seconds",
+        "pyramid_grad_runtime_seconds",
 
         "runtime_seconds",
 

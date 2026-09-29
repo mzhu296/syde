@@ -89,11 +89,11 @@
     </header>
 
     <div class="abstract">
-      <p><span class="label">Abstract—</span>Part One examines how camera position and focal length affect perspective through a compression comparison and a six-frame dolly zoom. Part Two reconstructs colour photographs from 24 vertically stacked Prokudin-Gorskii glass plates: 18 course images, three Berkeley rubric images, and three independently selected Library of Congress plates. Each plate is divided into blue, green, and red exposures; green and red are translated to align with blue. Exhaustive single-scale alignment is evaluated with Euclidean distance and normalized cross-correlation, while a hand-built Gaussian pyramid extends NCC alignment to full-resolution plates. Eighteen low-resolution plates completed in an average of 0.62 seconds and six full-resolution plates in an average of 59.14 seconds.</p>
+      <p><span class="label">Abstract—</span>Part One examines how camera position and focal length affect perspective through a compression comparison and a six-frame dolly zoom. Part Two reconstructs colour photographs from 24 vertically stacked Prokudin-Gorskii glass plates: 18 course images, three Berkeley rubric images, and three independently selected Library of Congress plates. Each plate is divided into blue, green, and red exposures; green and red are translated to align with blue. Exhaustive single-scale alignment is evaluated with Euclidean distance and normalized cross-correlation, while a hand-built Gaussian pyramid extends NCC alignment to full-resolution plates. Raw-pixel pyramid NCC left visible fringes on four to five of the six full-resolution plates; aligning Sobel gradient magnitudes with zero-mean NCC and a proportional border crop removes them with one fixed parameter set. The final gradient pyramid takes 0.20 seconds per low-resolution plate and 3.20 seconds per full-resolution plate on average.</p>
       <p><span class="label">Index Terms—</span>image alignment, Gaussian pyramid, normalized cross-correlation, Euclidean distance, colour reconstruction, Prokudin-Gorskii.</p>
     </div>
 
-    <nav class="contents" aria-label="Table of contents"><strong>Contents</strong><ol><li><a href="#part-one">Camera and perspective</a></li><li><a href="#problem">Problem and dataset</a></li><li><a href="#method">Alignment method</a></li><li><a href="#single-scale">Single-scale comparison</a></li><li><a href="#pyramid">Image pyramid</a></li><li><a href="#results">Complete results</a></li><li><a href="#analysis">Analysis and limitations</a></li><li><a href="#files">Supporting files</a></li></ol></nav>
+    <nav class="contents" aria-label="Table of contents"><strong>Contents</strong><ol><li><a href="#part-one">Camera and perspective</a></li><li><a href="#problem">Problem and dataset</a></li><li><a href="#method">Alignment method</a></li><li><a href="#single-scale">Single-scale comparison</a></li><li><a href="#pyramid">Image pyramid</a></li><li><a href="#gradient">Gradient-feature pyramid</a></li><li><a href="#results">Complete results</a></li><li><a href="#analysis">Analysis and limitations</a></li><li><a href="#files">Supporting files</a></li></ol></nav>
 
     <section id="part-one">
       <h2>Part One: Camera and Perspective</h2>
@@ -114,7 +114,7 @@
       <h2>I. Problem and Dataset</h2>
       <p class="no-indent">Each source image contains three monochrome exposures recorded through blue, green, and red filters and stacked vertically in BGR order. If the input height is (H), the program uses ⌊(H/3)⌋ rows per channel, discards any unmatched remainder, and constructs an RGB image after alignment. Blue remains fixed; green and red are independently translated onto it.</p>
       <p>The course-provided Learn directory contained 18 catalogue-numbered JPEG plates: 12 low-resolution plates and six full-resolution plates. The named Berkeley examples cathedral, monastery, and tobolsk were obtained separately because they were absent from the Learn download. Three additional color-separation negatives—two men at a yurt, a man with a loaded camel, and a crumbling mosque—were selected from the Library of Congress collection. Every one of the resulting 24 inputs was processed with the same parameters.</p>
-      <div class="result-box"><strong>Dataset:</strong> 24 plates · 18 low resolution · 6 full resolution · 96 generated comparison images</div>
+      <div class="result-box"><strong>Dataset:</strong> 24 plates · 18 low resolution · 6 full resolution · 120 generated comparison images</div>
     </section>
 
     <section id="method">
@@ -158,46 +158,76 @@
         <figure><img src="../outputs/01007a_unaligned.jpg" alt="Unaligned RGB reconstruction for 01007a"><figcaption><span class="fig-label">Fig. 2(a).</span> Full-resolution plate 01007a before alignment.</figcaption></figure>
         <figure><img src="../outputs/01007a_l2.jpg" alt="Single-scale L2 reconstruction for 01007a"><figcaption><span class="fig-label">Fig. 2(b).</span> L2 is constrained by the ±15 window.</figcaption></figure>
         <figure><img src="../outputs/01007a_ncc.jpg" alt="Single-scale NCC reconstruction for 01007a"><figcaption><span class="fig-label">Fig. 2(c).</span> NCC is also constrained at a single scale.</figcaption></figure>
-        <figure><img src="../outputs/01007a_pyramid_ncc.jpg" alt="Pyramid NCC reconstruction for 01007a"><figcaption><span class="fig-label">Fig. 2(d).</span> Pyramid NCC recovers G ((6,61)), R ((12,129)).</figcaption></figure>
+        <figure><img src="../outputs/01007a_pyramid_ncc.jpg" alt="Pyramid NCC reconstruction for 01007a"><figcaption><span class="fig-label">Fig. 2(d).</span> Pyramid NCC reaches G ((6,61)), R ((12,129)): the right neighbourhood, but fine fringes remain (corrected in Section V).</figcaption></figure>
       </div>
       <div class="method-note"><strong>Why NCC for the pyramid?</strong> The red, green, and blue glass-plate exposures can differ substantially in brightness. Normalizing each comparison makes the score more stable across channels while retaining a simple metric required by the assignment.</div>
       <h3>A. Animated Alignment Walkthrough</h3>
       <p class="no-indent">Figure 3 follows plate 01007a through the complete reconstruction pipeline. It first separates the vertically stacked scan into blue, green, and red exposures, then shows the unaligned colour composite. The L2 and NCC heatmaps visualize every displacement tested inside the single-scale ±15-pixel window: each pixel in a heatmap represents one candidate shift, and the marked optimum is the shift selected by that metric.</p>
       <figure class="walkthrough">
         <img src="../visualizations/01007a/01007a_detailed_alignment.gif" alt="Animated walkthrough of L2, NCC, and Gaussian-pyramid alignment for plate 01007a">
-        <figcaption><span class="fig-label">Fig. 3.</span> Detailed alignment of 01007a. After the single-scale comparisons, the animation constructs the Gaussian pyramids and follows NCC refinement from level 4 to level 0. Each finer level doubles the preceding displacement estimate and searches a small local neighbourhood. The side-by-side images show the colour separation disappearing as the estimates converge to G ((6,61)) and R ((12,129)). The final frame compares the original unaligned composite with the aligned reconstruction.</figcaption>
+        <figcaption><span class="fig-label">Fig. 3.</span> Detailed alignment of 01007a. After the single-scale comparisons, the animation constructs the Gaussian pyramids and follows NCC refinement from level 4 to level 0. Each finer level doubles the preceding displacement estimate and searches a small local neighbourhood. The side-by-side images show the large colour separation disappearing as the estimates converge to G ((6,61)) and R ((12,129)). The final frame compares the original unaligned composite with the raw-pixel pyramid reconstruction; the remaining few-pixel error in green is corrected by the gradient features of Section V.</figcaption>
       </figure>
       <p>The animation displays the meaningful optimization stages rather than all 961 candidate comparisons individually. This preserves the relationship between the score surfaces, the selected displacements, and the coarse-to-fine trajectory without slowing the walkthrough to the full computation time.</p>
     </section>
 
+    <section id="gradient">
+      <h2>V. Gradient-Feature Pyramid (Better Features)</h2>
+      <p class="no-indent">The raw-pixel pyramid moves every full-resolution plate into the correct neighbourhood, but close inspection shows residual colour fringes on four of the six large plates: 00458u, 01007a, 01657u, and 01725u, with a milder offset on 01047u. The gross displacement is right; the final few pixels are not.</p>
+      <h3>A. Diagnosing the Failure</h3>
+      <p class="no-indent">Printing every candidate score at each pyramid level exposed two causes. First, the score surface is almost flat. Because pixel values are non-negative, the plain NCC of Section II-C is close to 1 for nearly any shift: on 00458u at full resolution the best and worst of the 25 candidates scored 0.9604 and 0.9595. A difference that small is decided by noise and by the differing brightness of the filter exposures rather than by scene structure. Second, the scoring crop is a fixed number of pixels, so it shrinks from about 12% of each side at the coarsest level to 2–3% at full resolution. The dark and bright plate borders therefore remain inside the score at exactly the levels that set the final pixels.</p>
+      <h3>B. Method</h3>
+      <p class="no-indent">Three changes address these causes, and all three use one fixed parameter set for every plate.</p>
+      <p><strong>1. Edge features.</strong> Each pyramid level is replaced by its Sobel gradient magnitude, implemented directly with array slicing. An edge sits in the same place in all three exposures even when the red, green, and blue brightness differ, which is exactly the situation of the red locomotive paint in 00458u.</p>
+      <div class="equation">\[G(x,y)=\sqrt{(S_x*I)^2+(S_y*I)^2},\qquad S_x=\begin{bmatrix}-1&0&1\\-2&0&2\\-1&0&1\end{bmatrix},\;S_y=S_x^{\mathsf T}.\]</div>
+      <p><strong>2. Zero-mean NCC.</strong> Subtracting each crop's mean before normalizing turns the score into a true correlation coefficient, so unrelated shifts score near zero instead of near one.</p>
+      <div class="equation">\[\operatorname{ZNCC}(I_1,I_2)=\frac{\langle I_1-\bar I_1,\;I_2-\bar I_2\rangle}{\lVert I_1-\bar I_1\rVert_2\,\lVert I_2-\bar I_2\rVert_2}.\]</div>
+      <p><strong>3. Proportional crop.</strong> At every level the score ignores at least 10% of each side, so the plate borders never enter the comparison.</p>
+      <p>Together these make the peak of the score surface 10–100 times more distinct: on 00458u the spread between best and worst candidate at full resolution grows from 0.0009 to 0.0202 for green and from 0.0007 to 0.0342 for red. The rest of the pyramid (blur, downsampling, ±15 coarse search, ±2 refinement) is unchanged.</p>
+      <div class="method-note"><strong>Regression check.</strong> On the 18 low-resolution plates the gradient pyramid returns the same offsets as raw pyramid NCC on 13 plates and differs by one pixel on the other five, so nothing that previously aligned was broken. It adds about 0.6 seconds per full-resolution plate.</div>
+      <h3>C. Before and After</h3>
+      <p class="no-indent">Each pair shows the same 800 × 600 region from the centre of the full-resolution reconstruction, first with raw-pixel pyramid NCC and then with the gradient pyramid.</p>
+      <div class="figure-grid">
+        <figure><img src="media/part2/00458u_pyramid_ncc_detail.jpg" alt="00458u detail with raw pyramid NCC showing colour fringes"><figcaption><span class="fig-label">Fig. 4(a).</span> 00458u, raw pyramid NCC: G (−2, 42), R (29, 88). Strong red and cyan fringes on every rail.</figcaption></figure>
+        <figure><img src="media/part2/00458u_pyramid_grad_detail.jpg" alt="00458u detail with gradient pyramid"><figcaption><span class="fig-label">Fig. 4(b).</span> 00458u, gradient pyramid: G (2, 41), R (30, 85). A faint halo remains only on the far-right railing.</figcaption></figure>
+        <figure><img src="media/part2/01007a_pyramid_ncc_detail.jpg" alt="01007a detail with raw pyramid NCC showing colour fringes"><figcaption><span class="fig-label">Fig. 4(c).</span> 01007a, raw pyramid NCC: G (6, 61), R (12, 129). The poles split into red, green, and purple copies.</figcaption></figure>
+        <figure><img src="media/part2/01007a_pyramid_grad_detail.jpg" alt="01007a detail with gradient pyramid"><figcaption><span class="fig-label">Fig. 4(d).</span> 01007a, gradient pyramid: G (14, 60), R (13, 129). The green channel moves 8 pixels horizontally.</figcaption></figure>
+        <figure><img src="media/part2/01657u_pyramid_ncc_detail.jpg" alt="01657u detail with raw pyramid NCC showing yellow edges"><figcaption><span class="fig-label">Fig. 4(e).</span> 01657u, raw pyramid NCC: G (−6, 55), R (1, 112). Yellow edges along the hair and cheek.</figcaption></figure>
+        <figure><img src="media/part2/01657u_pyramid_grad_detail.jpg" alt="01657u detail with gradient pyramid"><figcaption><span class="fig-label">Fig. 4(f).</span> 01657u, gradient pyramid: G (9, 56), R (13, 120).</figcaption></figure>
+        <figure><img src="media/part2/01725u_pyramid_ncc_detail.jpg" alt="01725u detail with raw pyramid NCC showing a halo on the turban"><figcaption><span class="fig-label">Fig. 4(g).</span> 01725u, raw pyramid NCC: G (38, 77), R (76, 161). Coloured halo around the turban and shoulders.</figcaption></figure>
+        <figure><img src="media/part2/01725u_pyramid_grad_detail.jpg" alt="01725u detail with gradient pyramid"><figcaption><span class="fig-label">Fig. 4(h).</span> 01725u, gradient pyramid: G (44, 76), R (77, 162).</figcaption></figure>
+        <figure><img src="media/part2/01047u_pyramid_ncc_detail.jpg" alt="01047u detail with raw pyramid NCC"><figcaption><span class="fig-label">Fig. 4(i).</span> 01047u, raw pyramid NCC: G (17, 24), R (33, 72). Mild green–red offset on the metalwork.</figcaption></figure>
+        <figure><img src="media/part2/01047u_pyramid_grad_detail.jpg" alt="01047u detail with gradient pyramid"><figcaption><span class="fig-label">Fig. 4(j).</span> 01047u, gradient pyramid: G (20, 25), R (33, 71).</figcaption></figure>
+      </div>
+    </section>
+
     <section id="results">
-      <h2>V. Complete Numerical Results</h2>
-      <p class="no-indent">Table I reports displacements as ((d_x,d_y)), where positive values shift right and down. The timing includes loading, all three alignment variants, and writing four JPEG outputs. The median runtime over all 24 plates is 0.62 seconds because three-quarters of the dataset is low resolution.</p>
-      <div class="table-wrap"><table><caption>Table I. Channel displacements and total runtime</caption><thead><tr><th>Plate</th><th>Channel size</th><th>L2 G</th><th>L2 R</th><th>NCC G</th><th>NCC R</th><th>Pyramid G</th><th>Pyramid R</th><th>Time (s)</th></tr></thead><tbody>
-        <tr><td>00056v</td><td>398 × 341</td><td>(1, 6)</td><td>(1, 13)</td><td>(1, 6)</td><td>(1, 13)</td><td>(1, 6)</td><td>(1, 13)</td><td>0.75</td></tr>
-        <tr><td>00125v</td><td>400 × 341</td><td>(2, 5)</td><td>(1, 10)</td><td>(1, 5)</td><td>(1, 10)</td><td>(1, 5)</td><td>(1, 10)</td><td>0.67</td></tr>
-        <tr><td>00163v</td><td>387 × 341</td><td>(1, -3)</td><td>(1, -4)</td><td>(1, -3)</td><td>(1, -4)</td><td>(1, -3)</td><td>(1, -4)</td><td>0.60</td></tr>
-        <tr><td>00458u</td><td>3741 × 3238</td><td>(-6, 15)</td><td>(-1, 14)</td><td>(-6, 15)</td><td>(-2, 11)</td><td>(-2, 42)</td><td>(29, 88)</td><td>60.37</td></tr>
-        <tr><td>00804v</td><td>396 × 341</td><td>(-2, 6)</td><td>(-4, 13)</td><td>(-2, 6)</td><td>(-4, 13)</td><td>(-3, 6)</td><td>(-4, 13)</td><td>0.61</td></tr>
-        <tr><td>01007a</td><td>3800 × 3238</td><td>(-4, 15)</td><td>(-9, 15)</td><td>(-4, 15)</td><td>(-9, 15)</td><td>(6, 61)</td><td>(12, 129)</td><td>60.15</td></tr>
-        <tr><td>01047u</td><td>3741 × 3218</td><td>(2, 15)</td><td>(7, 15)</td><td>(2, 15)</td><td>(7, 15)</td><td>(17, 24)</td><td>(33, 72)</td><td>58.50</td></tr>
-        <tr><td>01164v</td><td>396 × 341</td><td>(1, 6)</td><td>(3, 11)</td><td>(1, 6)</td><td>(3, 11)</td><td>(1, 6)</td><td>(3, 11)</td><td>0.61</td></tr>
-        <tr><td>01269v</td><td>395 × 341</td><td>(2, 6)</td><td>(3, 14)</td><td>(2, 6)</td><td>(2, 13)</td><td>(2, 6)</td><td>(3, 13)</td><td>0.60</td></tr>
-        <tr><td>01522v</td><td>391 × 341</td><td>(2, 6)</td><td>(2, 13)</td><td>(2, 6)</td><td>(2, 13)</td><td>(2, 6)</td><td>(2, 13)</td><td>0.59</td></tr>
-        <tr><td>01597v</td><td>395 × 341</td><td>(1, 7)</td><td>(0, 15)</td><td>(1, 7)</td><td>(0, 15)</td><td>(1, 7)</td><td>(1, 16)</td><td>0.63</td></tr>
-        <tr><td>01598v</td><td>392 × 341</td><td>(0, 8)</td><td>(-1, 15)</td><td>(0, 8)</td><td>(-1, 15)</td><td>(0, 8)</td><td>(-1, 16)</td><td>0.60</td></tr>
-        <tr><td>01657u</td><td>3761 × 3212</td><td>(-8, 15)</td><td>(-15, 15)</td><td>(-8, 15)</td><td>(-15, 15)</td><td>(-6, 55)</td><td>(1, 112)</td><td>58.52</td></tr>
-        <tr><td>01725u</td><td>3731 × 3231</td><td>(7, 15)</td><td>(13, 15)</td><td>(7, 15)</td><td>(13, -10)</td><td>(38, 77)</td><td>(76, 161)</td><td>58.54</td></tr>
-        <tr><td>01728v</td><td>397 × 341</td><td>(1, 8)</td><td>(0, 15)</td><td>(1, 8)</td><td>(1, 15)</td><td>(1, 8)</td><td>(1, 18)</td><td>0.61</td></tr>
-        <tr><td>01861a</td><td>3741 × 3228</td><td>(15, 15)</td><td>(15, 15)</td><td>(15, 15)</td><td>(15, 15)</td><td>(38, 71)</td><td>(62, 148)</td><td>58.76</td></tr>
-        <tr><td>10131v</td><td>400 × 341</td><td>(2, 6)</td><td>(3, 12)</td><td>(2, 6)</td><td>(3, 11)</td><td>(2, 6)</td><td>(3, 12)</td><td>0.66</td></tr>
-        <tr><td>31421v</td><td>398 × 341</td><td>(0, 8)</td><td>(0, 13)</td><td>(0, 8)</td><td>(0, 13)</td><td>(0, 8)</td><td>(0, 13)</td><td>0.61</td></tr>
-        <tr><td>cathedral</td><td>390 × 341</td><td>(2, 5)</td><td>(3, 12)</td><td>(2, 5)</td><td>(3, 12)</td><td>(2, 5)</td><td>(3, 12)</td><td>0.59</td></tr>
-        <tr><td>monastery</td><td>391 × 341</td><td>(2, -3)</td><td>(2, 3)</td><td>(2, -3)</td><td>(2, 3)</td><td>(2, -3)</td><td>(2, 3)</td><td>0.60</td></tr>
-        <tr><td>tobolsk</td><td>396 × 341</td><td>(2, 3)</td><td>(3, 6)</td><td>(2, 3)</td><td>(3, 6)</td><td>(2, 3)</td><td>(3, 6)</td><td>0.60</td></tr>
-        <tr><td>LoC: camel</td><td>394 × 341</td><td>(2, 2)</td><td>(4, 8)</td><td>(2, 2)</td><td>(4, 8)</td><td>(2, 2)</td><td>(4, 8)</td><td>0.62</td></tr>
-        <tr><td>LoC: mosque</td><td>395 × 341</td><td>(1, 2)</td><td>(1, 7)</td><td>(1, 2)</td><td>(1, 7)</td><td>(1, 2)</td><td>(1, 7)</td><td>0.69</td></tr>
-        <tr><td>LoC: yurt men</td><td>395 × 341</td><td>(1, 4)</td><td>(0, 10)</td><td>(1, 4)</td><td>(0, 10)</td><td>(1, 4)</td><td>(0, 10)</td><td>0.60</td></tr>
+      <h2>VI. Complete Numerical Results</h2>
+      <p class="no-indent">Table I reports displacements as ((d_x,d_y)), where positive values shift right and down. The two pyramid time columns measure each pyramid alone. The total includes loading, all four alignment variants, and writing five JPEG outputs; on full-resolution plates it is dominated by the single-scale L2 and NCC runs kept for comparison.</p>
+      <div class="table-wrap"><table><caption>Table I. Channel displacements and runtime</caption><thead><tr><th>Plate</th><th>Channel size</th><th>L2 G</th><th>L2 R</th><th>NCC G</th><th>NCC R</th><th>Pyramid NCC G</th><th>Pyramid NCC R</th><th>Gradient pyramid G</th><th>Gradient pyramid R</th><th>Pyramid NCC (s)</th><th>Gradient pyramid (s)</th><th>Total (s)</th></tr></thead><tbody>
+        <tr><td>00056v</td><td>398 × 341</td><td>(1, 6)</td><td>(1, 13)</td><td>(1, 6)</td><td>(1, 13)</td><td>(1, 6)</td><td>(1, 13)</td><td>(1, 6)</td><td>(1, 13)</td><td>0.14</td><td>0.21</td><td>0.91</td></tr>
+        <tr><td>00125v</td><td>400 × 341</td><td>(2, 5)</td><td>(1, 10)</td><td>(1, 5)</td><td>(1, 10)</td><td>(1, 5)</td><td>(1, 10)</td><td>(2, 5)</td><td>(1, 10)</td><td>0.13</td><td>0.20</td><td>0.88</td></tr>
+        <tr><td>00163v</td><td>387 × 341</td><td>(1, -3)</td><td>(1, -4)</td><td>(1, -3)</td><td>(1, -4)</td><td>(1, -3)</td><td>(1, -4)</td><td>(1, -3)</td><td>(1, -4)</td><td>0.14</td><td>0.19</td><td>0.82</td></tr>
+        <tr><td>00458u</td><td>3741 × 3238</td><td>(-6, 15)</td><td>(-1, 14)</td><td>(-6, 15)</td><td>(-2, 11)</td><td>(-2, 42)</td><td>(29, 88)</td><td>(2, 41)</td><td>(30, 85)</td><td>2.44</td><td>2.96</td><td>62.96</td></tr>
+        <tr><td>00804v</td><td>396 × 341</td><td>(-2, 6)</td><td>(-4, 13)</td><td>(-2, 6)</td><td>(-4, 13)</td><td>(-3, 6)</td><td>(-4, 13)</td><td>(-2, 6)</td><td>(-4, 13)</td><td>0.13</td><td>0.20</td><td>0.88</td></tr>
+        <tr><td>01007a</td><td>3800 × 3238</td><td>(-4, 15)</td><td>(-9, 15)</td><td>(-4, 15)</td><td>(-9, 15)</td><td>(6, 61)</td><td>(12, 129)</td><td>(14, 60)</td><td>(13, 129)</td><td>3.00</td><td>3.82</td><td>69.42</td></tr>
+        <tr><td>01047u</td><td>3741 × 3218</td><td>(2, 15)</td><td>(7, 15)</td><td>(2, 15)</td><td>(7, 15)</td><td>(17, 24)</td><td>(33, 72)</td><td>(20, 25)</td><td>(33, 71)</td><td>2.86</td><td>3.16</td><td>70.44</td></tr>
+        <tr><td>01164v</td><td>396 × 341</td><td>(1, 6)</td><td>(3, 11)</td><td>(1, 6)</td><td>(3, 11)</td><td>(1, 6)</td><td>(3, 11)</td><td>(2, 6)</td><td>(3, 11)</td><td>0.14</td><td>0.21</td><td>0.87</td></tr>
+        <tr><td>01269v</td><td>395 × 341</td><td>(2, 6)</td><td>(3, 14)</td><td>(2, 6)</td><td>(2, 13)</td><td>(2, 6)</td><td>(3, 13)</td><td>(2, 6)</td><td>(3, 13)</td><td>0.13</td><td>0.20</td><td>0.85</td></tr>
+        <tr><td>01522v</td><td>391 × 341</td><td>(2, 6)</td><td>(2, 13)</td><td>(2, 6)</td><td>(2, 13)</td><td>(2, 6)</td><td>(2, 13)</td><td>(2, 6)</td><td>(2, 13)</td><td>0.15</td><td>0.22</td><td>0.87</td></tr>
+        <tr><td>01597v</td><td>395 × 341</td><td>(1, 7)</td><td>(0, 15)</td><td>(1, 7)</td><td>(0, 15)</td><td>(1, 7)</td><td>(1, 16)</td><td>(1, 7)</td><td>(1, 16)</td><td>0.13</td><td>0.20</td><td>0.84</td></tr>
+        <tr><td>01598v</td><td>392 × 341</td><td>(0, 8)</td><td>(-1, 15)</td><td>(0, 8)</td><td>(-1, 15)</td><td>(0, 8)</td><td>(-1, 16)</td><td>(0, 8)</td><td>(-1, 16)</td><td>0.13</td><td>0.20</td><td>0.89</td></tr>
+        <tr><td>01657u</td><td>3761 × 3212</td><td>(-8, 15)</td><td>(-15, 15)</td><td>(-8, 15)</td><td>(-15, 15)</td><td>(-6, 55)</td><td>(1, 112)</td><td>(9, 56)</td><td>(13, 120)</td><td>2.49</td><td>3.17</td><td>70.29</td></tr>
+        <tr><td>01725u</td><td>3731 × 3231</td><td>(7, 15)</td><td>(13, 15)</td><td>(7, 15)</td><td>(13, -10)</td><td>(38, 77)</td><td>(76, 161)</td><td>(44, 76)</td><td>(77, 162)</td><td>2.53</td><td>3.06</td><td>68.49</td></tr>
+        <tr><td>01728v</td><td>397 × 341</td><td>(1, 8)</td><td>(0, 15)</td><td>(1, 8)</td><td>(1, 15)</td><td>(1, 8)</td><td>(1, 18)</td><td>(1, 8)</td><td>(1, 18)</td><td>0.13</td><td>0.20</td><td>0.86</td></tr>
+        <tr><td>01861a</td><td>3741 × 3228</td><td>(15, 15)</td><td>(15, 15)</td><td>(15, 15)</td><td>(15, 15)</td><td>(38, 71)</td><td>(62, 148)</td><td>(39, 71)</td><td>(62, 147)</td><td>2.48</td><td>3.03</td><td>69.69</td></tr>
+        <tr><td>10131v</td><td>400 × 341</td><td>(2, 6)</td><td>(3, 12)</td><td>(2, 6)</td><td>(3, 11)</td><td>(2, 6)</td><td>(3, 12)</td><td>(2, 6)</td><td>(3, 12)</td><td>0.14</td><td>0.27</td><td>0.93</td></tr>
+        <tr><td>31421v</td><td>398 × 341</td><td>(0, 8)</td><td>(0, 13)</td><td>(0, 8)</td><td>(0, 13)</td><td>(0, 8)</td><td>(0, 13)</td><td>(0, 8)</td><td>(0, 13)</td><td>0.13</td><td>0.21</td><td>0.85</td></tr>
+        <tr><td>cathedral</td><td>390 × 341</td><td>(2, 5)</td><td>(3, 12)</td><td>(2, 5)</td><td>(3, 12)</td><td>(2, 5)</td><td>(3, 12)</td><td>(2, 5)</td><td>(3, 12)</td><td>0.13</td><td>0.20</td><td>0.83</td></tr>
+        <tr><td>monastery</td><td>391 × 341</td><td>(2, -3)</td><td>(2, 3)</td><td>(2, -3)</td><td>(2, 3)</td><td>(2, -3)</td><td>(2, 3)</td><td>(2, -3)</td><td>(2, 3)</td><td>0.14</td><td>0.19</td><td>0.83</td></tr>
+        <tr><td>tobolsk</td><td>396 × 341</td><td>(2, 3)</td><td>(3, 6)</td><td>(2, 3)</td><td>(3, 6)</td><td>(2, 3)</td><td>(3, 6)</td><td>(3, 3)</td><td>(3, 6)</td><td>0.14</td><td>0.20</td><td>0.84</td></tr>
+        <tr><td>LoC: camel</td><td>394 × 341</td><td>(2, 2)</td><td>(4, 8)</td><td>(2, 2)</td><td>(4, 8)</td><td>(2, 2)</td><td>(4, 8)</td><td>(2, 2)</td><td>(4, 8)</td><td>0.14</td><td>0.20</td><td>0.84</td></tr>
+        <tr><td>LoC: mosque</td><td>395 × 341</td><td>(1, 2)</td><td>(1, 7)</td><td>(1, 2)</td><td>(1, 7)</td><td>(1, 2)</td><td>(1, 7)</td><td>(1, 2)</td><td>(1, 7)</td><td>0.13</td><td>0.20</td><td>0.85</td></tr>
+        <tr><td>LoC: yurt men</td><td>395 × 341</td><td>(1, 4)</td><td>(0, 10)</td><td>(1, 4)</td><td>(0, 10)</td><td>(1, 4)</td><td>(0, 10)</td><td>(1, 4)</td><td>(0, 10)</td><td>0.14</td><td>0.20</td><td>0.84</td></tr>
       </tbody></table></div>
 
       <h3>A. Independently Selected Library of Congress Images</h3>
@@ -208,56 +238,59 @@
         <figure><img src="../outputs/loc_mosque_pyramid_ncc.jpg" alt="Aligned LoC image of a crumbling mosque"><figcaption>Crumbling mosque · G (1, 2), R (1, 7)</figcaption></figure>
       </div>
 
-      <h3>B. Complete Pyramid NCC Gallery</h3>
+      <h3>B. Complete Final Gallery (Gradient Pyramid)</h3>
+      <p class="no-indent">Every plate below uses the final gradient-feature pyramid of Section V with one fixed parameter set. The raw-pixel pyramid NCC offsets for the same plates are listed in Table I.</p>
       <div class="gallery">
-        <figure><img src="../outputs/00056v_pyramid_ncc.jpg" alt="Pyramid NCC result for 00056v"><figcaption>00056v · G (1, 6), R (1, 13)</figcaption></figure>
-        <figure><img src="../outputs/00125v_pyramid_ncc.jpg" alt="Pyramid NCC result for 00125v"><figcaption>00125v · G (1, 5), R (1, 10)</figcaption></figure>
-        <figure><img src="../outputs/00163v_pyramid_ncc.jpg" alt="Pyramid NCC result for 00163v"><figcaption>00163v · G (1, -3), R (1, -4)</figcaption></figure>
-        <figure><img src="../outputs/00458u_pyramid_ncc.jpg" alt="Pyramid NCC result for 00458u"><figcaption>00458u · G (-2, 42), R (29, 88)</figcaption></figure>
-        <figure><img src="../outputs/00804v_pyramid_ncc.jpg" alt="Pyramid NCC result for 00804v"><figcaption>00804v · G (-3, 6), R (-4, 13)</figcaption></figure>
-        <figure><img src="../outputs/01007a_pyramid_ncc.jpg" alt="Pyramid NCC result for 01007a"><figcaption>01007a · G (6, 61), R (12, 129)</figcaption></figure>
-        <figure><img src="../outputs/01047u_pyramid_ncc.jpg" alt="Pyramid NCC result for 01047u"><figcaption>01047u · G (17, 24), R (33, 72)</figcaption></figure>
-        <figure><img src="../outputs/01164v_pyramid_ncc.jpg" alt="Pyramid NCC result for 01164v"><figcaption>01164v · G (1, 6), R (3, 11)</figcaption></figure>
-        <figure><img src="../outputs/01269v_pyramid_ncc.jpg" alt="Pyramid NCC result for 01269v"><figcaption>01269v · G (2, 6), R (3, 13)</figcaption></figure>
-        <figure><img src="../outputs/01522v_pyramid_ncc.jpg" alt="Pyramid NCC result for 01522v"><figcaption>01522v · G (2, 6), R (2, 13)</figcaption></figure>
-        <figure><img src="../outputs/01597v_pyramid_ncc.jpg" alt="Pyramid NCC result for 01597v"><figcaption>01597v · G (1, 7), R (1, 16)</figcaption></figure>
-        <figure><img src="../outputs/01598v_pyramid_ncc.jpg" alt="Pyramid NCC result for 01598v"><figcaption>01598v · G (0, 8), R (-1, 16)</figcaption></figure>
-        <figure><img src="../outputs/01657u_pyramid_ncc.jpg" alt="Pyramid NCC result for 01657u"><figcaption>01657u · G (-6, 55), R (1, 112)</figcaption></figure>
-        <figure><img src="../outputs/01725u_pyramid_ncc.jpg" alt="Pyramid NCC result for 01725u"><figcaption>01725u · G (38, 77), R (76, 161)</figcaption></figure>
-        <figure><img src="../outputs/01728v_pyramid_ncc.jpg" alt="Pyramid NCC result for 01728v"><figcaption>01728v · G (1, 8), R (1, 18)</figcaption></figure>
-        <figure><img src="../outputs/01861a_pyramid_ncc.jpg" alt="Pyramid NCC result for 01861a"><figcaption>01861a · G (38, 71), R (62, 148)</figcaption></figure>
-        <figure><img src="../outputs/10131v_pyramid_ncc.jpg" alt="Pyramid NCC result for 10131v"><figcaption>10131v · G (2, 6), R (3, 12)</figcaption></figure>
-        <figure><img src="../outputs/31421v_pyramid_ncc.jpg" alt="Pyramid NCC result for 31421v"><figcaption>31421v · G (0, 8), R (0, 13)</figcaption></figure>
-        <figure><img src="../outputs/cathedral_pyramid_ncc.jpg" alt="Pyramid NCC result for Cathedral"><figcaption>Cathedral · G (2, 5), R (3, 12)</figcaption></figure>
-        <figure><img src="../outputs/monastery_pyramid_ncc.jpg" alt="Pyramid NCC result for Monastery"><figcaption>Monastery · G (2, -3), R (2, 3)</figcaption></figure>
-        <figure><img src="../outputs/tobolsk_pyramid_ncc.jpg" alt="Pyramid NCC result for Tobolsk"><figcaption>Tobolsk · G (2, 3), R (3, 6)</figcaption></figure>
-        <figure><img src="../outputs/loc_yurt_men_pyramid_ncc.jpg" alt="Pyramid NCC result for LoC yurt image"><figcaption>LoC yurt men · G (1, 4), R (0, 10)</figcaption></figure>
-        <figure><img src="../outputs/loc_camel_pyramid_ncc.jpg" alt="Pyramid NCC result for LoC camel image"><figcaption>LoC camel · G (2, 2), R (4, 8)</figcaption></figure>
-        <figure><img src="../outputs/loc_mosque_pyramid_ncc.jpg" alt="Pyramid NCC result for LoC mosque image"><figcaption>LoC mosque · G (1, 2), R (1, 7)</figcaption></figure>
+        <figure><img src="../outputs/00056v_pyramid_grad.jpg" alt="Gradient pyramid result for 00056v"><figcaption>00056v · G (1, 6), R (1, 13)</figcaption></figure>
+        <figure><img src="../outputs/00125v_pyramid_grad.jpg" alt="Gradient pyramid result for 00125v"><figcaption>00125v · G (2, 5), R (1, 10)</figcaption></figure>
+        <figure><img src="../outputs/00163v_pyramid_grad.jpg" alt="Gradient pyramid result for 00163v"><figcaption>00163v · G (1, -3), R (1, -4)</figcaption></figure>
+        <figure><img src="../outputs/00458u_pyramid_grad.jpg" alt="Gradient pyramid result for 00458u"><figcaption>00458u · G (2, 41), R (30, 85)</figcaption></figure>
+        <figure><img src="../outputs/00804v_pyramid_grad.jpg" alt="Gradient pyramid result for 00804v"><figcaption>00804v · G (-2, 6), R (-4, 13)</figcaption></figure>
+        <figure><img src="../outputs/01007a_pyramid_grad.jpg" alt="Gradient pyramid result for 01007a"><figcaption>01007a · G (14, 60), R (13, 129)</figcaption></figure>
+        <figure><img src="../outputs/01047u_pyramid_grad.jpg" alt="Gradient pyramid result for 01047u"><figcaption>01047u · G (20, 25), R (33, 71)</figcaption></figure>
+        <figure><img src="../outputs/01164v_pyramid_grad.jpg" alt="Gradient pyramid result for 01164v"><figcaption>01164v · G (2, 6), R (3, 11)</figcaption></figure>
+        <figure><img src="../outputs/01269v_pyramid_grad.jpg" alt="Gradient pyramid result for 01269v"><figcaption>01269v · G (2, 6), R (3, 13)</figcaption></figure>
+        <figure><img src="../outputs/01522v_pyramid_grad.jpg" alt="Gradient pyramid result for 01522v"><figcaption>01522v · G (2, 6), R (2, 13)</figcaption></figure>
+        <figure><img src="../outputs/01597v_pyramid_grad.jpg" alt="Gradient pyramid result for 01597v"><figcaption>01597v · G (1, 7), R (1, 16)</figcaption></figure>
+        <figure><img src="../outputs/01598v_pyramid_grad.jpg" alt="Gradient pyramid result for 01598v"><figcaption>01598v · G (0, 8), R (-1, 16)</figcaption></figure>
+        <figure><img src="../outputs/01657u_pyramid_grad.jpg" alt="Gradient pyramid result for 01657u"><figcaption>01657u · G (9, 56), R (13, 120)</figcaption></figure>
+        <figure><img src="../outputs/01725u_pyramid_grad.jpg" alt="Gradient pyramid result for 01725u"><figcaption>01725u · G (44, 76), R (77, 162)</figcaption></figure>
+        <figure><img src="../outputs/01728v_pyramid_grad.jpg" alt="Gradient pyramid result for 01728v"><figcaption>01728v · G (1, 8), R (1, 18)</figcaption></figure>
+        <figure><img src="../outputs/01861a_pyramid_grad.jpg" alt="Gradient pyramid result for 01861a"><figcaption>01861a · G (39, 71), R (62, 147)</figcaption></figure>
+        <figure><img src="../outputs/10131v_pyramid_grad.jpg" alt="Gradient pyramid result for 10131v"><figcaption>10131v · G (2, 6), R (3, 12)</figcaption></figure>
+        <figure><img src="../outputs/31421v_pyramid_grad.jpg" alt="Gradient pyramid result for 31421v"><figcaption>31421v · G (0, 8), R (0, 13)</figcaption></figure>
+        <figure><img src="../outputs/cathedral_pyramid_grad.jpg" alt="Gradient pyramid result for Cathedral"><figcaption>Cathedral · G (2, 5), R (3, 12)</figcaption></figure>
+        <figure><img src="../outputs/monastery_pyramid_grad.jpg" alt="Gradient pyramid result for Monastery"><figcaption>Monastery · G (2, -3), R (2, 3)</figcaption></figure>
+        <figure><img src="../outputs/tobolsk_pyramid_grad.jpg" alt="Gradient pyramid result for Tobolsk"><figcaption>Tobolsk · G (3, 3), R (3, 6)</figcaption></figure>
+        <figure><img src="../outputs/loc_yurt_men_pyramid_grad.jpg" alt="Gradient pyramid result for LoC yurt men"><figcaption>LoC yurt men · G (1, 4), R (0, 10)</figcaption></figure>
+        <figure><img src="../outputs/loc_camel_pyramid_grad.jpg" alt="Gradient pyramid result for LoC camel"><figcaption>LoC camel · G (2, 2), R (4, 8)</figcaption></figure>
+        <figure><img src="../outputs/loc_mosque_pyramid_grad.jpg" alt="Gradient pyramid result for LoC mosque"><figcaption>LoC mosque · G (1, 2), R (1, 7)</figcaption></figure>
       </div>
     </section>
 
     <section id="analysis">
-      <h2>VI. Analysis and Limitations</h2>
+      <h2>VII. Analysis and Limitations</h2>
       <h3>A. Alignment Quality</h3>
-      <p class="no-indent">The pyramid results remove the large, obvious channel separation visible in the unaligned full-resolution composites. Fine scene structure—including architectural edges, faces, tree lines, and object contours—generally agrees across channels. No final image shows the gross double-edge failure expected from a wholly incorrect displacement.</p>
-      <p>Plate 00056v retains strong magenta, green, and cyan speckling in the sky and mountain regions. Because the recovered L2, NCC, and pyramid offsets agree exactly, this pattern is more consistent with emulsion damage or channel-specific plate content than with a different translational optimum. Plates 00458u, 01007a, 01047u, 01657u, and 01861a retain narrow coloured source borders; these are boundary artifacts rather than misalignment of the interior scene.</p>
+      <p class="no-indent"><strong>Raw-pixel pyramid NCC.</strong> All 18 low-resolution plates, including cathedral, monastery, and tobolsk, align without visible defects. Of the six full-resolution plates, only 01861a is clean: 00458u, 01007a, 01657u, and 01725u show clear colour fringes and 01047u a mild offset (Fig. 4). The cause is the nearly flat score surface described in Section V-A: raw NCC on non-negative pixels barely distinguishes neighbouring shifts, and brightness differences between filter exposures, most visibly the red paint of the locomotive, tip the choice by a few pixels.</p>
+      <p><strong>Gradient pyramid.</strong> With edge features, zero-mean NCC, and a proportional crop, all 24 plates align without visible channel separation. The one remaining imperfection is a faint halo on the far-right railing of 00458u. The rest of that image is sharp, which suggests slight lens distortion or plate warping that a single global translation cannot model; searching over small rotations and scales would be the next step.</p>
+      <p>Plate 00056v retains strong magenta, green, and cyan speckling in the sky and mountain regions. Because every method recovers the same offsets, this pattern is emulsion damage or channel-specific plate content rather than misalignment. Several full-resolution plates retain narrow coloured source borders; these are boundary artifacts rather than misalignment of the interior scene.</p>
       <h3>B. Single-Scale versus Pyramid Search</h3>
-      <p class="no-indent">The small plates require displacements no larger than 18 pixels and therefore mostly fit the single-scale window. The large plates require vertical red shifts from 72 to 161 pixels. Their single-scale estimates often stop at (d_y=15), while the pyramid propagates coarse estimates to the original resolution. Plate 01725u is the strongest example: single-scale NCC reports red ((13,-10)), but pyramid NCC finds ((76,161)), producing coherent interior detail.</p>
+      <p class="no-indent">The small plates require displacements no larger than 18 pixels and therefore mostly fit the single-scale window. The large plates require vertical red shifts from 72 to 161 pixels. Their single-scale estimates often stop at (d_y=15), while the pyramid propagates coarse estimates to the original resolution. Plate 01725u is the strongest example: single-scale NCC reports red ((13,-10)), while pyramid NCC finds ((76,161)) and the gradient pyramid refines it to ((77,162)).</p>
       <h3>C. Performance</h3>
-      <p class="no-indent">Low-resolution processing averaged 0.62 seconds per plate. Full-resolution processing averaged 59.14 seconds and remained close to the assignment's one-minute target. The median over all 24 plates was 0.62 seconds. Most large-image time is spent evaluating full-resolution single-scale L2 and NCC for comparison; the pyramid itself avoids a prohibitively large exhaustive search over the true displacement range.</p>
+      <p class="no-indent">The final gradient pyramid aligns both channels in 0.20 seconds per low-resolution plate and 3.20 seconds per full-resolution plate on average (maximum 3.82 seconds), well under the one-minute target. Raw pyramid NCC is slightly faster at 0.14 and 2.63 seconds. The total per-plate time in Table I (0.86 seconds low resolution, 68.6 seconds full resolution) is dominated by the full-resolution single-scale L2 and NCC searches, which are run only to document their failure on large plates and are not part of the final algorithm.</p>
       <h3>D. Bells and Whistles</h3>
-      <p class="no-indent">No optional photometric enhancement was applied. The implementation includes anti-aliased Gaussian downsampling and displacement-aware removal of wrapped pixels, but it does not claim automatic border detection, contrast correction, white balance, feature-based alignment, rotation, or scale estimation. This keeps the comparison focused on the required translation model and matching metrics.</p>
+      <p class="no-indent"><strong>Better features (implemented).</strong> Alignment on Sobel gradient magnitudes with zero-mean NCC, described in Section V with before-and-after comparisons in Fig. 4. The Sobel filter is written directly with NumPy slicing rather than a library call. It fixes the four to five full-resolution plates that raw-pixel NCC left with visible fringes.</p>
+      <p>No photometric enhancement was applied: there is no automatic border detection, contrast correction, white balance, colour mapping, rotation, or scale search. The implementation also uses anti-aliased Gaussian downsampling and displacement-aware removal of wrapped pixels.</p>
     </section>
 
     <section id="files">
-      <h2>VII. Reproducibility and Supporting Files</h2>
-      <p class="no-indent">The implementation processes every JPEG in the data directory, saves unaligned, L2, NCC, and pyramid-NCC reconstructions, and records all scores, offsets, runtimes, and failures in a CSV file. The current results contain 24 successful inputs and 96 generated comparison images.</p>
+      <h2>VIII. Reproducibility and Supporting Files</h2>
+      <p class="no-indent">The implementation processes every JPEG in the data directory, saves unaligned, L2, NCC, pyramid-NCC, and gradient-pyramid reconstructions, and records all scores, offsets, runtimes, and failures in a CSV file. The current results contain 24 successful inputs and 120 generated comparison images.</p>
       <div class="downloads"><a href="../main.py">View Python source</a><a href="../main.py" download>Download Python source</a><a href="../outputs/results.csv" download>Download complete results</a><a href="../visualizations/01007a/01007a_detailed_alignment.gif" download>Download alignment GIF</a><a href="../create_detailed_alignment_gif.py">View GIF generator</a><a href="../SYDE671%20assn1.pdf">View assignment brief</a></div>
       <div class="method-note"><strong>Run from the SYDE 671 directory:</strong> install NumPy, ImageIO, and Matplotlib, place course JPEG files in <code>data/</code>, then execute <code>python3 main.py</code>. Generated files are written to <code>outputs/</code>.</div>
     </section>
 
-    <section><h2>VIII. Conclusion</h2><p class="no-indent">Exhaustive translation search is sufficient for low-resolution plates but cannot span the motion present in full-resolution scans. A hand-built coarse-to-fine Gaussian pyramid makes large displacements tractable while retaining the required NCC metric and fixed parameters. Across 24 plates—including all 18 course images, the three named Berkeley examples, and three independent LoC selections—the method produces visually coherent colour reconstructions, exposes the limitations of a bounded single-scale search, and records reproducible offsets for every result.</p></section>
+    <section><h2>IX. Conclusion</h2><p class="no-indent">Exhaustive translation search is sufficient for low-resolution plates but cannot span the motion present in full-resolution scans. A hand-built coarse-to-fine Gaussian pyramid makes large displacements tractable, but raw-pixel NCC cannot fix the last few pixels on full-resolution plates because its score surface is nearly flat and the filter exposures differ in brightness. Scoring Sobel edge magnitudes with zero-mean NCC and a proportional border crop sharpens that surface and, with one fixed parameter set, aligns all 24 plates: the 18 course images, the three named Berkeley examples, and three independent LoC selections. Reproducible offsets are recorded for every result.</p></section>
 
     <section><h2>References</h2><ol class="references"><li>SYDE 671, “Assignment 1,” course assignment document.</li><li>Library of Congress, “Prokudin-Gorskii Collection,” digitized glass-plate photographs, including catalogue records 2018681174, 2018681180, and 2018681276.</li><li>R. Szeliski, <em>Computer Vision: Algorithms and Applications</em>, discussion of image pyramids and colour processing.</li></ol></section>
   </main>

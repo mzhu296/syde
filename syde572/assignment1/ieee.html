@@ -3,8 +3,8 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="IEEE-inspired review copy of SYDE 572 Assignment 1: distance minimization and least-squares function fitting.">
-  <title>SYDE 572 Assignment 1 — IEEE Review Copy</title>
+  <meta name="description" content="SYDE 572 Assignment 1: distance minimization and least-squares function fitting.">
+  <title>SYDE 572 Assignment 1</title>
   <style>
     :root {
       --ink: #111;
@@ -74,8 +74,7 @@
       font-weight: 400;
       line-height: 1.12;
     }
-    .author-line { margin: 0; font-size: 1rem; }
-    .version-line { margin: .25rem 0 2rem; color: var(--muted); font-size: .9rem; }
+    .author-line { margin: 0 0 2rem; font-size: 1rem; }
 
     .abstract {
       max-width: 820px;
@@ -251,7 +250,7 @@
 </head>
 <body>
   <div class="review-bar">
-    <strong>IEEE-style review copy</strong>
+    <strong>SYDE 572 · Assignment 1</strong>
     <nav aria-label="Review page links">
       <a href="../index.html">Course home</a>
       <a href="#part-one">Part I</a>
@@ -265,7 +264,6 @@
       <p class="course">SYDE 572 · Introduction to Pattern Recognition · Assignment 1</p>
       <h1>Distance Minimization and Least-Squares Function Fitting Using Analytical and Numerical Methods</h1>
       <p class="author-line">Assignment Report</p>
-      <p class="version-line">IEEE-inspired layout for design review</p>
     </header>
 
     <div class="abstract">
@@ -746,9 +744,12 @@
 
       <p class="no-indent"><strong>Parabola.</strong> Using the additional sums \(\sum x_i^3=36\), \(\sum x_i^4=98\), and \(\sum x_i^2y_i=83\), the three coordinate updates are applied in order \(c_0\to c_1\to c_2\), each using the newest values:</p>
       <div class="equation">
-        \[\text{Sweep 1:}\quad c_0=\tfrac{26}{8}=3.250000,\quad c_1=\tfrac{62-39}{28}=0.821429,\quad c_2=\tfrac{166-91-59.142857}{196}=0.080904\]
-        \[\text{Sweep 2:}\quad c_0=\tfrac{26-9.857143-2.265306}{8}=1.734694,\quad c_1=\tfrac{62-20.816327-5.825073}{28}=1.262807,\quad c_2=\tfrac{166-48.571429-90.921116}{196}=0.135237\]
-        \[\text{Sweep 3:}\quad c_0=\tfrac{26-15.153686-3.786636}{8}=0.882460,\quad c_1=\tfrac{62-10.589516-9.737065}{28}=1.488336,\quad c_2=\tfrac{166-24.708871-107.160221}{196}=0.174137\]
+        \[\text{Sweep 1:}\quad c_0=\tfrac{26}{8}=3.250000,\quad c_1=\tfrac{62-39}{28}=0.821429\]
+        \[c_2=\tfrac{166-91-59.142857}{196}=0.080904\]
+        \[\text{Sweep 2:}\quad c_0=\tfrac{26-9.857143-2.265306}{8}=1.734694,\quad c_1=\tfrac{62-20.816327-5.825073}{28}=1.262807\]
+        \[c_2=\tfrac{166-48.571429-90.921116}{196}=0.135237\]
+        \[\text{Sweep 3:}\quad c_0=\tfrac{26-15.153686-3.786636}{8}=0.882460,\quad c_1=\tfrac{62-10.589516-9.737065}{28}=1.488336\]
+        \[c_2=\tfrac{166-24.708871-107.160221}{196}=0.174137\]
       </div>
       <div class="table-wrap">
         <table>

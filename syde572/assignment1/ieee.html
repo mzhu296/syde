@@ -170,6 +170,7 @@
       text-align: center;
       text-transform: uppercase;
     }
+    caption mjx-container { text-transform: none; }
     thead { border-bottom: 1px solid #000; }
     th, td { padding: .42rem .52rem; text-align: center; vertical-align: middle; }
     th { font-weight: 700; }
@@ -373,7 +374,44 @@
         \[k=2:\quad D'(-0.355482)=-0.000288,\quad D''=23.516409,\quad x_3=-0.355482-\tfrac{-0.000288}{23.516409}=-0.355470\]
         \[d=\sqrt{(-0.355470+4)^2+(5.126359)^2}=\sqrt{39.562155}=6.28985\]
       </div>
-      <p class="no-indent">The same update was applied to the other four points. Each column below is one hand iteration from \(x=0\); iteration stops once successive values agree to six decimals.</p>
+      <p class="no-indent"><strong>Remaining points.</strong> Only the constant term \(-2x_0\) in \(D'(x)\) changes from point to point, and \(D''(x)=12x^2+22\) is the same for all of them. Each iteration again starts from \(x=0\) and stops once successive values agree to six decimals.</p>
+      <p class="no-indent"><strong>\(P=(0,0)\):</strong> \(D'(x)=4x^3+22x\). Starting from \(x=0\):</p>
+      <div class="equation">
+        \[D'(0)=0\text{, so } x_1=x_0=0\text{ and the start is already the minimizer.}\]
+        \[d=\sqrt{(0-0)^2+(5)^2}=5.00000\]
+      </div>
+      <p class="no-indent"><strong>\(P=(-8,0)\):</strong> \(D'(x)=4x^3+22x+16\). Starting from \(x=0\):</p>
+      <div class="equation">
+        \[k=0:\quad D'(0)=16,\quad D''(0)=22,\quad x_1=0-\tfrac{16}{22}=-0.727273\]
+        \[k=1:\quad D'(-0.727273)=4(-0.384673)+22(-0.727273)+16=-1.538693,\quad D''=12(0.528926)+22=28.347107\]
+        \[x_2=-0.727273-\tfrac{-1.538693}{28.347107}=-0.672992\]
+        \[k=2:\quad D'(-0.672992)=4(-0.304811)+22(-0.672992)+16=-0.025074,\quad D''=12(0.452919)+22=27.435024\]
+        \[x_3=-0.672992-\tfrac{-0.025074}{27.435024}=-0.672078\]
+        \[k=3:\quad D'(-0.672078)=4(-0.303571)+22(-0.672078)+16=-0.000007,\quad D''=12(0.451689)+22=27.420272\]
+        \[x_4=-0.672078-\tfrac{-0.000007}{27.420272}=-0.672078\]
+        \[d=\sqrt{(-0.672078+8)^2+(5.451689)^2}=\sqrt{83.419352}=9.13342\]
+      </div>
+      <p class="no-indent"><strong>\(P=(2,0)\):</strong> \(D'(x)=4x^3+22x-4\). Starting from \(x=0\):</p>
+      <div class="equation">
+        \[k=0:\quad D'(0)=-4,\quad D''(0)=22,\quad x_1=0-\tfrac{-4}{22}=0.181818\]
+        \[k=1:\quad D'(0.181818)=4(0.006011)+22(0.181818)-4=0.024042,\quad D''=12(0.033058)+22=22.396694\]
+        \[x_2=0.181818-\tfrac{0.024042}{22.396694}=0.180745\]
+        \[k=2:\quad D'(0.180745)=4(0.005905)+22(0.180745)-4=0.000003,\quad D''=12(0.032669)+22=22.392024\]
+        \[x_3=0.180745-\tfrac{0.000003}{22.392024}=0.180745\]
+        \[d=\sqrt{(0.180745-2)^2+(5.032669)^2}=\sqrt{28.637444}=5.35140\]
+      </div>
+      <p class="no-indent"><strong>\(P=(6,0)\):</strong> \(D'(x)=4x^3+22x-12\). Starting from \(x=0\):</p>
+      <div class="equation">
+        \[k=0:\quad D'(0)=-12,\quad D''(0)=22,\quad x_1=0-\tfrac{-12}{22}=0.545455\]
+        \[k=1:\quad D'(0.545455)=4(0.162284)+22(0.545455)-12=0.649136,\quad D''=12(0.297521)+22=25.570248\]
+        \[x_2=0.545455-\tfrac{0.649136}{25.570248}=0.520068\]
+        \[k=2:\quad D'(0.520068)=4(0.140663)+22(0.520068)-12=0.004153,\quad D''=12(0.270471)+22=25.245651\]
+        \[x_3=0.520068-\tfrac{0.004153}{25.245651}=0.519904\]
+        \[k=3:\quad D'(0.519904)=4(0.140530)+22(0.519904)-12=1.69\times10^{-7},\quad D''=12(0.270300)+22=25.243598\]
+        \[x_4=0.519904-\tfrac{1.69\times10^{-7}}{25.243598}=0.519904\]
+        \[d=\sqrt{(0.519904-6)^2+(5.270300)^2}=\sqrt{57.807516}=7.60313\]
+      </div>
+      <p class="no-indent">Table IV collects the Newton–Raphson iterates for all five points.</p>
       <div class="table-wrap">
         <table>
           <caption>Table IV. Hand Newton–Raphson iterates for all supplied points</caption>
@@ -406,10 +444,43 @@
           </tbody>
         </table>
       </div>
-      <p class="no-indent">The bracket width after \(n\) reductions is \(20(0.618034)^n\). Reaching the \(10^{-7}\) tolerance requires \(n\ge\ln(2\times10^{8})/\ln(1.618034)\approx39.7\), so 40 reductions are needed for every point. The first five decisions for all supplied points are summarized below, with L meaning keep \([a,x_2]\) and R meaning keep \([x_1,b]\). At \((0,0)\) the first comparison is an exact tie by symmetry; the rule \(D(x_1)&lt;D(x_2)\) is false, so the right bracket is kept.</p>
+      <p class="no-indent"><strong>Remaining points.</strong> The same procedure, with \(D(x)=(x-x_0)^2+(x^2+5)^2\) for each point, gives the reductions in Table VI. Interior points \(\pm2.3607\), \(\pm0.5573\), \(\pm1.2461\) and \(\pm5.2786\) repeat across points because every search starts from the same bracket; only the \(D\) values, and therefore the decisions, differ. At \((0,0)\), steps 0 and 3 are exact ties by symmetry; the rule \(D(x_1)&lt;D(x_2)\) is then false, so the right bracket is kept.</p>
       <div class="table-wrap">
         <table>
-          <caption>Table VI. Hand golden-section decisions for all supplied points</caption>
+          <caption>Table VI. Hand golden-section reductions for the remaining points</caption>
+          <thead><tr><th>\(P\)</th><th>\(k\)</th><th>\([a,b]\)</th><th>\(x_1\)</th><th>\(x_2\)</th><th>\(D(x_1)\)</th><th>\(D(x_2)\)</th><th>Keep</th></tr></thead>
+          <tbody>
+            <tr><td>\((0,0)\)</td><td>0</td><td>\([-10.0000,\,10.0000]\)</td><td>−2.3607</td><td>2.3607</td><td>117.3571</td><td>117.3571</td><td>\([x_1,b]\)</td></tr>
+            <tr><td></td><td>1</td><td>\([-2.3607,\,10.0000]\)</td><td>2.3607</td><td>5.2786</td><td>117.3571</td><td>1107.9095</td><td>\([a,x_2]\)</td></tr>
+            <tr><td></td><td>2</td><td>\([-2.3607,\,5.2786]\)</td><td>0.5573</td><td>2.3607</td><td>28.5126</td><td>117.3571</td><td>\([a,x_2]\)</td></tr>
+            <tr><td></td><td>3</td><td>\([-2.3607,\,2.3607]\)</td><td>−0.5573</td><td>0.5573</td><td>28.5126</td><td>28.5126</td><td>\([x_1,b]\)</td></tr>
+            <tr><td></td><td>4</td><td>\([-0.5573,\,2.3607]\)</td><td>0.5573</td><td>1.2461</td><td>28.5126</td><td>44.4921</td><td>\([a,x_2]\)</td></tr>
+            <tr><td></td><td>5</td><td>\([-0.5573,\,1.2461]\)</td><td colspan="5">width \(=1.8034\); continue to 40 reductions</td></tr>
+            <tr><td>\((-8,0)\)</td><td>0</td><td>\([-10.0000,\,10.0000]\)</td><td>−2.3607</td><td>2.3607</td><td>143.5862</td><td>219.1280</td><td>\([a,x_2]\)</td></tr>
+            <tr><td></td><td>1</td><td>\([-10.0000,\,2.3607]\)</td><td>−5.2786</td><td>−2.3607</td><td>1087.4513</td><td>143.5862</td><td>\([x_1,b]\)</td></tr>
+            <tr><td></td><td>2</td><td>\([-5.2786,\,2.3607]\)</td><td>−2.3607</td><td>−0.5573</td><td>143.5862</td><td>83.5961</td><td>\([x_1,b]\)</td></tr>
+            <tr><td></td><td>3</td><td>\([-2.3607,\,2.3607]\)</td><td>−0.5573</td><td>0.5573</td><td>83.5961</td><td>101.4291</td><td>\([a,x_2]\)</td></tr>
+            <tr><td></td><td>4</td><td>\([-2.3607,\,0.5573]\)</td><td>−1.2461</td><td>−0.5573</td><td>88.5542</td><td>83.5961</td><td>\([x_1,b]\)</td></tr>
+            <tr><td></td><td>5</td><td>\([-1.2461,\,0.5573]\)</td><td colspan="5">width \(=1.8034\); continue to 40 reductions</td></tr>
+            <tr><td>\((2,0)\)</td><td>0</td><td>\([-10.0000,\,10.0000]\)</td><td>−2.3607</td><td>2.3607</td><td>130.7998</td><td>111.9144</td><td>\([x_1,b]\)</td></tr>
+            <tr><td></td><td>1</td><td>\([-2.3607,\,10.0000]\)</td><td>2.3607</td><td>5.2786</td><td>111.9144</td><td>1090.7949</td><td>\([a,x_2]\)</td></tr>
+            <tr><td></td><td>2</td><td>\([-2.3607,\,5.2786]\)</td><td>0.5573</td><td>2.3607</td><td>30.2835</td><td>111.9144</td><td>\([a,x_2]\)</td></tr>
+            <tr><td></td><td>3</td><td>\([-2.3607,\,2.3607]\)</td><td>−0.5573</td><td>0.5573</td><td>34.7418</td><td>30.2835</td><td>\([x_1,b]\)</td></tr>
+            <tr><td></td><td>4</td><td>\([-0.5573,\,2.3607]\)</td><td>0.5573</td><td>1.2461</td><td>30.2835</td><td>43.5077</td><td>\([a,x_2]\)</td></tr>
+            <tr><td></td><td>5</td><td>\([-0.5573,\,1.2461]\)</td><td colspan="5">width \(=1.8034\); continue to 40 reductions</td></tr>
+            <tr><td>\((6,0)\)</td><td>0</td><td>\([-10.0000,\,10.0000]\)</td><td>−2.3607</td><td>2.3607</td><td>181.6853</td><td>125.0289</td><td>\([x_1,b]\)</td></tr>
+            <tr><td></td><td>1</td><td>\([-2.3607,\,10.0000]\)</td><td>2.3607</td><td>5.2786</td><td>125.0289</td><td>1080.5658</td><td>\([a,x_2]\)</td></tr>
+            <tr><td></td><td>2</td><td>\([-2.3607,\,5.2786]\)</td><td>0.5573</td><td>2.3607</td><td>57.8253</td><td>125.0289</td><td>\([a,x_2]\)</td></tr>
+            <tr><td></td><td>3</td><td>\([-2.3607,\,2.3607]\)</td><td>−0.5573</td><td>0.5573</td><td>71.2000</td><td>57.8253</td><td>\([x_1,b]\)</td></tr>
+            <tr><td></td><td>4</td><td>\([-0.5573,\,2.3607]\)</td><td>0.5573</td><td>1.2461</td><td>57.8253</td><td>65.5387</td><td>\([a,x_2]\)</td></tr>
+            <tr><td></td><td>5</td><td>\([-0.5573,\,1.2461]\)</td><td colspan="5">width \(=1.8034\); continue to 40 reductions</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="no-indent">The bracket width after \(n\) reductions is \(20(0.618034)^n\). Reaching the \(10^{-7}\) tolerance requires \(n\ge\ln(2\times10^{8})/\ln(1.618034)\approx39.7\), so 40 reductions are needed for every point. The first five decisions for all supplied points are summarized in Table VII, with L meaning keep \([a,x_2]\) and R meaning keep \([x_1,b]\).</p>
+      <div class="table-wrap">
+        <table>
+          <caption>Table VII. Hand golden-section decisions for all supplied points</caption>
           <thead><tr><th>\(P\)</th><th>Decisions \(k=0\ldots4\)</th><th>Bracket after 5 steps</th><th>\(x^*\) after 40 steps</th><th>Distance</th></tr></thead>
           <tbody>
             <tr><td>\((0,0)\)</td><td>R L L R L</td><td>\([-0.5573,\,1.2461]\)</td><td>0.00000</td><td>5.00000</td></tr>
@@ -500,7 +571,7 @@
 
       <div class="table-wrap">
         <table>
-          <caption>Table VII. Comparison of the analytical least-squares models</caption>
+          <caption>Table VIII. Comparison of the analytical least-squares models</caption>
           <thead><tr><th>Model</th><th>Best-fit equation</th><th>SSE</th><th>MSE</th></tr></thead>
           <tbody>
             <tr><td>Line</td><td>\(\hat y=2.3x-0.2\)</td><td>2.30</td><td>0.575</td></tr>
@@ -533,7 +604,7 @@
       </div>
       <div class="table-wrap">
         <table>
-          <caption>Table VIII. Hand coordinate-wise sweeps for the line \(\hat y=c_0+c_1x\)</caption>
+          <caption>Table IX. Hand coordinate-wise sweeps for the line \(\hat y=c_0+c_1x\)</caption>
           <thead><tr><th>Sweep</th><th>\(c_0\)</th><th>\(c_1\)</th><th>SSE</th><th>MSE</th></tr></thead>
           <tbody>
             <tr><td>0</td><td>0.000000</td><td>0.000000</td><td>71.000000</td><td>17.750000</td></tr>
@@ -544,6 +615,30 @@
         </table>
       </div>
 
+      <p class="no-indent"><strong>Update-by-update arithmetic.</strong> Each update computes the residuals \(e=A\mathbf c-\mathbf y\) at the current coefficients, then \(c_j\leftarrow c_j-A_j^Te/A_j^TA_j\); the factors of 2 in the gradient and second derivative cancel. Table X lists every update in the first three sweeps for the line, and the MSE after each sweep is computed from the new residuals below it.</p>
+      <div class="table-wrap">
+        <table>
+          <caption>Table X. Hand coordinate updates for the line, sweeps 1–3</caption>
+          <thead><tr><th>Sweep</th><th>Update</th><th>Column \(A_j\)</th><th>Residuals \(e\) before update</th><th>\(A_j^Te\)</th><th>\(A_j^TA_j\)</th><th>New value</th></tr></thead>
+          <tbody>
+            <tr><td>1</td><td>\(c_0\)</td><td>\((1,\,1,\,1,\,1)\)</td><td>\((-0.5000,\,-1.5000,\,-3.5000,\,-7.5000)\)</td><td>−13.0000</td><td>4</td><td>0.000000 − (−13.0000)/4 = <strong>3.250000</strong></td></tr>
+            <tr><td></td><td>\(c_1\)</td><td>\((0,\,1,\,2,\,3)\)</td><td>\((2.7500,\,1.7500,\,-0.2500,\,-4.2500)\)</td><td>−11.5000</td><td>14</td><td>0.000000 − (−11.5000)/14 = <strong>0.821429</strong></td></tr>
+            <tr><td>2</td><td>\(c_0\)</td><td>\((1,\,1,\,1,\,1)\)</td><td>\((2.7500,\,2.5714,\,1.3929,\,-1.7857)\)</td><td>4.9286</td><td>4</td><td>3.250000 − (4.9286)/4 = <strong>2.017857</strong></td></tr>
+            <tr><td></td><td>\(c_1\)</td><td>\((0,\,1,\,2,\,3)\)</td><td>\((1.5179,\,1.3393,\,0.1607,\,-3.0179)\)</td><td>−7.3929</td><td>14</td><td>0.821429 − (−7.3929)/14 = <strong>1.349490</strong></td></tr>
+            <tr><td>3</td><td>\(c_0\)</td><td>\((1,\,1,\,1,\,1)\)</td><td>\((1.5179,\,1.8673,\,1.2168,\,-1.4337)\)</td><td>3.1684</td><td>4</td><td>2.017857 − (3.1684)/4 = <strong>1.225765</strong></td></tr>
+            <tr><td></td><td>\(c_1\)</td><td>\((0,\,1,\,2,\,3)\)</td><td>\((0.7258,\,1.0753,\,0.4247,\,-2.2258)\)</td><td>−4.7526</td><td>14</td><td>1.349490 − (−4.7526)/14 = <strong>1.688958</strong></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="equation">
+        \[\text{Sweep 1:}\quad e=(2.7500,\,2.5714,\,1.3929,\,-1.7857)\]
+        \[\mathrm{MSE}=\tfrac14[2.7500^2+2.5714^2+1.3929^2+(-1.7857)^2]=\tfrac14(19.303571)=4.825893\]
+        \[\text{Sweep 2:}\quad e=(1.5179,\,1.8673,\,1.2168,\,-1.4337)\]
+        \[\mathrm{MSE}=\tfrac14[1.5179^2+1.8673^2+1.2168^2+(-1.4337)^2]=\tfrac14(9.326986)=2.331747\]
+        \[\text{Sweep 3:}\quad e=(0.7258,\,1.4147,\,1.1037,\,-1.2074)\]
+        \[\mathrm{MSE}=\tfrac14[0.7258^2+1.4147^2+1.1037^2+(-1.2074)^2]=\tfrac14(5.204010)=1.301002\]
+      </div>
+
       <p class="no-indent"><strong>Parabola.</strong> Using the additional sums \(\sum x_i^3=36\), \(\sum x_i^4=98\), and \(\sum x_i^2y_i=83\), the three coordinate updates are applied in order \(c_0\to c_1\to c_2\), each using the newest values:</p>
       <div class="equation">
         \[\text{Sweep 1:}\quad c_0=\tfrac{26}{8}=3.250000,\quad c_1=\tfrac{62-39}{28}=0.821429,\quad c_2=\tfrac{166-91-59.142857}{196}=0.080904\]
@@ -552,7 +647,7 @@
       </div>
       <div class="table-wrap">
         <table>
-          <caption>Table IX. Hand coordinate-wise sweeps for the parabola \(\hat y=c_0+c_1x+c_2x^2\)</caption>
+          <caption>Table XI. Hand coordinate-wise sweeps for the parabola \(\hat y=c_0+c_1x+c_2x^2\)</caption>
           <thead><tr><th>Sweep</th><th>\(c_0\)</th><th>\(c_1\)</th><th>\(c_2\)</th><th>SSE</th><th>MSE</th></tr></thead>
           <tbody>
             <tr><td>0</td><td>0.000000</td><td>0.000000</td><td>0.000000</td><td>71.000000</td><td>17.750000</td></tr>
@@ -562,7 +657,34 @@
           </tbody>
         </table>
       </div>
-      <p class="no-indent">Continuing the same arithmetic, the line converges to \((c_0,c_1)=(-0.2,2.3)\) with MSE \(0.575\), and the parabola to \((0.55,0.05,0.75)\) with MSE \(0.0125\), matching the analytical solutions in Table VII. The parabola needs more sweeps because its coefficients are strongly coupled (the \(x\), \(x^2\) columns are highly correlated), so each coordinate step makes smaller progress along the valley of the MSE surface.</p>
+      <p class="no-indent"><strong>Update-by-update arithmetic.</strong> Each update computes the residuals \(e=A\mathbf c-\mathbf y\) at the current coefficients, then \(c_j\leftarrow c_j-A_j^Te/A_j^TA_j\); the factors of 2 in the gradient and second derivative cancel. Table XII lists every update in the first three sweeps for the parabola, and the MSE after each sweep is computed from the new residuals below it.</p>
+      <div class="table-wrap">
+        <table>
+          <caption>Table XII. Hand coordinate updates for the parabola, sweeps 1–3</caption>
+          <thead><tr><th>Sweep</th><th>Update</th><th>Column \(A_j\)</th><th>Residuals \(e\) before update</th><th>\(A_j^Te\)</th><th>\(A_j^TA_j\)</th><th>New value</th></tr></thead>
+          <tbody>
+            <tr><td>1</td><td>\(c_0\)</td><td>\((1,\,1,\,1,\,1)\)</td><td>\((-0.5000,\,-1.5000,\,-3.5000,\,-7.5000)\)</td><td>−13.0000</td><td>4</td><td>0.000000 − (−13.0000)/4 = <strong>3.250000</strong></td></tr>
+            <tr><td></td><td>\(c_1\)</td><td>\((0,\,1,\,2,\,3)\)</td><td>\((2.7500,\,1.7500,\,-0.2500,\,-4.2500)\)</td><td>−11.5000</td><td>14</td><td>0.000000 − (−11.5000)/14 = <strong>0.821429</strong></td></tr>
+            <tr><td></td><td>\(c_2\)</td><td>\((0,\,1,\,4,\,9)\)</td><td>\((2.7500,\,2.5714,\,1.3929,\,-1.7857)\)</td><td>−7.9286</td><td>98</td><td>0.000000 − (−7.9286)/98 = <strong>0.080904</strong></td></tr>
+            <tr><td>2</td><td>\(c_0\)</td><td>\((1,\,1,\,1,\,1)\)</td><td>\((2.7500,\,2.6523,\,1.7165,\,-1.0576)\)</td><td>6.0612</td><td>4</td><td>3.250000 − (6.0612)/4 = <strong>1.734694</strong></td></tr>
+            <tr><td></td><td>\(c_1\)</td><td>\((0,\,1,\,2,\,3)\)</td><td>\((1.2347,\,1.1370,\,0.2012,\,-2.5729)\)</td><td>−6.1793</td><td>14</td><td>0.821429 − (−6.1793)/14 = <strong>1.262807</strong></td></tr>
+            <tr><td></td><td>\(c_2\)</td><td>\((0,\,1,\,4,\,9)\)</td><td>\((1.2347,\,1.5784,\,1.0839,\,-1.2488)\)</td><td>−5.3247</td><td>98</td><td>0.080904 − (−5.3247)/98 = <strong>0.135237</strong></td></tr>
+            <tr><td>3</td><td>\(c_0\)</td><td>\((1,\,1,\,1,\,1)\)</td><td>\((1.2347,\,1.6327,\,1.3013,\,-0.7598)\)</td><td>3.4089</td><td>4</td><td>1.734694 − (3.4089)/4 = <strong>0.882460</strong></td></tr>
+            <tr><td></td><td>\(c_1\)</td><td>\((0,\,1,\,2,\,3)\)</td><td>\((0.3825,\,0.7805,\,0.4490,\,-1.6120)\)</td><td>−3.1574</td><td>14</td><td>1.262807 − (−3.1574)/14 = <strong>1.488336</strong></td></tr>
+            <tr><td></td><td>\(c_2\)</td><td>\((0,\,1,\,4,\,9)\)</td><td>\((0.3825,\,1.0060,\,0.9001,\,-0.9354)\)</td><td>−3.8122</td><td>98</td><td>0.135237 − (−3.8122)/98 = <strong>0.174137</strong></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="equation">
+        \[\text{Sweep 1:}\quad e=(2.7500,\,2.6523,\,1.7165,\,-1.0576)\]
+        \[\mathrm{MSE}=\tfrac14[2.7500^2+2.6523^2+1.7165^2+(-1.0576)^2]=\tfrac14(18.662120)=4.665530\]
+        \[\text{Sweep 2:}\quad e=(1.2347,\,1.6327,\,1.3013,\,-0.7598)\]
+        \[\mathrm{MSE}=\tfrac14[1.2347^2+1.6327^2+1.3013^2+(-0.7598)^2]=\tfrac14(6.460793)=1.615198\]
+        \[\text{Sweep 3:}\quad e=(0.3825,\,1.0449,\,1.0557,\,-0.5853)\]
+        \[\mathrm{MSE}=\tfrac14[0.3825^2+1.0449^2+1.0557^2+(-0.5853)^2]=\tfrac14(2.695196)=0.673799\]
+      </div>
+
+      <p class="no-indent">Continuing the same arithmetic, the line converges to \((c_0,c_1)=(-0.2,2.3)\) with MSE \(0.575\), and the parabola to \((0.55,0.05,0.75)\) with MSE \(0.0125\), matching the analytical solutions in Table VIII. The parabola needs more sweeps because its coefficients are strongly coupled (the \(x\), \(x^2\) columns are highly correlated), so each coordinate step makes smaller progress along the valley of the MSE surface.</p>
 
       <div class="downloads">
         <a href="./part2/part2_newton.py">View Part II code</a>
@@ -603,7 +725,7 @@
 
       <div class="table-wrap">
         <table>
-          <caption>Table X. Selected coordinate-wise Newton–Raphson states</caption>
+          <caption>Table XIII. Selected coordinate-wise Newton–Raphson states</caption>
           <thead><tr><th>Model</th><th>Sweep</th><th>Coefficients</th><th>SSE</th><th>MSE</th></tr></thead>
           <tbody>
             <tr><td>Line</td><td>0</td><td>\((0,0)\)</td><td>71.000000</td><td>17.750000</td></tr>

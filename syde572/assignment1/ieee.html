@@ -278,6 +278,7 @@
       <ol>
         <li><a href="#part-one">Part I: Distance minimization</a></li>
         <li><a href="#p1-analytical">Analytical formulation</a></li>
+        <li><a href="#p1-analytical-hand">Analytical solutions by hand</a></li>
         <li><a href="#p1-numerical">Numerical methods</a></li>
         <li><a href="#p1-hand">Numerical methods by hand</a></li>
         <li><a href="#p1-animation">Animated search</a></li>
@@ -303,6 +304,57 @@
         \[D(x)=(x-a)^2+(x^2+5)^2.\]
       </div>
       <p>Differentiation gives \(D'(x)=4x^3+22x-2a\). Every candidate minimizer therefore satisfies \(2x^3+11x-a=0\). Moreover, \(D''(x)=12x^2+22>0\) for every real \(x\), so the objective is strictly convex and each real stationary point is the unique global minimizer.</p>
+
+      <h3 id="p1-analytical-hand">A. Worked Analytical Solutions</h3>
+      <p class="no-indent">For each point \((x_0,0)\), the handwritten solution (Section IX-A) follows four steps: write \(D(x)=(x-x_0)^2+(x^2+5)^2\), set \(D'(x)=0\), solve the resulting cubic for \(x^*\), and substitute back to obtain the closest point \(Q\) and the distance \(d\). Dividing \(2x^3+11x-x_0=0\) by 2 gives the depressed cubic \(x^3+\tfrac{11}{2}x-\tfrac{x_0}{2}=0\). Its derivative \(6x^2+11\) is always positive, so the cubic has exactly one real root, given in closed form by Cardano's formula:</p>
+      <div class="equation">
+        \[x^*=\sqrt[3]{\frac{x_0}{4}+\sqrt{\frac{x_0^2}{16}+\frac{1331}{216}}}+\sqrt[3]{\frac{x_0}{4}-\sqrt{\frac{x_0^2}{16}+\frac{1331}{216}}},\qquad \frac{1331}{216}=\Big(\frac{11}{6}\Big)^3\approx6.162037.\]
+      </div>
+      <p class="no-indent"><strong>\(P=(0,0)\):</strong></p>
+      <div class="equation">
+        \[D(x)=x^2+(x^2+5)^2\]
+        \[D'(x)=2x+2(x^2+5)(2x)=4x^3+22x=0\]
+        \[2x(2x^2+11)=0\;\Rightarrow\;x=0\ \text{ or }\ x^2=-\tfrac{11}{2}\ \text{(no real root)}\]
+        \[Q=(x^*,\,x^{*2}+5)=(0,\,5.00000)\]
+        \[d=\sqrt{(0-0)^2+(5.00000)^2}=\sqrt{25.00000}=5.00000\]
+      </div>
+      <p class="no-indent"><strong>\(P=(-4,0)\):</strong></p>
+      <div class="equation">
+        \[D(x)=(x+4)^2+(x^2+5)^2\]
+        \[D'(x)=2(x+4)+2(x^2+5)(2x)=4x^3+22x+8=0\]
+        \[2x^3+11x+4=0\]
+        \[x^*=\sqrt[3]{-1+\sqrt{7.162037}}+\sqrt[3]{-1-\sqrt{7.162037}}=1.187887-1.543357=-0.35547\]
+        \[Q=(x^*,\,x^{*2}+5)=(-0.35547,\,5.12636)\]
+        \[d=\sqrt{(-0.35547+4)^2+(5.12636)^2}=\sqrt{39.56215}=6.28985\]
+      </div>
+      <p class="no-indent"><strong>\(P=(-8,0)\):</strong></p>
+      <div class="equation">
+        \[D(x)=(x+8)^2+(x^2+5)^2\]
+        \[D'(x)=2(x+8)+2(x^2+5)(2x)=4x^3+22x+16=0\]
+        \[2x^3+11x+8=0\]
+        \[x^*=\sqrt[3]{-2+\sqrt{10.162037}}+\sqrt[3]{-2-\sqrt{10.162037}}=1.059044-1.731122=-0.67208\]
+        \[Q=(x^*,\,x^{*2}+5)=(-0.67208,\,5.45169)\]
+        \[d=\sqrt{(-0.67208+8)^2+(5.45169)^2}=\sqrt{83.41935}=9.13342\]
+      </div>
+      <p class="no-indent"><strong>\(P=(2,0)\):</strong></p>
+      <div class="equation">
+        \[D(x)=(x-2)^2+(x^2+5)^2\]
+        \[D'(x)=2(x-2)+2(x^2+5)(2x)=4x^3+22x-4=0\]
+        \[2x^3+11x-2=0\]
+        \[x^*=\sqrt[3]{0.5+\sqrt{6.412037}}+\sqrt[3]{0.5-\sqrt{6.412037}}=1.447391-1.266647=0.18074\]
+        \[Q=(x^*,\,x^{*2}+5)=(0.18074,\,5.03267)\]
+        \[d=\sqrt{(0.18074-2)^2+(5.03267)^2}=\sqrt{28.63744}=5.35140\]
+      </div>
+      <p class="no-indent"><strong>\(P=(6,0)\):</strong></p>
+      <div class="equation">
+        \[D(x)=(x-6)^2+(x^2+5)^2\]
+        \[D'(x)=2(x-6)+2(x^2+5)(2x)=4x^3+22x-12=0\]
+        \[2x^3+11x-6=0\]
+        \[x^*=\sqrt[3]{1.5+\sqrt{8.412037}}+\sqrt[3]{1.5-\sqrt{8.412037}}=1.638686-1.118782=0.51990\]
+        \[Q=(x^*,\,x^{*2}+5)=(0.51990,\,5.27030)\]
+        \[d=\sqrt{(0.51990-6)^2+(5.27030)^2}=\sqrt{57.80752}=7.60313\]
+      </div>
+      <p class="no-indent">Table I collects the analytical results; the numerical columns in Section III reproduce them to five decimal places.</p>
 
       <div class="table-wrap">
         <table>

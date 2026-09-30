@@ -279,6 +279,7 @@
         <li><a href="#p1-analytical">Analytical formulation</a></li>
         <li><a href="#p1-numerical">Numerical methods</a></li>
         <li><a href="#p1-hand">Numerical methods by hand</a></li>
+        <li><a href="#p1-animation">Animated search</a></li>
         <li><a href="#p1-functions">Additional functions</a></li>
         <li><a href="#part-two">Part II: Function fitting</a></li>
         <li><a href="#p2-analytical">Analytical fits</a></li>
@@ -438,6 +439,26 @@
           <figcaption><span class="fig-label">Fig. 2.</span> Golden-section interval reduction for the five supplied points, plotted on the same coordinate scale as Fig. 1.</figcaption>
         </figure>
       </div>
+
+      <h3 id="p1-animation">D. Animated Search</h3>
+      <p class="no-indent">Each animation has three phases. First, a point \(Q\) slides along the curve while its squared distance \(D(x)\) is traced in the lower panel, and a dashed segment marks the best point seen so far. Next, the Newton–Raphson iterates jump to the root of \(D'(x)=0\). Finally, the golden-section bracket \([a,b]\) shrinks around the minimum. The last frames show that the shortest segment \(PQ^*\) is perpendicular to the tangent at \(Q^*\), which is exactly the stationary condition \((x-x_0)+(f(x)-y_0)f'(x)=0\).</p>
+      <p>The second example uses a different parabola, \(y=0.5x^2+1\), with the point \(P=(0,5)\) above its vertex. Here \(D'(x)=x^3-6x\), so \(D\) has a local maximum at \(x=0\) and two equal minima at \(x=\pm\sqrt6\), both at distance \(\sqrt7\approx2.64575\). Newton–Raphson converges to whichever minimum lies near its starting guess, and golden-section search needs a bracket containing only one minimum, so \([0,4.5]\) is used.</p>
+
+      <div class="downloads">
+        <a href="./part1/animate_distance.py">View animation code</a>
+        <a href="./part1/animate_distance.py" download>Download animation code</a>
+      </div>
+
+      <div class="figure-grid">
+        <figure>
+          <img src="./part1/media/distance_search_parabola.gif" alt="Animation of a point sliding along y equals x squared plus 5, followed by Newton-Raphson and golden-section steps converging to the closest point to (-4, 0)" loading="lazy">
+          <figcaption><span class="fig-label">Fig. 3.</span> Animated search for \(P=(-4,0)\) on \(y=x^2+5\). Newton–Raphson starts at \(x=2.5\) so that its steps are visible; it converges to \(x^*=-0.35547\) and \(d=6.28985\), matching Table I.</figcaption>
+        </figure>
+        <figure>
+          <img src="./part1/media/distance_search_two_minima.gif" alt="Animation for y equals 0.5 x squared plus 1 and the point (0, 5), showing two equal minima at x equals plus or minus root 6" loading="lazy">
+          <figcaption><span class="fig-label">Fig. 4.</span> A second parabola, \(y=0.5x^2+1\), with \(P=(0,5)\). The lower panel shows two equal valleys in \(D(x)\). Both methods find \(Q^*=(\sqrt6,4)\) with \(d=\sqrt7\approx2.64575\), and the dashed segment marks the mirror minimum at \(x=-\sqrt6\).</figcaption>
+        </figure>
+      </div>
     </section>
 
     <section id="p1-functions">
@@ -450,14 +471,14 @@
       </div>
 
       <div class="figure-grid">
-        <figure><img src="./part1/media/exponential_newton_steps.png" alt="Exponential-function Newton-Raphson results" loading="lazy"><figcaption><span class="fig-label">Fig. 3.</span> Exponential-function examples solved with Newton–Raphson.</figcaption></figure>
-        <figure><img src="./part1/media/exponential_golden_section_steps.png" alt="Exponential-function golden-section results" loading="lazy"><figcaption><span class="fig-label">Fig. 4.</span> Exponential-function examples solved with golden-section search.</figcaption></figure>
-        <figure><img src="./part1/media/logarithmic_newton_steps.png" alt="Logarithmic-function Newton-Raphson results" loading="lazy"><figcaption><span class="fig-label">Fig. 5.</span> Logarithmic-function examples solved with Newton–Raphson.</figcaption></figure>
-        <figure><img src="./part1/media/logarithmic_golden_section_steps.png" alt="Logarithmic-function golden-section results" loading="lazy"><figcaption><span class="fig-label">Fig. 6.</span> Logarithmic-function examples solved with golden-section search.</figcaption></figure>
-        <figure><img src="./part1/media/rational_newton_steps.png" alt="Rational-function Newton-Raphson results" loading="lazy"><figcaption><span class="fig-label">Fig. 7.</span> Variable-denominator examples solved with Newton–Raphson.</figcaption></figure>
-        <figure><img src="./part1/media/rational_golden_section_steps.png" alt="Rational-function golden-section results" loading="lazy"><figcaption><span class="fig-label">Fig. 8.</span> Variable-denominator examples solved with golden-section search.</figcaption></figure>
-        <figure><img src="./part1/media/radical_newton_steps.png" alt="Radical-function Newton-Raphson results" loading="lazy"><figcaption><span class="fig-label">Fig. 9.</span> Radical-function examples solved with Newton–Raphson.</figcaption></figure>
-        <figure><img src="./part1/media/radical_golden_section_steps.png" alt="Radical-function golden-section results" loading="lazy"><figcaption><span class="fig-label">Fig. 10.</span> Radical-function examples solved with golden-section search.</figcaption></figure>
+        <figure><img src="./part1/media/exponential_newton_steps.png" alt="Exponential-function Newton-Raphson results" loading="lazy"><figcaption><span class="fig-label">Fig. 5.</span> Exponential-function examples solved with Newton–Raphson.</figcaption></figure>
+        <figure><img src="./part1/media/exponential_golden_section_steps.png" alt="Exponential-function golden-section results" loading="lazy"><figcaption><span class="fig-label">Fig. 6.</span> Exponential-function examples solved with golden-section search.</figcaption></figure>
+        <figure><img src="./part1/media/logarithmic_newton_steps.png" alt="Logarithmic-function Newton-Raphson results" loading="lazy"><figcaption><span class="fig-label">Fig. 7.</span> Logarithmic-function examples solved with Newton–Raphson.</figcaption></figure>
+        <figure><img src="./part1/media/logarithmic_golden_section_steps.png" alt="Logarithmic-function golden-section results" loading="lazy"><figcaption><span class="fig-label">Fig. 8.</span> Logarithmic-function examples solved with golden-section search.</figcaption></figure>
+        <figure><img src="./part1/media/rational_newton_steps.png" alt="Rational-function Newton-Raphson results" loading="lazy"><figcaption><span class="fig-label">Fig. 9.</span> Variable-denominator examples solved with Newton–Raphson.</figcaption></figure>
+        <figure><img src="./part1/media/rational_golden_section_steps.png" alt="Rational-function golden-section results" loading="lazy"><figcaption><span class="fig-label">Fig. 10.</span> Variable-denominator examples solved with golden-section search.</figcaption></figure>
+        <figure><img src="./part1/media/radical_newton_steps.png" alt="Radical-function Newton-Raphson results" loading="lazy"><figcaption><span class="fig-label">Fig. 11.</span> Radical-function examples solved with Newton–Raphson.</figcaption></figure>
+        <figure><img src="./part1/media/radical_golden_section_steps.png" alt="Radical-function golden-section results" loading="lazy"><figcaption><span class="fig-label">Fig. 12.</span> Radical-function examples solved with golden-section search.</figcaption></figure>
       </div>
     </section>
 
@@ -552,11 +573,11 @@
       <div class="figure-grid">
         <figure>
           <img src="./part2/media/part2_line_newton_steps.png" alt="Coordinate-wise Newton iterations for the straight-line fit" loading="lazy">
-          <figcaption><span class="fig-label">Fig. 11.</span> Intermediate line fits and MSE convergence. The method reaches \(c_0=-0.2\), \(c_1=2.3\), and MSE \(0.575\) after 55 sweeps.</figcaption>
+          <figcaption><span class="fig-label">Fig. 13.</span> Intermediate line fits and MSE convergence. The method reaches \(c_0=-0.2\), \(c_1=2.3\), and MSE \(0.575\) after 55 sweeps.</figcaption>
         </figure>
         <figure>
           <img src="./part2/media/part2_parabola_newton_steps.png" alt="Coordinate-wise Newton iterations for the quadratic fit" loading="lazy">
-          <figcaption><span class="fig-label">Fig. 12.</span> Intermediate quadratic fits and MSE convergence. The method reaches \((c_0,c_1,c_2)=(0.55,0.05,0.75)\) and MSE \(0.0125\) after 591 sweeps.</figcaption>
+          <figcaption><span class="fig-label">Fig. 14.</span> Intermediate quadratic fits and MSE convergence. The method reaches \((c_0,c_1,c_2)=(0.55,0.05,0.75)\) and MSE \(0.0125\) after 591 sweeps.</figcaption>
         </figure>
       </div>
 
@@ -601,7 +622,7 @@
       <h2>References</h2>
       <ol class="references">
         <li>SYDE 572, “Assignment 1,” course assignment document. <a href="./SYDE572 assn1.pdf">View assignment PDF.</a></li>
-        <li>Part I Python implementations: <a href="./part1/A1.py">Newton–Raphson</a>, <a href="./part1/A2.py">golden-section search</a>, and <a href="./part1/non_polynomial_examples.py">non-polynomial examples</a>.</li>
+        <li>Part I Python implementations: <a href="./part1/A1.py">Newton–Raphson</a>, <a href="./part1/A2.py">golden-section search</a>, <a href="./part1/non_polynomial_examples.py">non-polynomial examples</a>, and <a href="./part1/animate_distance.py">animations</a>.</li>
         <li>Part II Python implementation: <a href="./part2/part2_newton.py">coordinate-wise Newton–Raphson</a>.</li>
       </ol>
     </section>

@@ -441,7 +441,7 @@
       </div>
 
       <h3 id="p1-animation">D. Animated Search</h3>
-      <p class="no-indent">Each animation has three phases. First, a point \(Q\) slides along the curve while its squared distance \(D(x)\) is traced in the lower panel, and a dashed segment marks the best point seen so far. Next, the Newton–Raphson iterates jump to the root of \(D'(x)=0\). Finally, the golden-section bracket \([a,b]\) shrinks around the minimum. The last frames show that the shortest segment \(PQ^*\) is perpendicular to the tangent at \(Q^*\), which is exactly the stationary condition \((x-x_0)+(f(x)-y_0)f'(x)=0\).</p>
+      <p class="no-indent">Each animation shows the two numerical methods in turn, with the curve in the upper panel and the squared distance \(D(x)\) in the lower panel. First, the Newton–Raphson iterates jump to the root of \(D'(x)=0\). Then the golden-section bracket \([a,b]\) shrinks around the minimum. The last frames show that the shortest segment \(PQ^*\) is perpendicular to the tangent at \(Q^*\), which is exactly the stationary condition \((x-x_0)+(f(x)-y_0)f'(x)=0\).</p>
       <p>The second example uses a different parabola, \(y=0.5x^2+1\), with the point \(P=(0,5)\) above its vertex. Here \(D'(x)=x^3-6x\), so \(D\) has a local maximum at \(x=0\) and two equal minima at \(x=\pm\sqrt6\), both at distance \(\sqrt7\approx2.64575\). Newton–Raphson converges to whichever minimum lies near its starting guess, and golden-section search needs a bracket containing only one minimum, so \([0,4.5]\) is used.</p>
 
       <div class="downloads">
@@ -452,7 +452,7 @@
       <div class="figure-grid">
         <figure>
           <img src="./part1/media/distance_search_parabola.gif" alt="Animation of a point sliding along y equals x squared plus 5, followed by Newton-Raphson and golden-section steps converging to the closest point to (-4, 0)" loading="lazy">
-          <figcaption><span class="fig-label">Fig. 3.</span> Animated search for \(P=(-4,0)\) on \(y=x^2+5\). Newton–Raphson starts at \(x=2.5\) so that its steps are visible; it converges to \(x^*=-0.35547\) and \(d=6.28985\), matching Table I.</figcaption>
+          <figcaption><span class="fig-label">Fig. 3.</span> Animated search for \(P=(-4,0)\) on \(y=x^2+5\). Newton–Raphson starts at \(x=1.5\) so that its steps are visible; it converges to \(x^*=-0.35547\) and \(d=6.28985\), matching Table I.</figcaption>
         </figure>
         <figure>
           <img src="./part1/media/distance_search_two_minima.gif" alt="Animation for y equals 0.5 x squared plus 1 and the point (0, 5), showing two equal minima at x equals plus or minus root 6" loading="lazy">

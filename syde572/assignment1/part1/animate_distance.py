@@ -1,9 +1,8 @@
 """Animate the shortest-distance search from a point to a curve.
 
-Each GIF has three phases:
-  1. Slide: a point Q moves along the curve while D(x) is traced below.
-  2. Newton-Raphson: the iterates jump toward the minimum of D(x).
-  3. Golden-section: the bracket [a, b] shrinks around the minimum.
+Each GIF has two phases, with D(x) plotted below the curve:
+  1. Newton-Raphson: the iterates jump toward the minimum of D(x).
+  2. Golden-section: the bracket [a, b] shrinks around the minimum.
 The final frames show the shortest segment meeting the tangent at a right angle.
 """
 
@@ -28,7 +27,6 @@ POINT = "#d1495b"
 NEWTON = "#f28e2b"
 GOLDEN = "#7b2cbf"
 FINAL = "#2a9d8f"
-SLIDE = "#6b7280"
 
 
 def parabola(a, b, c):
@@ -61,12 +59,10 @@ def animate(name, label, f, df, ddf, point, x_range, y_range, d_top,
         if not newton_xs or abs(value - newton_xs[-1]) > 1e-4:
             newton_xs.append(value)
 
-    slide_xs = np.linspace(x_range[0] + 0.4, x_range[1] - 0.4, 64)
     frames = (
-        [("slide", i) for i in range(len(slide_xs))]
-        + [("newton", k) for k in range(len(newton_xs)) for _ in range(9)]
+        [("newton", k) for k in range(len(newton_xs)) for _ in range(12)]
         + [("golden", s) for s in range(min(golden_steps, len(golden_history)))
-           for _ in range(5)]
+           for _ in range(7)]
         + [("final", 0)] * 36
     )
 
@@ -89,10 +85,8 @@ def animate(name, label, f, df, ddf, point, x_range, y_range, d_top,
     ax.set_ylabel("y")
     ax.legend(loc="lower right", fontsize=9, framealpha=0.92)
 
-    best_segment, = ax.plot([], [], color=FINAL, linewidth=1.6, alpha=0.45,
-                            linestyle="--", label="_best")
-    segment, = ax.plot([], [], color=SLIDE, linewidth=2.2)
-    q_dot, = ax.plot([], [], "o", color=SLIDE, markersize=9, zorder=7)
+    segment, = ax.plot([], [], color=NEWTON, linewidth=2.2)
+    q_dot, = ax.plot([], [], "o", color=NEWTON, markersize=9, zorder=7)
     q_label = ax.annotate("", (0, 0), xytext=(8, 8), textcoords="offset points",
                           fontsize=10, fontweight="bold")
     trail, = ax.plot([], [], "o--", color=NEWTON, markersize=6, linewidth=1.2,
@@ -118,8 +112,8 @@ def animate(name, label, f, df, ddf, point, x_range, y_range, d_top,
     ax_d.grid(alpha=0.25)
     ax_d.set_xlabel("x")
     ax_d.set_ylabel(r"$D(x)=(x-x_0)^2+(f(x)-y_0)^2$", fontsize=9)
-    cursor = ax_d.axvline(slide_xs[0], color=SLIDE, linewidth=1, alpha=0.6)
-    d_dot, = ax_d.plot([], [], "o", color=SLIDE, markersize=8, zorder=5)
+    cursor = ax_d.axvline(newton_start, color=NEWTON, linewidth=1, alpha=0.6)
+    d_dot, = ax_d.plot([], [], "o", color=NEWTON, markersize=8, zorder=5)
     d_trail, = ax_d.plot([], [], "o--", color=NEWTON, markersize=5,
                          linewidth=1.1, zorder=5)
     d_probes, = ax_d.plot([], [], "D", color=GOLDEN, markersize=5, zorder=5)
@@ -149,7 +143,7 @@ def animate(name, label, f, df, ddf, point, x_range, y_range, d_top,
         d_dot.set_color(color)
 
     def reset():
-        for artist in (best_segment, trail, probes, tangent, right_angle,
+        for artist in (trail, probes, tangent, right_angle,
                        mirror_segment, d_trail, d_probes):
             artist.set_data([], [])
         bracket_top.set_width(0)
@@ -159,26 +153,13 @@ def animate(name, label, f, df, ddf, point, x_range, y_range, d_top,
         phase, index = frame
         reset()
 
-        if phase == "slide":
-            x = slide_xs[index]
-            place_q(x, SLIDE)
-            seen = slide_xs[:index + 1]
-            best = seen[np.argmin(D(seen))]
-            best_segment.set_data([x0, best], [y0, f(best)])
-            title.set_text("1 · Slide Q along the curve")
-            info.set_text(
-                f"Q = ({x:6.3f}, {f(x):6.3f})\n"
-                f"|PQ|      = {math.sqrt(D(x)):7.4f}\n"
-                f"best seen = {math.sqrt(D(best)):7.4f}"
-            )
-
-        elif phase == "newton":
+        if phase == "newton":
             x = newton_xs[index]
             shown = np.array(newton_xs[:index + 1])
             trail.set_data(shown, f(shown))
             d_trail.set_data(shown, D(shown))
             place_q(x, NEWTON)
-            title.set_text("2 · Newton–Raphson on D'(x) = 0")
+            title.set_text("1 · Newton–Raphson on D'(x) = 0")
             info.set_text(
                 f"k = {index}\n"
                 f"x_k   = {x:9.6f}\n"
@@ -195,7 +176,7 @@ def animate(name, label, f, df, ddf, point, x_range, y_range, d_top,
             probes.set_data([x1, x2], [f(x1), f(x2)])
             d_probes.set_data([x1, x2], [step["D_x1"], step["D_x2"]])
             place_q((a + b) / 2, GOLDEN)
-            title.set_text("3 · Golden-section search shrinks [a, b]")
+            title.set_text("2 · Golden-section search shrinks [a, b]")
             info.set_text(
                 f"k = {index}\n"
                 f"[a, b] = [{a:7.4f}, {b:7.4f}]\n"
@@ -247,7 +228,7 @@ if __name__ == "__main__":
         x_range=(-6.5, 3.5),
         y_range=(-1.5, 8.5),
         d_top=160,
-        newton_start=2.5,
+        newton_start=1.5,
         bracket=(-6, 3),
     )
 

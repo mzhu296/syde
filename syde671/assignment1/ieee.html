@@ -99,27 +99,27 @@
     <section id="part-one">
       <h2>Part One: Camera and Perspective</h2>
       <h3>A. Selfie: Close versus Distant</h3>
-      <p class="no-indent">The first portrait was taken at arm's length with the wide lens (23 mm equivalent). The second was taken from several feet farther back and zoomed so the face fills roughly the same area of the frame. In the close-up the nose and centre of the face look enlarged, the forehead and chin recede, and the ears disappear behind the hair, making the head look narrower. In the distant shot the proportions are flatter and more natural, and more of the sides of the head are visible.</p>
-      <p>The cause is the camera's distance, not its focal length. Image size falls off as one over distance from the centre of projection. At arm's length the tip of the nose is noticeably closer to the camera than the ears, so it is magnified much more. From several feet away that depth difference is a small fraction of the total distance, so every part of the face is magnified almost equally. Zooming only restores the overall size; the perspective is set by where the camera stands.</p>
+      <p class="no-indent">A close-up selfie compared with a portrait taken from farther back and zoomed to the same face size, showing how camera distance distorts facial proportions.</p>
       <div class="camera-grid square">
         <figure><img src="media/part1/selfie_close.jpg" alt="Close-up selfie taken at arm's length with a wide lens"><figcaption><span class="fig-label">Fig. P0(a).</span> Close up, wide lens: exaggerated nose, narrow head.</figcaption></figure>
         <figure><img src="media/part1/selfie_far.jpg" alt="Portrait taken from farther away and zoomed to the same face size"><figcaption><span class="fig-label">Fig. P0(b).</span> Stepped back and zoomed to match face size: natural proportions.</figcaption></figure>
       </div>
       <h3>B. Architectural Perspective Compression</h3>
-      <p class="no-indent">The two photographs keep the tree at approximately the same displayed size while changing camera position and zoom. Moving farther away and narrowing the field of view reduces the relative size difference between near and distant objects, making the house and vegetation appear more compressed toward the tree. The effect is present but subtle because the background is relatively close to the subject.</p>
+      <p class="no-indent">The same scene photographed up close with a wide view and from farther away with zoom, showing how a distant, zoomed camera flattens depth.</p>
       <div class="camera-grid">
         <figure><img src="media/part1/perspective_near.jpg" alt="Tree photographed from the nearer camera position"><figcaption><span class="fig-label">Fig. P1(a).</span> Nearer camera position with a wider field of view.</figcaption></figure>
         <figure><img src="media/part1/perspective_far.jpg" alt="Tree photographed from farther away with zoom"><figcaption><span class="fig-label">Fig. P1(b).</span> Farther camera position with zoom adjusted to retain a similar subject size.</figcaption></figure>
       </div>
       <h3>C. Dolly Zoom</h3>
-      <p class="no-indent">Six still photographs were taken while moving backward and increasing zoom so that the central bush remained approximately constant in size. The changing viewpoint alters the foreground and background geometry even though the subject scale changes comparatively little. The animation plays the sequence forward and backward to make this perspective change easy to inspect.</p>
+      <p class="no-indent">Six stills taken while stepping back and zooming in to keep the bush the same size, combined into a GIF that recreates the Vertigo dolly-zoom effect.</p>
       <figure class="dolly-figure"><img src="media/part1/dolly_zoom.gif" alt="Six-frame dolly zoom sequence of a bush against a brick wall"><figcaption><span class="fig-label">Fig. P2.</span> Dolly zoom constructed from six still photographs.</figcaption></figure>
     </section>
 
     <section id="problem">
       <h2>I. Problem and Dataset</h2>
       <p class="no-indent">Each source image contains three monochrome exposures recorded through blue, green, and red filters and stacked vertically in BGR order. If the input height is (H), the program uses ⌊(H/3)⌋ rows per channel, discards any unmatched remainder, and constructs an RGB image after alignment. Blue remains fixed; green and red are independently translated onto it.</p>
-      <p>The course-provided Learn directory contained 18 catalogue-numbered JPEG plates: 12 low-resolution plates and six full-resolution plates. The named Berkeley examples cathedral, monastery, and tobolsk were obtained separately because they were absent from the Learn download. Three additional color-separation negatives—two men at a yurt, a man with a loaded camel, and a crumbling mosque—were selected from the Library of Congress collection. Every one of the resulting 24 inputs was processed with the same parameters.</p>
+      <p>The course-provided Learn directory contained 18 catalogue-numbered JPEG plates: 12 low-resolution plates and six full-resolution plates. Three additional color-separation negatives—two men at a yurt, a man with a loaded camel, and a crumbling mosque—were selected from the Library of Congress collection. Every one of the resulting 24 inputs was processed with the same parameters.</p>
+      <div class="method-note"><strong>Note on the rubric images.</strong> The single-scale grading rubric is scored on “cathedral,” “monastery,” and “tobolsk,” but none of these three plates is included in the data provided on Learn. Because this assignment is adapted from Berkeley CS180 Project 1 [4], the three images were taken from the original CS180 project data and processed with exactly the same code and parameters as every other plate.</div>
       <div class="result-box"><strong>Dataset:</strong> 24 plates · 18 low resolution · 6 full resolution · 120 generated comparison images</div>
     </section>
 
@@ -147,7 +147,7 @@
         <figure><img src="../outputs/00125v_pyramid_ncc.jpg" alt="Pyramid NCC reconstruction for 00125v"><figcaption><span class="fig-label">Fig. 1(d).</span> Pyramid NCC reproduces the single-scale NCC offsets.</figcaption></figure>
       </div>
       <h3>A. Berkeley Rubric Images</h3>
-      <p class="no-indent">The three low-resolution images named explicitly in the rubric align without visible channel separation. L2, NCC, and pyramid NCC recover the same offsets on each image, providing a direct check against the expected single-scale behaviour.</p>
+      <p class="no-indent">These three plates are not in the Learn data; they come from the original Berkeley CS180 project (see Section I). The three low-resolution images named explicitly in the rubric align without visible channel separation. L2, NCC, and pyramid NCC recover the same offsets on each image, providing a direct check against the expected single-scale behaviour.</p>
       <div class="gallery">
         <figure><img src="../outputs/cathedral_pyramid_ncc.jpg" alt="Aligned Cathedral result"><figcaption>Cathedral · G (2, 5), R (3, 12)</figcaption></figure>
         <figure><img src="../outputs/monastery_pyramid_ncc.jpg" alt="Aligned Monastery result"><figcaption>Monastery · G (2, -3), R (2, 3)</figcaption></figure>
@@ -298,7 +298,7 @@
 
     <section><h2>IX. Conclusion</h2><p class="no-indent">Exhaustive translation search is sufficient for low-resolution plates but cannot span the motion present in full-resolution scans. A hand-built coarse-to-fine Gaussian pyramid makes large displacements tractable, but raw-pixel NCC cannot fix the last few pixels on full-resolution plates because its score surface is nearly flat and the filter exposures differ in brightness. Scoring Sobel edge magnitudes with zero-mean NCC and a proportional border crop sharpens that surface and, with one fixed parameter set, aligns all 24 plates: the 18 course images, the three named Berkeley examples, and three independent LoC selections. Reproducible offsets are recorded for every result.</p></section>
 
-    <section><h2>References</h2><ol class="references"><li>SYDE 671, “Assignment 1,” course assignment document.</li><li>Library of Congress, “Prokudin-Gorskii Collection,” digitized glass-plate photographs, including catalogue records 2018681174, 2018681180, and 2018681276.</li><li>R. Szeliski, <em>Computer Vision: Algorithms and Applications</em>, discussion of image pyramids and colour processing.</li></ol></section>
+    <section><h2>References</h2><ol class="references"><li>SYDE 671, “Assignment 1,” course assignment document.</li><li>Library of Congress, “Prokudin-Gorskii Collection,” digitized glass-plate photographs, including catalogue records 2018681174, 2018681180, and 2018681276.</li><li>R. Szeliski, <em>Computer Vision: Algorithms and Applications</em>, discussion of image pyramids and colour processing.</li><li>UC Berkeley CS180, “Project 1: Images of the Russian Empire—Colorizing the Prokudin-Gorskii Photo Collection,” course project and data (source of cathedral, monastery, and tobolsk).</li></ol></section>
   </main>
 </body>
 </html>

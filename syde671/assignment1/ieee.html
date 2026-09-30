@@ -35,6 +35,8 @@
     section { margin:0 0 2.5rem; scroll-margin-top:5rem; }
     h2,h3 { break-after:avoid; }
     h2 { margin:2.8rem 0 1rem; border-bottom:1px solid var(--ink); font-family:Arial,Helvetica,sans-serif; font-size:1.08rem; line-height:1.35; letter-spacing:.045em; text-align:center; text-transform:uppercase; }
+    h2.part-heading { margin-top:3.4rem; padding-bottom:.35rem; border-bottom:3px double var(--ink); font-size:1.3rem; }
+    .part-intro { margin:.4rem 0 1.5rem; color:var(--muted); font-style:italic; text-align:center; }
     h3 { margin:1.8rem 0 .55rem; font-size:1rem; font-style:italic; font-weight:700; }
     section>p,.prose>p { margin:.55rem 0; text-align:justify; text-indent:1.35rem; }
     section>p.no-indent,.no-indent { text-indent:0; }
@@ -94,10 +96,10 @@
       <p><span class="label">Index Terms—</span>image alignment, Gaussian pyramid, normalized cross-correlation, Euclidean distance, colour reconstruction, Prokudin-Gorskii.</p>
     </div>
 
-    <nav class="contents" aria-label="Table of contents"><strong>Contents</strong><ol><li><a href="#part-one">Camera and perspective</a></li><li><a href="#problem">Problem and dataset</a></li><li><a href="#method">Alignment method</a></li><li><a href="#single-scale">Single-scale comparison</a></li><li><a href="#pyramid">Image pyramid</a></li><li><a href="#gradient">Gradient-feature pyramid</a></li><li><a href="#results">Complete results</a></li><li><a href="#analysis">Analysis and limitations</a></li><li><a href="#files">Supporting files</a></li></ol></nav>
+    <nav class="contents" aria-label="Table of contents"><strong>Contents</strong><ol><li><a href="#part-one">Part One: Camera and perspective</a></li><li><a href="#part-two">Part Two: Glass-plate colorization</a></li><li><a href="#problem">Problem and dataset</a></li><li><a href="#method">Alignment method</a></li><li><a href="#single-scale">Single-scale comparison</a></li><li><a href="#pyramid">Image pyramid</a></li><li><a href="#gradient">Gradient-feature pyramid</a></li><li><a href="#results">Complete results</a></li><li><a href="#analysis">Analysis and limitations</a></li><li><a href="#files">Supporting files</a></li></ol></nav>
 
     <section id="part-one">
-      <h2>Part One: Camera and Perspective</h2>
+      <h2 class="part-heading">Part One: Camera and Perspective</h2>
       <h3>A. Selfie: Close versus Distant</h3>
       <p class="no-indent">A close-up selfie compared with a portrait taken from farther back and zoomed to the same face size, showing how camera distance distorts facial proportions.</p>
       <div class="camera-grid square">
@@ -115,10 +117,15 @@
       <figure class="dolly-figure"><img src="media/part1/dolly_zoom.gif" alt="Six-frame dolly zoom sequence of a bush against a brick wall"><figcaption><span class="fig-label">Fig. P2.</span> Dolly zoom constructed from six still photographs.</figcaption></figure>
     </section>
 
+    <section id="part-two">
+      <h2 class="part-heading">Part Two: Colorizing the Prokudin-Gorskii Photo Collection</h2>
+      <p class="part-intro no-indent">Reconstructing colour images of the Russian Empire by aligning the blue, green, and red glass-plate exposures.</p>
+    </section>
+
     <section id="problem">
       <h2>I. Problem and Dataset</h2>
-      <p class="no-indent">Each source image contains three monochrome exposures recorded through blue, green, and red filters and stacked vertically in BGR order. If the input height is (H), the program uses ⌊(H/3)⌋ rows per channel, discards any unmatched remainder, and constructs an RGB image after alignment. Blue remains fixed; green and red are independently translated onto it.</p>
-      <p>The course-provided Learn directory contained 18 catalogue-numbered JPEG plates: 12 low-resolution plates and six full-resolution plates. Three additional color-separation negatives—two men at a yurt, a man with a loaded camel, and a crumbling mosque—were selected from the Library of Congress collection. Every one of the resulting 24 inputs was processed with the same parameters.</p>
+      <p class="no-indent">Each source image contains three monochrome exposures recorded through blue, green, and red filters and stacked vertically in BGR order. If the input height is \(H\), the program uses \(\lfloor H/3\rfloor\) rows per channel, discards any unmatched remainder, and constructs an RGB image after alignment. Blue remains fixed; green and red are independently translated onto it.</p>
+      <p>The course-provided Learn directory contained 18 catalogue-numbered JPEG plates: 12 low-resolution plates and six full-resolution plates. Three additional color-separation negatives—two men at a yurt, a man with a loaded camel, and a crumbling mosque—were selected from the Library of Congress collection. Together with the three rubric images described below, all 24 inputs were processed with the same parameters.</p>
       <div class="method-note"><strong>Note on the rubric images.</strong> The single-scale grading rubric is scored on “cathedral,” “monastery,” and “tobolsk,” but none of these three plates is included in the data provided on Learn. Because this assignment is adapted from Berkeley CS180 Project 1 [4], the three images were taken from the original CS180 project data and processed with exactly the same code and parameters as every other plate.</div>
       <div class="result-box"><strong>Dataset:</strong> 24 plates · 18 low resolution · 6 full resolution · 120 generated comparison images</div>
     </section>
@@ -126,15 +133,15 @@
     <section id="method">
       <h2>II. Alignment Method</h2>
       <h3>A. Translation Search</h3>
-      <p class="no-indent">A candidate displacement ((d_x,d_y)) is applied with array rolling. Scoring excludes a border large enough to prevent wrapped pixels from influencing the comparison. The single-scale implementation searches every integer displacement in ([-15,15]^2), or 961 candidates per moving channel.</p>
+      <p class="no-indent">A candidate displacement \((d_x,d_y)\) is applied with array rolling. Scoring excludes a border large enough to prevent wrapped pixels from influencing the comparison. The single-scale implementation searches every integer displacement in \([-15,15]^2\), or 961 candidates per moving channel.</p>
       <h3>B. Euclidean Distance</h3>
       <div class="equation">\[L_2(I_1,I_2)=\sqrt{\sum_{x,y}[I_1(x,y)-I_2(x,y)]^2}.\]</div>
-      <p>The displacement with the smallest (L_2) score is selected. This metric is direct but sensitive to differences in brightness and contrast between filter exposures.</p>
+      <p>The displacement with the smallest \(L_2\) score is selected. This metric is direct but sensitive to differences in brightness and contrast between filter exposures.</p>
       <h3>C. Normalized Cross-Correlation</h3>
       <div class="equation">\[\operatorname{NCC}(I_1,I_2)=\frac{\langle I_1,I_2\rangle}{\lVert I_1\rVert_2\lVert I_2\rVert_2}.\]</div>
       <p>The displacement with the largest NCC score is selected. Normalization reduces sensitivity to global magnitude differences, so NCC was chosen for the coarse-to-fine pipeline. Both metrics are still reported at a single scale for comparison.</p>
       <h3>D. Output Construction</h3>
-      <p>The aligned channels are stacked as ([R,G,B]), clipped to ([0,1]), converted to 8-bit colour, and saved as JPEG. The display crop equals a 20-pixel base margin plus the largest recovered displacement, removing pixels wrapped by the translation.</p>
+      <p>The aligned channels are stacked as \([R,G,B]\), clipped to \([0,1]\), converted to 8-bit colour, and saved as JPEG. The display crop equals a 20-pixel base margin plus the largest recovered displacement, removing pixels wrapped by the translation.</p>
     </section>
 
     <section id="single-scale">
@@ -142,8 +149,8 @@
       <p class="no-indent">On low-resolution plates, exhaustive L2 and NCC usually agree exactly or differ by only one pixel. This indicates a well-defined translational optimum despite channel-intensity differences. On full-resolution plates the best single-scale offsets frequently reach the search boundary, demonstrating why a fixed ±15-pixel window cannot recover the true motion.</p>
       <div class="comparison-grid">
         <figure><img src="../outputs/00125v_unaligned.jpg" alt="Unaligned RGB reconstruction for 00125v"><figcaption><span class="fig-label">Fig. 1(a).</span> 00125v before alignment.</figcaption></figure>
-        <figure><img src="../outputs/00125v_l2.jpg" alt="Single-scale L2 reconstruction for 00125v"><figcaption><span class="fig-label">Fig. 1(b).</span> L2: G ((2,5)), R ((1,10)).</figcaption></figure>
-        <figure><img src="../outputs/00125v_ncc.jpg" alt="Single-scale NCC reconstruction for 00125v"><figcaption><span class="fig-label">Fig. 1(c).</span> NCC: G ((1,5)), R ((1,10)).</figcaption></figure>
+        <figure><img src="../outputs/00125v_l2.jpg" alt="Single-scale L2 reconstruction for 00125v"><figcaption><span class="fig-label">Fig. 1(b).</span> L2: G \((2,5)\), R \((1,10)\).</figcaption></figure>
+        <figure><img src="../outputs/00125v_ncc.jpg" alt="Single-scale NCC reconstruction for 00125v"><figcaption><span class="fig-label">Fig. 1(c).</span> NCC: G \((1,5)\), R \((1,10)\).</figcaption></figure>
         <figure><img src="../outputs/00125v_pyramid_ncc.jpg" alt="Pyramid NCC reconstruction for 00125v"><figcaption><span class="fig-label">Fig. 1(d).</span> Pyramid NCC reproduces the single-scale NCC offsets.</figcaption></figure>
       </div>
       <h3>A. Berkeley Rubric Images</h3>
@@ -158,20 +165,20 @@
 
     <section id="pyramid">
       <h2>IV. Coarse-to-Fine Gaussian Pyramid</h2>
-      <p class="no-indent">Large images are repeatedly blurred with the separable binomial kernel ([1,4,6,4,1]/16) and downsampled by two until the smallest dimension is below twice the 150-pixel threshold. Alignment begins at the coarsest level with a ±15-pixel search. At each finer level, the displacement is doubled and refined within ±2 pixels. The blur and downsampling routines are implemented directly rather than through a high-level pyramid library.</p>
+      <p class="no-indent">Large images are repeatedly blurred with the separable binomial kernel \([1,4,6,4,1]/16\) and downsampled by two until the smallest dimension is below twice the 150-pixel threshold. Alignment begins at the coarsest level with a ±15-pixel search. At each finer level, the displacement is doubled and refined within ±2 pixels. The blur and downsampling routines are implemented directly rather than through a high-level pyramid library.</p>
       <div class="equation">\[(d_x^{\ell-1},d_y^{\ell-1})\leftarrow2(d_x^{\ell},d_y^{\ell})+\operatorname*{arg\,max}_{(u,v)\in[-2,2]^2}\operatorname{NCC}(u,v).\]</div>
       <div class="comparison-grid">
         <figure><img src="../outputs/01007a_unaligned.jpg" alt="Unaligned RGB reconstruction for 01007a"><figcaption><span class="fig-label">Fig. 2(a).</span> Full-resolution plate 01007a before alignment.</figcaption></figure>
         <figure><img src="../outputs/01007a_l2.jpg" alt="Single-scale L2 reconstruction for 01007a"><figcaption><span class="fig-label">Fig. 2(b).</span> L2 is constrained by the ±15 window.</figcaption></figure>
         <figure><img src="../outputs/01007a_ncc.jpg" alt="Single-scale NCC reconstruction for 01007a"><figcaption><span class="fig-label">Fig. 2(c).</span> NCC is also constrained at a single scale.</figcaption></figure>
-        <figure><img src="../outputs/01007a_pyramid_ncc.jpg" alt="Pyramid NCC reconstruction for 01007a"><figcaption><span class="fig-label">Fig. 2(d).</span> Pyramid NCC reaches G ((6,61)), R ((12,129)): the right neighbourhood, but fine fringes remain (corrected in Section V).</figcaption></figure>
+        <figure><img src="../outputs/01007a_pyramid_ncc.jpg" alt="Pyramid NCC reconstruction for 01007a"><figcaption><span class="fig-label">Fig. 2(d).</span> Pyramid NCC reaches G \((6,61)\), R \((12,129)\): the right neighbourhood, but fine fringes remain (corrected in Section V).</figcaption></figure>
       </div>
       <div class="method-note"><strong>Why NCC for the pyramid?</strong> The red, green, and blue glass-plate exposures can differ substantially in brightness. Normalizing each comparison makes the score more stable across channels while retaining a simple metric required by the assignment.</div>
       <h3>A. Animated Alignment Walkthrough</h3>
       <p class="no-indent">Figure 3 follows plate 01007a through the complete reconstruction pipeline. It first separates the vertically stacked scan into blue, green, and red exposures, then shows the unaligned colour composite. The L2 and NCC heatmaps visualize every displacement tested inside the single-scale ±15-pixel window: each pixel in a heatmap represents one candidate shift, and the marked optimum is the shift selected by that metric.</p>
       <figure class="walkthrough">
         <img src="../visualizations/01007a/01007a_detailed_alignment.gif" alt="Animated walkthrough of L2, NCC, and Gaussian-pyramid alignment for plate 01007a">
-        <figcaption><span class="fig-label">Fig. 3.</span> Detailed alignment of 01007a. After the single-scale comparisons, the animation constructs the Gaussian pyramids and follows NCC refinement from level 4 to level 0. Each finer level doubles the preceding displacement estimate and searches a small local neighbourhood. The side-by-side images show the large colour separation disappearing as the estimates converge to G ((6,61)) and R ((12,129)). The final frame compares the original unaligned composite with the raw-pixel pyramid reconstruction; the remaining few-pixel error in green is corrected by the gradient features of Section V.</figcaption>
+        <figcaption><span class="fig-label">Fig. 3.</span> Detailed alignment of 01007a. After the single-scale comparisons, the animation constructs the Gaussian pyramids and follows NCC refinement from level 4 to level 0. Each finer level doubles the preceding displacement estimate and searches a small local neighbourhood. The side-by-side images show the large colour separation disappearing as the estimates converge to G \((6,61)\) and R \((12,129)\). The final frame compares the original unaligned composite with the raw-pixel pyramid reconstruction; the remaining few-pixel error in green is corrected by the gradient features of Section V.</figcaption>
       </figure>
       <p>The animation displays the meaningful optimization stages rather than all 961 candidate comparisons individually. This preserves the relationship between the score surfaces, the selected displacements, and the coarse-to-fine trajectory without slowing the walkthrough to the full computation time.</p>
     </section>
@@ -189,7 +196,7 @@
       <div class="equation">\[\operatorname{ZNCC}(I_1,I_2)=\frac{\langle I_1-\bar I_1,\;I_2-\bar I_2\rangle}{\lVert I_1-\bar I_1\rVert_2\,\lVert I_2-\bar I_2\rVert_2}.\]</div>
       <p><strong>3. Proportional crop.</strong> At every level the score ignores at least 10% of each side, so the plate borders never enter the comparison.</p>
       <p>Together these make the peak of the score surface 10–100 times more distinct: on 00458u the spread between best and worst candidate at full resolution grows from 0.0009 to 0.0202 for green and from 0.0007 to 0.0342 for red. The rest of the pyramid (blur, downsampling, ±15 coarse search, ±2 refinement) is unchanged.</p>
-      <div class="method-note"><strong>Regression check.</strong> On the 18 low-resolution plates the gradient pyramid returns the same offsets as raw pyramid NCC on 13 plates and differs by one pixel on the other five, so nothing that previously aligned was broken. It adds about 0.6 seconds per full-resolution plate.</div>
+      <div class="method-note"><strong>Regression check.</strong> On the 18 low-resolution plates the gradient pyramid returns the same offsets as raw pyramid NCC on 14 plates and differs by one pixel on the other four, so nothing that previously aligned was broken. It adds about 0.6 seconds per full-resolution plate.</div>
       <h3>C. Before and After</h3>
       <p class="no-indent">Each pair shows the same 800 × 600 region from the centre of the full-resolution reconstruction, first with raw-pixel pyramid NCC and then with the gradient pyramid.</p>
       <div class="figure-grid">
@@ -208,7 +215,7 @@
 
     <section id="results">
       <h2>VI. Complete Numerical Results</h2>
-      <p class="no-indent">Table I reports displacements as ((d_x,d_y)), where positive values shift right and down. The two pyramid time columns measure each pyramid alone. The total includes loading, all four alignment variants, and writing five JPEG outputs; on full-resolution plates it is dominated by the single-scale L2 and NCC runs kept for comparison.</p>
+      <p class="no-indent">Table I reports displacements as \((d_x,d_y)\), where positive values shift right and down. The two pyramid time columns measure each pyramid alone. The total includes loading, all four alignment variants, and writing five JPEG outputs; on full-resolution plates it is dominated by the single-scale L2 and NCC runs kept for comparison.</p>
       <div class="table-wrap"><table><caption>Table I. Channel displacements and runtime</caption><thead><tr><th>Plate</th><th>Channel size</th><th>L2 G</th><th>L2 R</th><th>NCC G</th><th>NCC R</th><th>Pyramid NCC G</th><th>Pyramid NCC R</th><th>Gradient pyramid G</th><th>Gradient pyramid R</th><th>Pyramid NCC (s)</th><th>Gradient pyramid (s)</th><th>Total (s)</th></tr></thead><tbody>
         <tr><td>00056v</td><td>398 × 341</td><td>(1, 6)</td><td>(1, 13)</td><td>(1, 6)</td><td>(1, 13)</td><td>(1, 6)</td><td>(1, 13)</td><td>(1, 6)</td><td>(1, 13)</td><td>0.14</td><td>0.21</td><td>0.91</td></tr>
         <tr><td>00125v</td><td>400 × 341</td><td>(2, 5)</td><td>(1, 10)</td><td>(1, 5)</td><td>(1, 10)</td><td>(1, 5)</td><td>(1, 10)</td><td>(2, 5)</td><td>(1, 10)</td><td>0.13</td><td>0.20</td><td>0.88</td></tr>
@@ -281,7 +288,7 @@
       <p><strong>Gradient pyramid.</strong> With edge features, zero-mean NCC, and a proportional crop, all 24 plates align without visible channel separation. The one remaining imperfection is a faint halo on the far-right railing of 00458u. The rest of that image is sharp, which suggests slight lens distortion or plate warping that a single global translation cannot model; searching over small rotations and scales would be the next step.</p>
       <p>Plate 00056v retains strong magenta, green, and cyan speckling in the sky and mountain regions. Because every method recovers the same offsets, this pattern is emulsion damage or channel-specific plate content rather than misalignment. Several full-resolution plates retain narrow coloured source borders; these are boundary artifacts rather than misalignment of the interior scene.</p>
       <h3>B. Single-Scale versus Pyramid Search</h3>
-      <p class="no-indent">The small plates require displacements no larger than 18 pixels and therefore mostly fit the single-scale window. The large plates require vertical red shifts from 72 to 161 pixels. Their single-scale estimates often stop at (d_y=15), while the pyramid propagates coarse estimates to the original resolution. Plate 01725u is the strongest example: single-scale NCC reports red ((13,-10)), while pyramid NCC finds ((76,161)) and the gradient pyramid refines it to ((77,162)).</p>
+      <p class="no-indent">The small plates require displacements no larger than 18 pixels and therefore mostly fit the single-scale window. The large plates require vertical red shifts from 72 to 161 pixels. Their single-scale estimates often stop at \(d_y=15\), while the pyramid propagates coarse estimates to the original resolution. Plate 01725u is the strongest example: single-scale NCC reports red \((13,-10)\), while pyramid NCC finds \((76,161)\) and the gradient pyramid refines it to \((77,162)\).</p>
       <h3>C. Performance</h3>
       <p class="no-indent">The final gradient pyramid aligns both channels in 0.20 seconds per low-resolution plate and 3.20 seconds per full-resolution plate on average (maximum 3.82 seconds), well under the one-minute target. Raw pyramid NCC is slightly faster at 0.14 and 2.63 seconds. The total per-plate time in Table I (0.86 seconds low resolution, 68.6 seconds full resolution) is dominated by the full-resolution single-scale L2 and NCC searches, which are run only to document their failure on large plates and are not part of the final algorithm.</p>
       <h3>D. Bells and Whistles</h3>

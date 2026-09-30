@@ -285,6 +285,7 @@
         <li><a href="#p2-analytical">Analytical fits</a></li>
         <li><a href="#p2-newton">Coordinate-wise Newton method</a></li>
         <li><a href="#p2-hand">Newton sweeps by hand</a></li>
+        <li><a href="#p2-animation">Animated updates</a></li>
         <li><a href="#files">Supporting files</a></li>
       </ol>
     </nav>
@@ -581,6 +582,25 @@
         </figure>
       </div>
 
+      <h3 id="p2-animation">B. Animated Coordinate Updates</h3>
+      <p class="no-indent">Each frame below is one single-coefficient Newton update. Because only one coefficient changes at a time, the path on the MSE contours moves parallel to one axis and then the other, forming a staircase. The contours form a long, tilted valley, so each axis-aligned step can only make partial progress toward the minimum. The first eight sweeps are shown update by update; later sweeps are sampled so that each animation stays short. The red vertical segments in the left panels are the residuals \(e_i\) whose squares are averaged in the MSE.</p>
+
+      <div class="downloads">
+        <a href="./part2/animate_fit.py">View animation code</a>
+        <a href="./part2/animate_fit.py" download>Download animation code</a>
+      </div>
+
+      <div class="figure-grid">
+        <figure class="wide">
+          <img src="./part2/media/part2_line_newton.gif" alt="Animation of the straight-line fit: the fitted line swings toward the data while the coefficient path staircases across MSE contours to (-0.2, 2.3)" loading="lazy">
+          <figcaption><span class="fig-label">Fig. 15.</span> Line fit. Left: the current line and its residuals. Right: MSE contours over \((c_0,c_1)\). Horizontal steps update \(c_0\) with \(c_1\) fixed, and vertical steps update \(c_1\) with \(c_0\) fixed. The path reaches the analytical minimum \((-0.2,2.3)\), with MSE \(0.575\), after 55 sweeps.</figcaption>
+        </figure>
+        <figure class="wide">
+          <img src="./part2/media/part2_parabola_newton.gif" alt="Animation of the quadratic fit: the fitted curve bends toward the data, the coefficient path staircases along a narrow MSE valley, and MSE falls to 0.0125" loading="lazy">
+          <figcaption><span class="fig-label">Fig. 16.</span> Parabola fit. Middle: the path projected onto \((c_1,c_2)\), drawn over MSE contours with \(c_0\) set to its best value for each \((c_1,c_2)\). The \(c_0\) updates do not move the projected path. The narrow valley explains the slow progress, and the right panel shows MSE falling to \(0.0125\) after 591 sweeps.</figcaption>
+        </figure>
+      </div>
+
       <div class="table-wrap">
         <table>
           <caption>Table X. Selected coordinate-wise Newton–Raphson states</caption>
@@ -623,7 +643,7 @@
       <ol class="references">
         <li>SYDE 572, “Assignment 1,” course assignment document. <a href="./SYDE572 assn1.pdf">View assignment PDF.</a></li>
         <li>Part I Python implementations: <a href="./part1/A1.py">Newton–Raphson</a>, <a href="./part1/A2.py">golden-section search</a>, <a href="./part1/non_polynomial_examples.py">non-polynomial examples</a>, and <a href="./part1/animate_distance.py">animations</a>.</li>
-        <li>Part II Python implementation: <a href="./part2/part2_newton.py">coordinate-wise Newton–Raphson</a>.</li>
+        <li>Part II Python implementation: <a href="./part2/part2_newton.py">coordinate-wise Newton–Raphson</a> and <a href="./part2/animate_fit.py">animations</a>.</li>
       </ol>
     </section>
   </main>

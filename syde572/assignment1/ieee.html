@@ -608,47 +608,100 @@
 
     <section id="part-two">
       <h2>V. Part II — Least-Squares Function Fitting</h2>
-      <p class="no-indent">The second task fits a line and a parabola to \((0,0.5)\), \((1,1.5)\), \((2,3.5)\), and \((3,7.5)\). For a model prediction \(\hat y(x_i)\), let \(e_i=\hat y(x_i)-y_i\). The sum of squared errors is \(\rho=\sum_{i=1}^{4}e_i^2\), and \(\mathrm{MSE}=\rho/4\). Since MSE differs from SSE only by a positive constant, both objectives have the same optimal coefficients.</p>
+      <p class="no-indent">The second task fits a line and a parabola to \((0,0.5)\), \((1,1.5)\), \((2,3.5)\), and \((3,7.5)\). For a model prediction \(\hat y(x_i)\), let \(e_i=\hat y(x_i)-y_i\). Both fits minimize the mean squared error</p>
+      <div class="equation">
+        \[\mathrm{MSE}(\mathbf c)=\frac14\sum_{i=1}^{4}e_i^2=\frac14\sum_{i=1}^{4}\big(\hat y(x_i)-y_i\big)^2.\]
+      </div>
     </section>
 
     <section id="p2-analytical">
       <h2>VI. Analytical Least-Squares Solutions</h2>
-      <h3>A. Straight-Line Model</h3>
-      <p class="no-indent">For \(\hat y=c_0+c_1x\), setting the two partial derivatives of the SSE to zero gives \(4c_0+6c_1=13\) and \(6c_0+14c_1=31\). Solving the simultaneous equations produces \(c_0=-0.2\) and \(c_1=2.3\).</p>
-      <div class="result-box">\[\boxed{\hat y=2.3x-0.2},\qquad \mathrm{SSE}=2.30,\qquad \mathrm{MSE}=0.575.\]</div>
-
-      <h3>B. Quadratic Model</h3>
-      <p class="no-indent">For \(\hat y=c_0+c_1x+c_2x^2\), the stationary equations are \(4c_0+6c_1+14c_2=13\), \(6c_0+14c_1+36c_2=31\), and \(14c_0+36c_1+98c_2=83\). Their solution is \(c_0=0.55\), \(c_1=0.05\), and \(c_2=0.75\).</p>
-      <div class="result-box">\[\boxed{\hat y=0.75x^2+0.05x+0.55},\qquad \mathrm{SSE}=0.05,\qquad \mathrm{MSE}=0.0125.\]</div>
-
+      <p class="no-indent">Writing the model as \(A\mathbf c\approx\mathbf y\), with one row of \(A\) per data point, gives \(\mathrm{MSE}(\mathbf c)=\tfrac14\lVert A\mathbf c-\mathbf y\rVert^2\). Setting the gradient to zero,</p>
+      <div class="equation">
+        \[\nabla\,\mathrm{MSE}=\tfrac12A^T(A\mathbf c-\mathbf y)=\mathbf 0\quad\Longrightarrow\quad A^TA\,\mathbf c=A^T\mathbf y,\qquad \mathbf c=(A^TA)^{-1}A^T\mathbf y.\]
+      </div>
+      <p class="no-indent">The entries of \(A^TA\) and \(A^T\mathbf y\) are the column sums in Table VIII.</p>
       <div class="table-wrap">
         <table>
-          <caption>Table VIII. Comparison of the analytical least-squares models</caption>
-          <thead><tr><th>Model</th><th>Best-fit equation</th><th>SSE</th><th>MSE</th></tr></thead>
+          <caption>Table VIII. Sums used in the normal equations</caption>
+          <thead><tr><th>\(x_i\)</th><th>\(y_i\)</th><th>\(x_i^2\)</th><th>\(x_i^3\)</th><th>\(x_i^4\)</th><th>\(x_iy_i\)</th><th>\(x_i^2y_i\)</th></tr></thead>
           <tbody>
-            <tr><td>Line</td><td>\(\hat y=2.3x-0.2\)</td><td>2.30</td><td>0.575</td></tr>
-            <tr><td>Parabola</td><td>\(\hat y=0.75x^2+0.05x+0.55\)</td><td>0.05</td><td>0.0125</td></tr>
+            <tr><td>0</td><td>0.5</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td></tr>
+            <tr><td>1</td><td>1.5</td><td>1</td><td>1</td><td>1</td><td>1.5</td><td>1.5</td></tr>
+            <tr><td>2</td><td>3.5</td><td>4</td><td>8</td><td>16</td><td>7</td><td>14</td></tr>
+            <tr><td>3</td><td>7.5</td><td>9</td><td>27</td><td>81</td><td>22.5</td><td>67.5</td></tr>
+            <tr><td>\(\sum=6\)</td><td>\(\sum=13\)</td><td>\(\sum=14\)</td><td>\(\sum=36\)</td><td>\(\sum=98\)</td><td>\(\sum=31\)</td><td>\(\sum=83\)</td></tr>
           </tbody>
         </table>
       </div>
-      <p>The quadratic model has the lower MSE because its additional coefficient represents the curvature in the four observations. In matrix form, both analytical calculations satisfy the normal equation \(A^TA\mathbf c=A^T\mathbf y\).</p>
+
+      <h3>A. Straight-Line Model</h3>
+      <p class="no-indent">For \(\hat y=c_0+c_1x\), each data point gives one equation \(c_0+c_1x_i=y_i\):</p>
+      <div class="equation">
+        \[A=\begin{bmatrix}1&0\\1&1\\1&2\\1&3\end{bmatrix},\qquad \mathbf c=\begin{bmatrix}c_0\\c_1\end{bmatrix},\qquad \mathbf y=\begin{bmatrix}0.5\\1.5\\3.5\\7.5\end{bmatrix}\]
+        \[A^TA=\begin{bmatrix}4&6\\6&14\end{bmatrix},\qquad A^T\mathbf y=\begin{bmatrix}13\\31\end{bmatrix},\qquad \det(A^TA)=4(14)-6(6)=20\]
+        \[(A^TA)^{-1}=\frac1{20}\begin{bmatrix}14&-6\\-6&4\end{bmatrix}\]
+        \[\mathbf c=\frac1{20}\begin{bmatrix}14&-6\\-6&4\end{bmatrix}\begin{bmatrix}13\\31\end{bmatrix}=\frac1{20}\begin{bmatrix}182-186\\-78+124\end{bmatrix}=\frac1{20}\begin{bmatrix}-4\\46\end{bmatrix}=\begin{bmatrix}-0.2\\2.3\end{bmatrix}\]
+      </div>
+      <p class="no-indent">Substituting back gives the predictions, residuals and MSE:</p>
+      <div class="equation">
+        \[\hat{\mathbf y}=(-0.2,\,2.1,\,4.4,\,6.7),\qquad \mathbf e=\hat{\mathbf y}-\mathbf y=(-0.7,\,0.6,\,0.9,\,-0.8)\]
+        \[\mathrm{MSE}=\tfrac14\big[(-0.7)^2+0.6^2+0.9^2+(-0.8)^2\big]=\tfrac14(0.49+0.36+0.81+0.64)=\tfrac14(2.30)=0.575\]
+      </div>
+      <div class="result-box">\[\boxed{\hat y=2.3x-0.2},\qquad \mathrm{MSE}=0.575.\]</div>
+
+      <h3>B. Quadratic Model</h3>
+      <p class="no-indent">For \(\hat y=c_0+c_1x+c_2x^2\), \(A\) gains a column of \(x_i^2\):</p>
+      <div class="equation">
+        \[A=\begin{bmatrix}1&0&0\\1&1&1\\1&2&4\\1&3&9\end{bmatrix},\qquad A^TA=\begin{bmatrix}4&6&14\\6&14&36\\14&36&98\end{bmatrix},\qquad A^T\mathbf y=\begin{bmatrix}13\\31\\83\end{bmatrix}\]
+      </div>
+      <p class="no-indent">The system \(A^TA\,\mathbf c=A^T\mathbf y\) is solved by Gaussian elimination on the augmented matrix, then back substitution:</p>
+      <div class="equation">
+        \[\left[\begin{array}{ccc|c}4&6&14&13\\6&14&36&31\\14&36&98&83\end{array}\right]
+        \xrightarrow[R_3-3.5R_1]{R_2-1.5R_1}
+        \left[\begin{array}{ccc|c}4&6&14&13\\0&5&15&11.5\\0&15&49&37.5\end{array}\right]
+        \xrightarrow{R_3-3R_2}
+        \left[\begin{array}{ccc|c}4&6&14&13\\0&5&15&11.5\\0&0&4&3\end{array}\right]\]
+        \[4c_2=3\;\Rightarrow\;c_2=0.75\]
+        \[5c_1+15(0.75)=11.5\;\Rightarrow\;5c_1=0.25\;\Rightarrow\;c_1=0.05\]
+        \[4c_0+6(0.05)+14(0.75)=13\;\Rightarrow\;4c_0=13-0.3-10.5=2.2\;\Rightarrow\;c_0=0.55\]
+      </div>
+      <p class="no-indent">Substituting back gives the predictions, residuals and MSE:</p>
+      <div class="equation">
+        \[\hat{\mathbf y}=(0.55,\,1.35,\,3.65,\,7.45),\qquad \mathbf e=\hat{\mathbf y}-\mathbf y=(0.05,\,-0.15,\,0.15,\,-0.05)\]
+        \[\mathrm{MSE}=\tfrac14\big[0.05^2+(-0.15)^2+0.15^2+(-0.05)^2\big]=\tfrac14(0.0025+0.0225+0.0225+0.0025)=\tfrac14(0.05)=0.0125\]
+      </div>
+      <div class="result-box">\[\boxed{\hat y=0.75x^2+0.05x+0.55},\qquad \mathrm{MSE}=0.0125.\]</div>
+      <p class="no-indent">Both solutions are minima rather than saddle points: the Hessian of the MSE is \(\tfrac12A^TA\), and \(A^TA\) is positive definite in both cases (its leading principal minors are \(4\), \(20\), and, for the parabola, \(\det(A^TA)=80\)).</p>
+
+      <div class="table-wrap">
+        <table>
+          <caption>Table IX. Comparison of the analytical least-squares models</caption>
+          <thead><tr><th>Model</th><th>Best-fit equation</th><th>MSE</th></tr></thead>
+          <tbody>
+            <tr><td>Line</td><td>\(\hat y=2.3x-0.2\)</td><td>0.575</td></tr>
+            <tr><td>Parabola</td><td>\(\hat y=0.75x^2+0.05x+0.55\)</td><td>0.0125</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>The quadratic model has the lower MSE because its additional coefficient represents the curvature in the four observations.</p>
     </section>
 
     <section id="p2-newton">
       <h2>VII. Coordinate-Wise Newton–Raphson</h2>
       <p class="no-indent">The numerical solution begins with every coefficient equal to zero. Within each sweep, one coefficient is optimized while all other coefficients are held at their newest available values. For design-matrix column \(A_j\), the coordinate update is</p>
       <div class="equation">
-        \[c_j^{\mathrm{new}}=c_j^{\mathrm{old}}-\frac{2A_j^T(A\mathbf c-\mathbf y)}{2A_j^TA_j}.\]
+        \[c_j^{\mathrm{new}}=c_j^{\mathrm{old}}-\frac{\partial\,\mathrm{MSE}/\partial c_j}{\partial^2\mathrm{MSE}/\partial c_j^2}=c_j^{\mathrm{old}}-\frac{\tfrac12A_j^T(A\mathbf c-\mathbf y)}{\tfrac12A_j^TA_j}.\]
       </div>
       <p>For the line, the intercept and slope updates are \(c_0\leftarrow(26-12c_1)/8\), followed by \(c_1\leftarrow(62-12c_0)/28\). For the parabola, the sequential updates are \(c_0\leftarrow(26-12c_1-28c_2)/8\), \(c_1\leftarrow(62-12c_0-72c_2)/28\), and \(c_2\leftarrow(166-28c_0-72c_1)/196\). Iteration stops when the largest coefficient change in a sweep is below \(10^{-10}\).</p>
 
       <h3 id="p2-hand">A. Worked Sweeps by Hand</h3>
-      <p class="no-indent"><strong>Deriving the line update.</strong> With \(\mathrm{SSE}(c_0,c_1)=\sum_i(c_0+c_1x_i-y_i)^2\) and \(\sum x_i=6\), \(\sum x_i^2=14\), \(\sum y_i=13\), \(\sum x_iy_i=31\):</p>
+      <p class="no-indent"><strong>Deriving the line update.</strong> With \(\mathrm{MSE}(c_0,c_1)=\tfrac14\sum_i(c_0+c_1x_i-y_i)^2\) and \(\sum x_i=6\), \(\sum x_i^2=14\), \(\sum y_i=13\), \(\sum x_iy_i=31\):</p>
       <div class="equation">
-        \[\frac{\partial\,\mathrm{SSE}}{\partial c_0}=2(4c_0+6c_1-13),\qquad \frac{\partial^2\mathrm{SSE}}{\partial c_0^2}=8,\]
-        \[c_0^{\mathrm{new}}=c_0-\frac{8c_0+12c_1-26}{8}=\frac{26-12c_1}{8}.\]
+        \[\frac{\partial\,\mathrm{MSE}}{\partial c_0}=\tfrac12(4c_0+6c_1-13),\qquad \frac{\partial^2\mathrm{MSE}}{\partial c_0^2}=2,\]
+        \[c_0^{\mathrm{new}}=c_0-\frac{\tfrac12(4c_0+6c_1-13)}{2}=\frac{13-6c_1}{4}=\frac{26-12c_1}{8}.\]
       </div>
-      <p class="no-indent">Because SSE is quadratic in each coefficient, a single Newton step lands exactly on the one-dimensional minimum, so each coordinate update is an exact line minimization with the other coefficient held fixed. The slope update \(c_1\leftarrow(62-12c_0)/28\) follows in the same way from \(\partial\,\mathrm{SSE}/\partial c_1=2(6c_0+14c_1-31)\) and \(\partial^2\mathrm{SSE}/\partial c_1^2=28\).</p>
+      <p class="no-indent">Because MSE is quadratic in each coefficient, a single Newton step lands exactly on the one-dimensional minimum, so each coordinate update is an exact line minimization with the other coefficient held fixed. The slope update \(c_1\leftarrow(62-12c_0)/28\) follows in the same way from \(\partial\,\mathrm{MSE}/\partial c_1=\tfrac12(6c_0+14c_1-31)\) and \(\partial^2\mathrm{MSE}/\partial c_1^2=7\).</p>
       <div class="equation">
         \[\text{Sweep 1:}\quad c_0=\tfrac{26-12(0)}{8}=3.250000,\qquad c_1=\tfrac{62-12(3.25)}{28}=\tfrac{23}{28}=0.821429\]
         \[\text{Sweep 2:}\quad c_0=\tfrac{26-12(0.821429)}{8}=2.017857,\qquad c_1=\tfrac{62-12(2.017857)}{28}=1.349490\]
@@ -656,21 +709,21 @@
       </div>
       <div class="table-wrap">
         <table>
-          <caption>Table IX. Hand coordinate-wise sweeps for the line \(\hat y=c_0+c_1x\)</caption>
-          <thead><tr><th>Sweep</th><th>\(c_0\)</th><th>\(c_1\)</th><th>SSE</th><th>MSE</th></tr></thead>
+          <caption>Table X. Hand coordinate-wise sweeps for the line \(\hat y=c_0+c_1x\)</caption>
+          <thead><tr><th>Sweep</th><th>\(c_0\)</th><th>\(c_1\)</th><th>MSE</th></tr></thead>
           <tbody>
-            <tr><td>0</td><td>0.000000</td><td>0.000000</td><td>71.000000</td><td>17.750000</td></tr>
-            <tr><td>1</td><td>3.250000</td><td>0.821429</td><td>19.303571</td><td>4.825893</td></tr>
-            <tr><td>2</td><td>2.017857</td><td>1.349490</td><td>9.326986</td><td>2.331747</td></tr>
-            <tr><td>3</td><td>1.225765</td><td>1.688958</td><td>5.204010</td><td>1.301002</td></tr>
+            <tr><td>0</td><td>0.000000</td><td>0.000000</td><td>17.750000</td></tr>
+            <tr><td>1</td><td>3.250000</td><td>0.821429</td><td>4.825893</td></tr>
+            <tr><td>2</td><td>2.017857</td><td>1.349490</td><td>2.331747</td></tr>
+            <tr><td>3</td><td>1.225765</td><td>1.688958</td><td>1.301002</td></tr>
           </tbody>
         </table>
       </div>
 
-      <p class="no-indent"><strong>Update-by-update arithmetic.</strong> Each update computes the residuals \(e=A\mathbf c-\mathbf y\) at the current coefficients, then \(c_j\leftarrow c_j-A_j^Te/A_j^TA_j\); the factors of 2 in the gradient and second derivative cancel. Table X lists every update in the first three sweeps for the line, and the MSE after each sweep is computed from the new residuals below it.</p>
+      <p class="no-indent"><strong>Update-by-update arithmetic.</strong> Each update computes the residuals \(e=A\mathbf c-\mathbf y\) at the current coefficients, then \(c_j\leftarrow c_j-A_j^Te/A_j^TA_j\); the factors of \(\tfrac12\) in the gradient and second derivative cancel. Table XI lists every update in the first three sweeps for the line, and the MSE after each sweep is computed from the new residuals below it.</p>
       <div class="table-wrap">
         <table>
-          <caption>Table X. Hand coordinate updates for the line, sweeps 1–3</caption>
+          <caption>Table XI. Hand coordinate updates for the line, sweeps 1–3</caption>
           <thead><tr><th>Sweep</th><th>Update</th><th>Column \(A_j\)</th><th>Residuals \(e\) before update</th><th>\(A_j^Te\)</th><th>\(A_j^TA_j\)</th><th>New value</th></tr></thead>
           <tbody>
             <tr><td>1</td><td>\(c_0\)</td><td>\((1,\,1,\,1,\,1)\)</td><td>\((-0.5000,\,-1.5000,\,-3.5000,\,-7.5000)\)</td><td>−13.0000</td><td>4</td><td>0.000000 − (−13.0000)/4 = <strong>3.250000</strong></td></tr>
@@ -699,20 +752,20 @@
       </div>
       <div class="table-wrap">
         <table>
-          <caption>Table XI. Hand coordinate-wise sweeps for the parabola \(\hat y=c_0+c_1x+c_2x^2\)</caption>
-          <thead><tr><th>Sweep</th><th>\(c_0\)</th><th>\(c_1\)</th><th>\(c_2\)</th><th>SSE</th><th>MSE</th></tr></thead>
+          <caption>Table XII. Hand coordinate-wise sweeps for the parabola \(\hat y=c_0+c_1x+c_2x^2\)</caption>
+          <thead><tr><th>Sweep</th><th>\(c_0\)</th><th>\(c_1\)</th><th>\(c_2\)</th><th>MSE</th></tr></thead>
           <tbody>
-            <tr><td>0</td><td>0.000000</td><td>0.000000</td><td>0.000000</td><td>71.000000</td><td>17.750000</td></tr>
-            <tr><td>1</td><td>3.250000</td><td>0.821429</td><td>0.080904</td><td>18.662120</td><td>4.665530</td></tr>
-            <tr><td>2</td><td>1.734694</td><td>1.262807</td><td>0.135237</td><td>6.460793</td><td>1.615198</td></tr>
-            <tr><td>3</td><td>0.882460</td><td>1.488336</td><td>0.174137</td><td>2.695196</td><td>0.673799</td></tr>
+            <tr><td>0</td><td>0.000000</td><td>0.000000</td><td>0.000000</td><td>17.750000</td></tr>
+            <tr><td>1</td><td>3.250000</td><td>0.821429</td><td>0.080904</td><td>4.665530</td></tr>
+            <tr><td>2</td><td>1.734694</td><td>1.262807</td><td>0.135237</td><td>1.615198</td></tr>
+            <tr><td>3</td><td>0.882460</td><td>1.488336</td><td>0.174137</td><td>0.673799</td></tr>
           </tbody>
         </table>
       </div>
-      <p class="no-indent"><strong>Update-by-update arithmetic.</strong> Each update computes the residuals \(e=A\mathbf c-\mathbf y\) at the current coefficients, then \(c_j\leftarrow c_j-A_j^Te/A_j^TA_j\); the factors of 2 in the gradient and second derivative cancel. Table XII lists every update in the first three sweeps for the parabola, and the MSE after each sweep is computed from the new residuals below it.</p>
+      <p class="no-indent"><strong>Update-by-update arithmetic.</strong> Each update computes the residuals \(e=A\mathbf c-\mathbf y\) at the current coefficients, then \(c_j\leftarrow c_j-A_j^Te/A_j^TA_j\); the factors of \(\tfrac12\) in the gradient and second derivative cancel. Table XIII lists every update in the first three sweeps for the parabola, and the MSE after each sweep is computed from the new residuals below it.</p>
       <div class="table-wrap">
         <table>
-          <caption>Table XII. Hand coordinate updates for the parabola, sweeps 1–3</caption>
+          <caption>Table XIII. Hand coordinate updates for the parabola, sweeps 1–3</caption>
           <thead><tr><th>Sweep</th><th>Update</th><th>Column \(A_j\)</th><th>Residuals \(e\) before update</th><th>\(A_j^Te\)</th><th>\(A_j^TA_j\)</th><th>New value</th></tr></thead>
           <tbody>
             <tr><td>1</td><td>\(c_0\)</td><td>\((1,\,1,\,1,\,1)\)</td><td>\((-0.5000,\,-1.5000,\,-3.5000,\,-7.5000)\)</td><td>−13.0000</td><td>4</td><td>0.000000 − (−13.0000)/4 = <strong>3.250000</strong></td></tr>
@@ -736,7 +789,7 @@
         \[\mathrm{MSE}=\tfrac14[0.3825^2+1.0449^2+1.0557^2+(-0.5853)^2]=\tfrac14(2.695196)=0.673799\]
       </div>
 
-      <p class="no-indent">Continuing the same arithmetic, the line converges to \((c_0,c_1)=(-0.2,2.3)\) with MSE \(0.575\), and the parabola to \((0.55,0.05,0.75)\) with MSE \(0.0125\), matching the analytical solutions in Table VIII. The parabola needs more sweeps because its coefficients are strongly coupled (the \(x\), \(x^2\) columns are highly correlated), so each coordinate step makes smaller progress along the valley of the MSE surface.</p>
+      <p class="no-indent">Continuing the same arithmetic, the line converges to \((c_0,c_1)=(-0.2,2.3)\) with MSE \(0.575\), and the parabola to \((0.55,0.05,0.75)\) with MSE \(0.0125\), matching the analytical solutions in Table IX. The parabola needs more sweeps because its coefficients are strongly coupled (the \(x\), \(x^2\) columns are highly correlated), so each coordinate step makes smaller progress along the valley of the MSE surface.</p>
 
       <div class="downloads">
         <a href="./part2/part2_newton.py">View Part II code</a>
@@ -777,15 +830,15 @@
 
       <div class="table-wrap">
         <table>
-          <caption>Table XIII. Selected coordinate-wise Newton–Raphson states</caption>
-          <thead><tr><th>Model</th><th>Sweep</th><th>Coefficients</th><th>SSE</th><th>MSE</th></tr></thead>
+          <caption>Table XIV. Selected coordinate-wise Newton–Raphson states</caption>
+          <thead><tr><th>Model</th><th>Sweep</th><th>Coefficients</th><th>MSE</th></tr></thead>
           <tbody>
-            <tr><td>Line</td><td>0</td><td>\((0,0)\)</td><td>71.000000</td><td>17.750000</td></tr>
-            <tr><td>Line</td><td>10</td><td>\((-0.135308,2.272275)\)</td><td>2.305979</td><td>0.576495</td></tr>
-            <tr><td>Line</td><td>55</td><td>\((-0.200000,2.300000)\)</td><td>2.300000</td><td>0.575000</td></tr>
-            <tr><td>Parabola</td><td>0</td><td>\((0,0,0)\)</td><td>71.000000</td><td>17.750000</td></tr>
-            <tr><td>Parabola</td><td>50</td><td>\((0.384549,0.409855,0.641444)\)</td><td>0.103107</td><td>0.025777</td></tr>
-            <tr><td>Parabola</td><td>591</td><td>\((0.550000,0.050000,0.750000)\)</td><td>0.050000</td><td>0.012500</td></tr>
+            <tr><td>Line</td><td>0</td><td>\((0,0)\)</td><td>17.750000</td></tr>
+            <tr><td>Line</td><td>10</td><td>\((-0.135308,2.272275)\)</td><td>0.576495</td></tr>
+            <tr><td>Line</td><td>55</td><td>\((-0.200000,2.300000)\)</td><td>0.575000</td></tr>
+            <tr><td>Parabola</td><td>0</td><td>\((0,0,0)\)</td><td>17.750000</td></tr>
+            <tr><td>Parabola</td><td>50</td><td>\((0.384549,0.409855,0.641444)\)</td><td>0.025777</td></tr>
+            <tr><td>Parabola</td><td>591</td><td>\((0.550000,0.050000,0.750000)\)</td><td>0.012500</td></tr>
           </tbody>
         </table>
       </div>

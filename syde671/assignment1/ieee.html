@@ -148,17 +148,17 @@
       <h2>III. Single-Scale Alignment</h2>
       <p class="no-indent">On low-resolution plates, exhaustive L2 and NCC usually agree exactly or differ by only one pixel. This indicates a well-defined translational optimum despite channel-intensity differences. On full-resolution plates the best single-scale offsets frequently reach the search boundary, demonstrating why a fixed ±15-pixel window cannot recover the true motion.</p>
       <div class="comparison-grid">
-        <figure><img src="../outputs/00125v_unaligned.jpg" alt="Unaligned RGB reconstruction for 00125v"><figcaption><span class="fig-label">Fig. 1(a).</span> 00125v before alignment.</figcaption></figure>
-        <figure><img src="../outputs/00125v_l2.jpg" alt="Single-scale L2 reconstruction for 00125v"><figcaption><span class="fig-label">Fig. 1(b).</span> L2: G \((2,5)\), R \((1,10)\).</figcaption></figure>
-        <figure><img src="../outputs/00125v_ncc.jpg" alt="Single-scale NCC reconstruction for 00125v"><figcaption><span class="fig-label">Fig. 1(c).</span> NCC: G \((1,5)\), R \((1,10)\).</figcaption></figure>
-        <figure><img src="../outputs/00125v_pyramid_ncc.jpg" alt="Pyramid NCC reconstruction for 00125v"><figcaption><span class="fig-label">Fig. 1(d).</span> Pyramid NCC reproduces the single-scale NCC offsets.</figcaption></figure>
+        <figure><img src="outputs/00125v_unaligned.jpg" alt="Unaligned RGB reconstruction for 00125v"><figcaption><span class="fig-label">Fig. 1(a).</span> 00125v before alignment.</figcaption></figure>
+        <figure><img src="outputs/00125v_l2.jpg" alt="Single-scale L2 reconstruction for 00125v"><figcaption><span class="fig-label">Fig. 1(b).</span> L2: G \((2,5)\), R \((1,10)\).</figcaption></figure>
+        <figure><img src="outputs/00125v_ncc.jpg" alt="Single-scale NCC reconstruction for 00125v"><figcaption><span class="fig-label">Fig. 1(c).</span> NCC: G \((1,5)\), R \((1,10)\).</figcaption></figure>
+        <figure><img src="outputs/00125v_pyramid_ncc.jpg" alt="Pyramid NCC reconstruction for 00125v"><figcaption><span class="fig-label">Fig. 1(d).</span> Pyramid NCC reproduces the single-scale NCC offsets.</figcaption></figure>
       </div>
       <h3>A. Berkeley Rubric Images</h3>
       <p class="no-indent">These three plates are not in the Learn data; they come from the original Berkeley CS180 project (see Section I). The three low-resolution images named explicitly in the rubric align without visible channel separation. L2, NCC, and pyramid NCC recover the same offsets on each image, providing a direct check against the expected single-scale behaviour.</p>
       <div class="gallery">
-        <figure><img src="../outputs/cathedral_pyramid_ncc.jpg" alt="Aligned Cathedral result"><figcaption>Cathedral · G (2, 5), R (3, 12)</figcaption></figure>
-        <figure><img src="../outputs/monastery_pyramid_ncc.jpg" alt="Aligned Monastery result"><figcaption>Monastery · G (2, -3), R (2, 3)</figcaption></figure>
-        <figure><img src="../outputs/tobolsk_pyramid_ncc.jpg" alt="Aligned Tobolsk result"><figcaption>Tobolsk · G (2, 3), R (3, 6)</figcaption></figure>
+        <figure><img src="outputs/cathedral_pyramid_ncc.jpg" alt="Aligned Cathedral result"><figcaption>Cathedral · G (2, 5), R (3, 12)</figcaption></figure>
+        <figure><img src="outputs/monastery_pyramid_ncc.jpg" alt="Aligned Monastery result"><figcaption>Monastery · G (2, -3), R (2, 3)</figcaption></figure>
+        <figure><img src="outputs/tobolsk_pyramid_ncc.jpg" alt="Aligned Tobolsk result"><figcaption>Tobolsk · G (2, 3), R (3, 6)</figcaption></figure>
       </div>
       <p>Across the 18 low-resolution plates, L2 and NCC return identical displacements on 14 and differ by a single pixel on the other four (00125v, 01269v, 01728v, and 10131v). The two metrics differ in what they assume about the channels. L2 compares raw intensities, so it is minimized only when the two exposures have the same brightness at matching pixels. Because each plate was exposed through a different filter, a red roof or blue sky is bright in one channel and dark in another. L2 then penalizes the correct shift for that brightness difference and can prefer a nearby shift that happens to reduce it. NCC divides each image by its own norm, so a channel that is uniformly brighter or darker scores the same; it rewards matching <em>structure</em> rather than matching brightness. On these small plates the scene structure is strong enough that both metrics usually find the same optimum, but NCC's insensitivity to exposure differences is why it was chosen for the pyramid.</p>
     </section>
@@ -168,16 +168,16 @@
       <p class="no-indent">Large images are repeatedly blurred with the separable binomial kernel \([1,4,6,4,1]/16\) and downsampled by two until the smallest dimension is below twice the 150-pixel threshold. Alignment begins at the coarsest level with a ±15-pixel search. At each finer level, the displacement is doubled and refined within ±2 pixels. The blur and downsampling routines are implemented directly rather than through a high-level pyramid library.</p>
       <div class="equation">\[(d_x^{\ell-1},d_y^{\ell-1})\leftarrow2(d_x^{\ell},d_y^{\ell})+\operatorname*{arg\,max}_{(u,v)\in[-2,2]^2}\operatorname{NCC}(u,v).\]</div>
       <div class="comparison-grid">
-        <figure><img src="../outputs/01007a_unaligned.jpg" alt="Unaligned RGB reconstruction for 01007a"><figcaption><span class="fig-label">Fig. 2(a).</span> Full-resolution plate 01007a before alignment.</figcaption></figure>
-        <figure><img src="../outputs/01007a_l2.jpg" alt="Single-scale L2 reconstruction for 01007a"><figcaption><span class="fig-label">Fig. 2(b).</span> L2 is constrained by the ±15 window.</figcaption></figure>
-        <figure><img src="../outputs/01007a_ncc.jpg" alt="Single-scale NCC reconstruction for 01007a"><figcaption><span class="fig-label">Fig. 2(c).</span> NCC is also constrained at a single scale.</figcaption></figure>
-        <figure><img src="../outputs/01007a_pyramid_ncc.jpg" alt="Pyramid NCC reconstruction for 01007a"><figcaption><span class="fig-label">Fig. 2(d).</span> Pyramid NCC reaches G \((6,61)\), R \((12,129)\): the right neighbourhood, but fine fringes remain (corrected in Section V).</figcaption></figure>
+        <figure><img src="outputs/01007a_unaligned.jpg" alt="Unaligned RGB reconstruction for 01007a"><figcaption><span class="fig-label">Fig. 2(a).</span> Full-resolution plate 01007a before alignment.</figcaption></figure>
+        <figure><img src="outputs/01007a_l2.jpg" alt="Single-scale L2 reconstruction for 01007a"><figcaption><span class="fig-label">Fig. 2(b).</span> L2 is constrained by the ±15 window.</figcaption></figure>
+        <figure><img src="outputs/01007a_ncc.jpg" alt="Single-scale NCC reconstruction for 01007a"><figcaption><span class="fig-label">Fig. 2(c).</span> NCC is also constrained at a single scale.</figcaption></figure>
+        <figure><img src="outputs/01007a_pyramid_ncc.jpg" alt="Pyramid NCC reconstruction for 01007a"><figcaption><span class="fig-label">Fig. 2(d).</span> Pyramid NCC reaches G \((6,61)\), R \((12,129)\): the right neighbourhood, but fine fringes remain (corrected in Section V).</figcaption></figure>
       </div>
       <div class="method-note"><strong>Why NCC for the pyramid?</strong> The red, green, and blue glass-plate exposures can differ substantially in brightness. Normalizing each comparison makes the score more stable across channels while retaining a simple metric required by the assignment.</div>
       <h3>A. Animated Alignment Walkthrough</h3>
       <p class="no-indent">Figure 3 follows plate 01007a through the complete reconstruction pipeline. It first separates the vertically stacked scan into blue, green, and red exposures, then shows the unaligned colour composite. The L2 and NCC heatmaps visualize every displacement tested inside the single-scale ±15-pixel window: each pixel in a heatmap represents one candidate shift, and the marked optimum is the shift selected by that metric.</p>
       <figure class="walkthrough">
-        <img src="../visualizations/01007a/01007a_detailed_alignment.gif" alt="Animated walkthrough of L2, NCC, and Gaussian-pyramid alignment for plate 01007a">
+        <img src="visualizations/01007a/01007a_detailed_alignment.gif" alt="Animated walkthrough of L2, NCC, and Gaussian-pyramid alignment for plate 01007a">
         <figcaption><span class="fig-label">Fig. 3.</span> Detailed alignment of 01007a. After the single-scale comparisons, the animation constructs the Gaussian pyramids and follows NCC refinement from level 4 to level 0. Each finer level doubles the preceding displacement estimate and searches a small local neighbourhood. The side-by-side images show the large colour separation disappearing as the estimates converge to G \((6,61)\) and R \((12,129)\). The final frame compares the original unaligned composite with the raw-pixel pyramid reconstruction; the remaining few-pixel error in green is corrected by the gradient features of Section V.</figcaption>
       </figure>
       <p>The animation displays the meaningful optimization stages rather than all 961 candidate comparisons individually. This preserves the relationship between the score surfaces, the selected displacements, and the coarse-to-fine trajectory without slowing the walkthrough to the full computation time.</p>
@@ -246,38 +246,38 @@
       <h3>A. Independently Selected Library of Congress Images</h3>
       <p class="no-indent">To test the algorithm beyond the supplied dataset, three additional LoC glass plates were downloaded as raw BGR color-separation negatives. All three align successfully without parameter changes, and L2 and NCC select identical translations.</p>
       <div class="gallery">
-        <figure><img src="../outputs/loc_yurt_men_pyramid_ncc.jpg" alt="Aligned LoC image of two men at a yurt"><figcaption>Two men at a yurt · G (1, 4), R (0, 10)</figcaption></figure>
-        <figure><img src="../outputs/loc_camel_pyramid_ncc.jpg" alt="Aligned LoC image of a man with a loaded camel"><figcaption>Man with loaded camel · G (2, 2), R (4, 8)</figcaption></figure>
-        <figure><img src="../outputs/loc_mosque_pyramid_ncc.jpg" alt="Aligned LoC image of a crumbling mosque"><figcaption>Crumbling mosque · G (1, 2), R (1, 7)</figcaption></figure>
+        <figure><img src="outputs/loc_yurt_men_pyramid_ncc.jpg" alt="Aligned LoC image of two men at a yurt"><figcaption>Two men at a yurt · G (1, 4), R (0, 10)</figcaption></figure>
+        <figure><img src="outputs/loc_camel_pyramid_ncc.jpg" alt="Aligned LoC image of a man with a loaded camel"><figcaption>Man with loaded camel · G (2, 2), R (4, 8)</figcaption></figure>
+        <figure><img src="outputs/loc_mosque_pyramid_ncc.jpg" alt="Aligned LoC image of a crumbling mosque"><figcaption>Crumbling mosque · G (1, 2), R (1, 7)</figcaption></figure>
       </div>
 
       <h3>B. Complete Final Gallery (Gradient Pyramid)</h3>
       <p class="no-indent">Every plate below uses the final gradient-feature pyramid of Section V with one fixed parameter set. The raw-pixel pyramid NCC offsets for the same plates are listed in Table I.</p>
       <div class="gallery">
-        <figure><img src="../outputs/00056v_pyramid_grad.jpg" alt="Gradient pyramid result for 00056v"><figcaption>00056v · G (1, 6), R (1, 13)</figcaption></figure>
-        <figure><img src="../outputs/00125v_pyramid_grad.jpg" alt="Gradient pyramid result for 00125v"><figcaption>00125v · G (2, 5), R (1, 10)</figcaption></figure>
-        <figure><img src="../outputs/00163v_pyramid_grad.jpg" alt="Gradient pyramid result for 00163v"><figcaption>00163v · G (1, -3), R (1, -4)</figcaption></figure>
-        <figure><img src="../outputs/00458u_pyramid_grad.jpg" alt="Gradient pyramid result for 00458u"><figcaption>00458u · G (2, 41), R (30, 85)</figcaption></figure>
-        <figure><img src="../outputs/00804v_pyramid_grad.jpg" alt="Gradient pyramid result for 00804v"><figcaption>00804v · G (-2, 6), R (-4, 13)</figcaption></figure>
-        <figure><img src="../outputs/01007a_pyramid_grad.jpg" alt="Gradient pyramid result for 01007a"><figcaption>01007a · G (14, 60), R (13, 129)</figcaption></figure>
-        <figure><img src="../outputs/01047u_pyramid_grad.jpg" alt="Gradient pyramid result for 01047u"><figcaption>01047u · G (20, 25), R (33, 71)</figcaption></figure>
-        <figure><img src="../outputs/01164v_pyramid_grad.jpg" alt="Gradient pyramid result for 01164v"><figcaption>01164v · G (2, 6), R (3, 11)</figcaption></figure>
-        <figure><img src="../outputs/01269v_pyramid_grad.jpg" alt="Gradient pyramid result for 01269v"><figcaption>01269v · G (2, 6), R (3, 13)</figcaption></figure>
-        <figure><img src="../outputs/01522v_pyramid_grad.jpg" alt="Gradient pyramid result for 01522v"><figcaption>01522v · G (2, 6), R (2, 13)</figcaption></figure>
-        <figure><img src="../outputs/01597v_pyramid_grad.jpg" alt="Gradient pyramid result for 01597v"><figcaption>01597v · G (1, 7), R (1, 16)</figcaption></figure>
-        <figure><img src="../outputs/01598v_pyramid_grad.jpg" alt="Gradient pyramid result for 01598v"><figcaption>01598v · G (0, 8), R (-1, 16)</figcaption></figure>
-        <figure><img src="../outputs/01657u_pyramid_grad.jpg" alt="Gradient pyramid result for 01657u"><figcaption>01657u · G (9, 56), R (13, 120)</figcaption></figure>
-        <figure><img src="../outputs/01725u_pyramid_grad.jpg" alt="Gradient pyramid result for 01725u"><figcaption>01725u · G (44, 76), R (77, 162)</figcaption></figure>
-        <figure><img src="../outputs/01728v_pyramid_grad.jpg" alt="Gradient pyramid result for 01728v"><figcaption>01728v · G (1, 8), R (1, 18)</figcaption></figure>
-        <figure><img src="../outputs/01861a_pyramid_grad.jpg" alt="Gradient pyramid result for 01861a"><figcaption>01861a · G (39, 71), R (62, 147)</figcaption></figure>
-        <figure><img src="../outputs/10131v_pyramid_grad.jpg" alt="Gradient pyramid result for 10131v"><figcaption>10131v · G (2, 6), R (3, 12)</figcaption></figure>
-        <figure><img src="../outputs/31421v_pyramid_grad.jpg" alt="Gradient pyramid result for 31421v"><figcaption>31421v · G (0, 8), R (0, 13)</figcaption></figure>
-        <figure><img src="../outputs/cathedral_pyramid_grad.jpg" alt="Gradient pyramid result for Cathedral"><figcaption>Cathedral · G (2, 5), R (3, 12)</figcaption></figure>
-        <figure><img src="../outputs/monastery_pyramid_grad.jpg" alt="Gradient pyramid result for Monastery"><figcaption>Monastery · G (2, -3), R (2, 3)</figcaption></figure>
-        <figure><img src="../outputs/tobolsk_pyramid_grad.jpg" alt="Gradient pyramid result for Tobolsk"><figcaption>Tobolsk · G (3, 3), R (3, 6)</figcaption></figure>
-        <figure><img src="../outputs/loc_yurt_men_pyramid_grad.jpg" alt="Gradient pyramid result for LoC yurt men"><figcaption>LoC yurt men · G (1, 4), R (0, 10)</figcaption></figure>
-        <figure><img src="../outputs/loc_camel_pyramid_grad.jpg" alt="Gradient pyramid result for LoC camel"><figcaption>LoC camel · G (2, 2), R (4, 8)</figcaption></figure>
-        <figure><img src="../outputs/loc_mosque_pyramid_grad.jpg" alt="Gradient pyramid result for LoC mosque"><figcaption>LoC mosque · G (1, 2), R (1, 7)</figcaption></figure>
+        <figure><img src="outputs/00056v_pyramid_grad.jpg" alt="Gradient pyramid result for 00056v"><figcaption>00056v · G (1, 6), R (1, 13)</figcaption></figure>
+        <figure><img src="outputs/00125v_pyramid_grad.jpg" alt="Gradient pyramid result for 00125v"><figcaption>00125v · G (2, 5), R (1, 10)</figcaption></figure>
+        <figure><img src="outputs/00163v_pyramid_grad.jpg" alt="Gradient pyramid result for 00163v"><figcaption>00163v · G (1, -3), R (1, -4)</figcaption></figure>
+        <figure><img src="outputs/00458u_pyramid_grad.jpg" alt="Gradient pyramid result for 00458u"><figcaption>00458u · G (2, 41), R (30, 85)</figcaption></figure>
+        <figure><img src="outputs/00804v_pyramid_grad.jpg" alt="Gradient pyramid result for 00804v"><figcaption>00804v · G (-2, 6), R (-4, 13)</figcaption></figure>
+        <figure><img src="outputs/01007a_pyramid_grad.jpg" alt="Gradient pyramid result for 01007a"><figcaption>01007a · G (14, 60), R (13, 129)</figcaption></figure>
+        <figure><img src="outputs/01047u_pyramid_grad.jpg" alt="Gradient pyramid result for 01047u"><figcaption>01047u · G (20, 25), R (33, 71)</figcaption></figure>
+        <figure><img src="outputs/01164v_pyramid_grad.jpg" alt="Gradient pyramid result for 01164v"><figcaption>01164v · G (2, 6), R (3, 11)</figcaption></figure>
+        <figure><img src="outputs/01269v_pyramid_grad.jpg" alt="Gradient pyramid result for 01269v"><figcaption>01269v · G (2, 6), R (3, 13)</figcaption></figure>
+        <figure><img src="outputs/01522v_pyramid_grad.jpg" alt="Gradient pyramid result for 01522v"><figcaption>01522v · G (2, 6), R (2, 13)</figcaption></figure>
+        <figure><img src="outputs/01597v_pyramid_grad.jpg" alt="Gradient pyramid result for 01597v"><figcaption>01597v · G (1, 7), R (1, 16)</figcaption></figure>
+        <figure><img src="outputs/01598v_pyramid_grad.jpg" alt="Gradient pyramid result for 01598v"><figcaption>01598v · G (0, 8), R (-1, 16)</figcaption></figure>
+        <figure><img src="outputs/01657u_pyramid_grad.jpg" alt="Gradient pyramid result for 01657u"><figcaption>01657u · G (9, 56), R (13, 120)</figcaption></figure>
+        <figure><img src="outputs/01725u_pyramid_grad.jpg" alt="Gradient pyramid result for 01725u"><figcaption>01725u · G (44, 76), R (77, 162)</figcaption></figure>
+        <figure><img src="outputs/01728v_pyramid_grad.jpg" alt="Gradient pyramid result for 01728v"><figcaption>01728v · G (1, 8), R (1, 18)</figcaption></figure>
+        <figure><img src="outputs/01861a_pyramid_grad.jpg" alt="Gradient pyramid result for 01861a"><figcaption>01861a · G (39, 71), R (62, 147)</figcaption></figure>
+        <figure><img src="outputs/10131v_pyramid_grad.jpg" alt="Gradient pyramid result for 10131v"><figcaption>10131v · G (2, 6), R (3, 12)</figcaption></figure>
+        <figure><img src="outputs/31421v_pyramid_grad.jpg" alt="Gradient pyramid result for 31421v"><figcaption>31421v · G (0, 8), R (0, 13)</figcaption></figure>
+        <figure><img src="outputs/cathedral_pyramid_grad.jpg" alt="Gradient pyramid result for Cathedral"><figcaption>Cathedral · G (2, 5), R (3, 12)</figcaption></figure>
+        <figure><img src="outputs/monastery_pyramid_grad.jpg" alt="Gradient pyramid result for Monastery"><figcaption>Monastery · G (2, -3), R (2, 3)</figcaption></figure>
+        <figure><img src="outputs/tobolsk_pyramid_grad.jpg" alt="Gradient pyramid result for Tobolsk"><figcaption>Tobolsk · G (3, 3), R (3, 6)</figcaption></figure>
+        <figure><img src="outputs/loc_yurt_men_pyramid_grad.jpg" alt="Gradient pyramid result for LoC yurt men"><figcaption>LoC yurt men · G (1, 4), R (0, 10)</figcaption></figure>
+        <figure><img src="outputs/loc_camel_pyramid_grad.jpg" alt="Gradient pyramid result for LoC camel"><figcaption>LoC camel · G (2, 2), R (4, 8)</figcaption></figure>
+        <figure><img src="outputs/loc_mosque_pyramid_grad.jpg" alt="Gradient pyramid result for LoC mosque"><figcaption>LoC mosque · G (1, 2), R (1, 7)</figcaption></figure>
       </div>
     </section>
 
@@ -300,7 +300,7 @@
     <section id="files">
       <h2>VIII. Reproducibility and Supporting Files</h2>
       <p class="no-indent">The implementation processes every JPEG in the data directory, saves unaligned, L2, NCC, pyramid-NCC, and gradient-pyramid reconstructions, and records all scores, offsets, runtimes, and failures in a CSV file. The current results contain 24 successful inputs and 120 generated comparison images.</p>
-      <div class="downloads"><a href="../main.py">View Python source</a><a href="../main.py" download>Download Python source</a><a href="../outputs/results.csv" download>Download complete results</a><a href="../visualizations/01007a/01007a_detailed_alignment.gif" download>Download alignment GIF</a><a href="../create_detailed_alignment_gif.py">View GIF generator</a><a href="../SYDE671%20assn1.pdf">View assignment brief</a></div>
+      <div class="downloads"><a href="main.py">View Python source</a><a href="main.py" download>Download Python source</a><a href="outputs/results.csv" download>Download complete results</a><a href="visualizations/01007a/01007a_detailed_alignment.gif" download>Download alignment GIF</a><a href="create_detailed_alignment_gif.py">View GIF generator</a><a href="SYDE671%20assn1.pdf">View assignment brief</a></div>
       <div class="method-note"><strong>Run from the SYDE 671 directory:</strong> install the packages in <code>requirements.txt</code> (<code>pip install -r requirements.txt</code>; tested with Python 3.9 in Anaconda), place course JPEG files in <code>data/</code>, then execute <code>python main.py</code>. Generated files are written to <code>outputs/</code>.</div>
     </section>
 

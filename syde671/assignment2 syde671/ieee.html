@@ -1,0 +1,384 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="SYDE 671 Assignment 2: convolution from scratch, edge detection, unsharp masking, hybrid images, and multiresolution blending.">
+  <title>SYDE 671 Assignment 2 | Fun with Filters and Frequencies</title>
+  <style>
+    :root { --ink:#111; --muted:#4b5563; --rule:#9ca3af; --light-rule:#d1d5db; --accent:#075985; --paper:#fff; --canvas:#e9edf1; --soft:#f4f7f9; --result:#eef6fa; }
+    * { box-sizing:border-box; }
+    html { scroll-behavior:smooth; scroll-padding-top:4.5rem; }
+    body { margin:0; color:var(--ink); background:var(--canvas); font-family:"Times New Roman",Times,serif; font-size:16px; line-height:1.52; }
+    a { color:var(--accent); text-underline-offset:.16em; }
+    a:hover { color:#9a3412; }
+    img { max-width:100%; }
+    .review-bar { position:sticky; top:0; z-index:20; display:flex; justify-content:space-between; align-items:center; gap:1rem; padding:.65rem max(1rem,calc((100% - 1120px)/2)); border-bottom:1px solid #cbd5e1; background:rgba(248,250,252,.96); font-family:Arial,Helvetica,sans-serif; font-size:.86rem; backdrop-filter:blur(10px); }
+    .review-bar strong { letter-spacing:.04em; text-transform:uppercase; }
+    .review-bar nav { display:flex; flex-wrap:wrap; justify-content:flex-end; gap:.75rem; }
+    .review-bar a { font-weight:700; text-decoration:none; }
+    .paper { width:min(1120px,calc(100% - 2rem)); margin:2rem auto 4rem; padding:clamp(2rem,6vw,4.75rem); background:var(--paper); box-shadow:0 16px 44px rgba(15,23,42,.14); }
+    .paper-header { text-align:center; }
+    .paper-header .course { margin:0 0 .75rem; font-family:Arial,Helvetica,sans-serif; font-size:.78rem; font-weight:700; letter-spacing:.13em; text-transform:uppercase; }
+    h1 { max-width:820px; margin:0 auto .85rem; font-size:clamp(1.85rem,4.4vw,2.7rem); font-weight:400; line-height:1.12; }
+    .author-line { margin:0; font-size:1rem; }
+    .version-line { margin:.25rem 0 2rem; color:var(--muted); font-size:.9rem; }
+    .abstract { max-width:880px; margin:0 auto 2rem; padding:1rem 1.25rem; border-top:1.5px solid var(--ink); border-bottom:1px solid var(--rule); text-align:justify; }
+    .abstract p { margin:0 0 .6rem; }
+    .abstract p:last-child { margin-bottom:0; }
+    .label { font-variant:small-caps; font-weight:700; letter-spacing:.04em; }
+    .contents { margin:2rem 0 2.5rem; padding:1rem 1.2rem; border-left:3px solid var(--accent); background:var(--soft); font-family:Arial,Helvetica,sans-serif; font-size:.9rem; }
+    .contents strong { display:block; margin-bottom:.4rem; text-transform:uppercase; letter-spacing:.06em; }
+    .contents ol { columns:2; margin:0; padding-left:1.3rem; }
+    .contents li { margin:.25rem 0; padding-right:1rem; break-inside:avoid; }
+    .contents a { color:#1f2937; }
+    section { margin:0 0 2.5rem; scroll-margin-top:5rem; }
+    h2,h3 { break-after:avoid; }
+    h2 { margin:2.8rem 0 1rem; border-bottom:1px solid var(--ink); font-family:Arial,Helvetica,sans-serif; font-size:1.08rem; line-height:1.35; letter-spacing:.045em; text-align:center; text-transform:uppercase; }
+    h2.part-heading { margin-top:3.4rem; padding-bottom:.35rem; border-bottom:3px double var(--ink); font-size:1.3rem; }
+    h3 { margin:1.8rem 0 .55rem; font-size:1rem; font-style:italic; font-weight:700; }
+    section>p,.prose>p { margin:.55rem 0; text-align:justify; text-indent:1.35rem; }
+    section>p.no-indent,.no-indent { text-indent:0; }
+    .equation { margin:1rem 0; padding:.35rem 1rem; overflow-x:auto; border-left:2px solid var(--rule); font-size:1.02rem; text-align:center; }
+    .result-box { margin:1rem 0; padding:.8rem 1rem; border-top:1.5px solid var(--accent); border-bottom:1px solid var(--accent); background:var(--result); text-align:center; }
+    .method-note { margin:1rem 0; padding:.75rem 1rem; border-left:3px solid #a16207; background:#fffbeb; text-align:justify; }
+    .table-wrap { margin:1.25rem 0 1.8rem; overflow-x:auto; }
+    table { width:100%; border-collapse:collapse; border-top:1.8px solid #000; border-bottom:1.8px solid #000; font-size:.88rem; line-height:1.3; font-variant-numeric:tabular-nums; }
+    caption { padding:0 0 .5rem; font-size:.82rem; line-height:1.25; text-align:center; text-transform:uppercase; }
+    thead { border-bottom:1px solid #000; }
+    th,td { padding:.4rem .5rem; text-align:center; vertical-align:middle; }
+    th { font-weight:700; }
+    tbody tr+tr { border-top:.5px solid var(--light-rule); }
+    figure { margin:1.2rem 0 1.6rem; break-inside:avoid; }
+    figure img { display:block; width:100%; height:auto; border:1px solid var(--light-rule); background:white; }
+    figure.narrow { max-width:620px; margin-left:auto; margin-right:auto; }
+    figure.medium { max-width:820px; margin-left:auto; margin-right:auto; }
+    figcaption { margin-top:.45rem; font-size:.84rem; line-height:1.35; text-align:justify; }
+    .fig-label { font-variant:small-caps; font-weight:700; }
+    .codeblock { margin:1rem 0 1.4rem; border:1px solid var(--light-rule); background:#f8fafc; break-inside:avoid; }
+    .codehead { padding:.25rem .7rem; border-bottom:1px solid var(--light-rule); background:#eef2f6; font:700 .74rem Arial,Helvetica,sans-serif; color:#334155; letter-spacing:.03em; }
+    pre { margin:0; padding:.7rem .85rem; overflow-x:auto; }
+    pre code { font:.78rem/1.45 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; color:#0f172a; }
+    code { font:.88em ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; }
+    .downloads { display:flex; flex-wrap:wrap; gap:.55rem; margin:1rem 0 1.4rem; font-family:Arial,Helvetica,sans-serif; font-size:.82rem; }
+    .downloads a { display:inline-flex; align-items:center; min-height:2.25rem; padding:.42rem .7rem; border:1px solid #94a3b8; background:#f8fafc; color:#0f172a; font-weight:700; text-decoration:none; }
+    .downloads a:hover { border-color:var(--accent); color:var(--accent); }
+    .small { color:var(--muted); font-size:.88rem; }
+    .references { padding-left:1.4rem; font-size:.92rem; }
+    .references li { margin-bottom:.55rem; }
+    @media (max-width:680px) { .review-bar { align-items:flex-start; flex-direction:column; } .review-bar nav { justify-content:flex-start; } .paper { width:100%; margin:0; padding:1.5rem 1rem 3rem; box-shadow:none; } .contents ol { columns:1; } }
+    @media print { @page { size:letter; margin:.6in; } body { background:white; font-size:10pt; line-height:1.28; } .review-bar,.contents,.downloads { display:none!important; } .paper { width:auto; margin:0; padding:0; box-shadow:none; } h1 { font-size:20pt; } h2 { font-size:11pt; } section { margin-bottom:1.3rem; } figure,.table-wrap,.result-box,.equation,.codeblock { page-break-inside:avoid; } a { color:inherit; text-decoration:none; } }
+</style>
+  <script>window.MathJax={tex:{inlineMath:[['\\(','\\)']],displayMath:[['\\[','\\]']]},options:{skipHtmlTags:['script','noscript','style','textarea','pre','code']}};</script>
+  <script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+</head>
+<body>
+
+<div class="review-bar">
+  <strong>SYDE 671 · Assignment 2</strong>
+  <nav aria-label="Page links"><a href="../">Course home</a><a href="#part-one">Part 1</a><a href="#part-two">Part 2</a><a href="#learned">What I learned</a><a href="#files">Files</a></nav>
+</div>
+<main class="paper">
+<header class="paper-header">
+  <p class="course">SYDE 671 · Introduction to Computer Vision · Assignment 2</p>
+  <h1>Fun with Filters and Frequencies</h1>
+  <p class="author-line">Assignment Report · Parts One and Two</p>
+  <p class="version-line">Convolution, edges, sharpening, hybrid images, and multiresolution blending</p>
+</header>
+
+<div class="abstract">
+  <p><span class="label">Abstract—</span>Part One implements 2D convolution from scratch in NumPy, with four loops and with two loops, and checks both against <code>scipy.signal.convolve2d</code> (agreement to 2×10<sup>-15</sup>). It then finds edges in the cameraman image with finite differences, Gaussian smoothing, and derivative-of-Gaussian (DoG) filters; the single-convolution DoG filters reproduce the blur-then-difference result to 10<sup>-15</sup>. Gradient orientation is visualised in HSV with a hand-written arctangent (maximum error 1.1×10<sup>-5</sup> rad). Part Two builds the unsharp mask as one convolution kernel, three hybrid images (Derek and Nutmeg, plus two pairs of painted character portraits), Gaussian and Laplacian stacks without downsampling, and Burt–Adelson multiresolution blending. The blending results are the Oraple, a face swap with an elliptical mask, a soft-mask blend that puts the Taj Mahal into the lenses of eyeglasses, and a straight-seam blend of two aligned faces.</p>
+  <p><span class="label">Index Terms—</span>convolution, finite differences, derivative of Gaussian, unsharp masking, hybrid images, Gaussian stack, Laplacian stack, multiresolution blending.</p>
+</div>
+
+<nav class="contents" aria-label="Table of contents"><strong>Contents</strong><ol>
+<li><a href="#part-one">Part 1: Fun with filters</a></li>
+<li><a href="#p11">1.1 Convolution from scratch</a></li>
+<li><a href="#p12">1.2 Finite difference operator</a></li>
+<li><a href="#p13">1.3 Derivative of Gaussian filter</a></li>
+<li><a href="#bw1">Bells and whistles: gradient orientation</a></li>
+<li><a href="#part-two">Part 2: Fun with frequencies</a></li>
+<li><a href="#p21">2.1 Image sharpening</a></li>
+<li><a href="#p22">2.2 Hybrid images</a></li>
+<li><a href="#p23">2.3 Gaussian and Laplacian stacks</a></li>
+<li><a href="#p24">2.4 Multiresolution blending</a></li>
+<li><a href="#limits">Limitations</a></li>
+<li><a href="#learned">What I learned</a></li>
+<li><a href="#files">Files, sources, and credits</a></li>
+</ol></nav>
+
+<section id="part-one">
+<h2 class="part-heading">Part 1: Fun with Filters</h2>
+</section>
+
+<section id="p11">
+<h2>1.1 Convolution from Scratch</h2>
+<p class="no-indent">Convolution flips the kernel \(k\) before sliding it over the image, so the output at pixel \((i,j)\) is</p>
+<div class="equation">\[ (f * k)[i,j] = \sum_{u}\sum_{v} f[i-u,\, j-v]\; k[u,v]. \]</div>
+<p>I implemented this with NumPy only: once with four nested loops (output row, output column, kernel row, kernel column) and once with two loops, where the inner double sum becomes one elementwise product and <code>np.sum</code> over a window. Both use zero padding, so the output has the same size as the input.</p>
+<div class="codeblock"><div class="codehead">part1_1.py</div><pre><code>def pad_zero(img, kh, kw):
+    &quot;&quot;&quot;Zero-pad so a (kh, kw) kernel yields a same-size output (works for even sizes).&quot;&quot;&quot;
+    H, W = img.shape
+    out = np.zeros((H + kh - 1, W + kw - 1))
+    out[kh // 2 : kh // 2 + H, kw // 2 : kw // 2 + W] = img
+    return out
+def conv_4loops(img, k):
+    kh, kw = k.shape
+    kf = k[::-1, ::-1]  # convolution flips the kernel
+    p = pad_zero(img, kh, kw)
+    out = np.zeros(img.shape)
+    for i in range(img.shape[0]):
+        for j in range(img.shape[1]):
+            s = 0.0
+            for u in range(kh):
+                for v in range(kw):
+                    s += p[i + u, j + v] * kf[u, v]
+            out[i, j] = s
+    return out
+def conv_2loops(img, k):
+    kh, kw = k.shape
+    kf = k[::-1, ::-1]
+    p = pad_zero(img, kh, kw)
+    out = np.zeros(img.shape)
+    for i in range(img.shape[0]):
+        for j in range(img.shape[1]):
+            out[i, j] = np.sum(p[i : i + kh, j : j + kw] * kf)
+    return out</code></pre></div>
+<div class="method-note"><strong>Two details that matter.</strong> First, the kernel is flipped (<code>k[::-1, ::-1]</code>); without the flip the code computes correlation, which reverses the sign of D<sub>x</sub> and D<sub>y</sub>. Second, the padding is <code>k//2</code> before the image and <code>(k-1)//2</code> after it, so it also works for even-sized kernels such as D<sub>x</sub> = [1, −1]. Padding by the same amount on both sides would shift those results by one pixel relative to SciPy.</div>
+<p>I tested on my own photo, read as grayscale and downsampled to 256×256 so the four-loop version finishes quickly. The kernels were a 9×9 box filter, D<sub>x</sub> = [1, −1], and D<sub>y</sub> = [1, −1]<sup>T</sup>.</p>
+<div class="table-wrap"><table><caption>Table 1. Runtime and agreement with scipy.signal.convolve2d (256×256 image)</caption>
+<thead><tr><th>Kernel</th><th>4 loops</th><th>2 loops</th><th>SciPy</th><th>Max |difference| from SciPy</th></tr></thead>
+<tbody>
+<tr><td>9×9 box</td><td>0.99 s</td><td>0.13 s</td><td>0.0063 s</td><td>2.2×10<sup>-15</sup></td></tr>
+<tr><td>D<sub>x</sub> (1×2)</td><td>0.03 s</td><td>0.12 s</td><td>0.0006 s</td><td>0</td></tr>
+<tr><td>D<sub>y</sub> (2×1)</td><td>0.04 s</td><td>0.12 s</td><td>0.0007 s</td><td>0</td></tr>
+</tbody></table></div>
+<figure class="medium"><a href="media/part1_1.jpg"><img src="media/part1_1.jpg" alt="Grayscale selfie, the 9×9 box-filtered image, and the absolute values of the D&lt;sub&gt;x&lt;/sub&gt; and D&lt;sub&gt;y&lt;/sub&gt; r" loading="lazy"></a><figcaption><span class="fig-label">Fig. 1.1.</span> Grayscale selfie, the 9×9 box-filtered image, and the absolute values of the D<sub>x</sub> and D<sub>y</sub> responses (absolute value because the responses are signed). The vertical edges of the glasses and hair appear in D<sub>x</sub>, and the horizontal edges of the frame and lips in D<sub>y</sub>.</figcaption></figure>
+<h3>Runtime</h3>
+<p class="no-indent">For the 9×9 kernel the four-loop version is about eight times slower than the two-loop version, because the inner 81 multiplications run in Python. SciPy is roughly 20 times faster again than the two-loop version, since it runs compiled C. For the tiny 1×2 and 2×1 kernels the ordering flips: the four-loop version needs only two multiplications per pixel and is faster than the two-loop version, which pays the per-pixel overhead of slicing and calling <code>np.sum</code>. The two-loop version is therefore not always faster; it wins only when the kernel is large enough to amortise that overhead.</p>
+<h3>Boundary handling</h3>
+<p class="no-indent">Zero padding treats everything outside the image as black. This is why the box-filtered image has a dark border: pixels near the edge average in zeros. It also matches <code>convolve2d(..., boundary="fill", fillvalue=0)</code>, which is why the comparison above is exact. For the edge-detection parts below I switch to symmetric (reflecting) boundaries, because zero padding would create a strong false edge along the whole image border where the intensity jumps to black.</p>
+</section>
+
+<section id="p12">
+<h2>1.2 Finite Difference Operator</h2>
+<p class="no-indent">Using D<sub>x</sub> = [1, −1] and D<sub>y</sub> = [1, −1]<sup>T</sup>, I convolved the cameraman image with <code>scipy.signal.convolve2d</code> to get the partial derivatives, then computed the gradient magnitude \(\sqrt{g_x^2+g_y^2}\) and binarized it.</p>
+<div class="codeblock"><div class="codehead">part1_2.py</div><pre><code>def gradients(img):
+    # symmetric boundary: zero fill would create a fake bright edge along the image border
+    gx = convolve2d(img, Dx, mode=&quot;same&quot;, boundary=&quot;symm&quot;)
+    gy = convolve2d(img, Dy, mode=&quot;same&quot;, boundary=&quot;symm&quot;)
+    return gx, gy, np.hypot(gx, gy)</code></pre></div>
+<figure class=""><a href="media/part1_2.jpg"><img src="media/part1_2.jpg" alt="Original, partial derivative in x, partial derivative in y, gradient magnitude, and the binarized edge image a" loading="lazy"></a><figcaption><span class="fig-label">Fig. 1.2.</span> Original, partial derivative in x, partial derivative in y, gradient magnitude, and the binarized edge image at threshold 0.20. Derivatives are shown signed, with mid-gray meaning zero.</figcaption></figure>
+<h3>Choice of threshold</h3>
+<p class="no-indent">The gradient magnitude ranges up to 0.82 with a mean of 0.041. I tried thresholds from 0.05 to 0.30 and judged them by eye (Fig. 1.3). At 0.05 and 0.10 the grass becomes a field of noise. At 0.25 and above, real edges begin to disappear, such as the buildings on the skyline and parts of the coat. I chose <strong>0.20</strong> as the best trade-off: the tripod, camera, coat outline and skyline survive, and only a sparse speckle of grass noise remains. This is the noise that Gaussian smoothing removes in Part 1.3.</p>
+<figure class=""><a href="media/part1_2_threshold_sweep.jpg"><img src="media/part1_2_threshold_sweep.jpg" alt="Binarized gradient magnitude at six thresholds, used to choose 0.20." loading="lazy"></a><figcaption><span class="fig-label">Fig. 1.3.</span> Binarized gradient magnitude at six thresholds, used to choose 0.20.</figcaption></figure>
+</section>
+
+<section id="p13">
+<h2>1.3 Derivative of Gaussian (DoG) Filter</h2>
+<p class="no-indent">The Gaussian is a 13×13 kernel with σ = 2, built as the outer product of a 1D kernel from <code>cv2.getGaussianKernel</code> with its transpose.</p>
+<div class="codeblock"><div class="codehead">part1_3.py</div><pre><code>def gaussian2d(ksize=KSIZE, sigma=SIGMA):
+    g = cv2.getGaussianKernel(ksize, sigma)  # (ksize, 1) column vector
+    return g @ g.T</code></pre></div>
+<p>First I blurred the image and repeated the Part 1.2 procedure. Then I made the DoG filters by convolving the Gaussian with D<sub>x</sub> and D<sub>y</sub> (a <em>full</em> convolution, giving 13×14 and 14×13 filters) and applied each with a single convolution.</p>
+<figure class=""><a href="media/part1_3_blur_pipeline.jpg"><img src="media/part1_3_blur_pipeline.jpg" alt="Blurred image, derivatives of the blurred image, gradient magnitude, edges at threshold 0.05, and (right) the " loading="lazy"></a><figcaption><span class="fig-label">Fig. 1.4.</span> Blurred image, derivatives of the blurred image, gradient magnitude, edges at threshold 0.05, and (right) the Part 1.2 edges without blurring for comparison.</figcaption></figure>
+<h3>What changes with smoothing</h3>
+<p class="no-indent">The grass noise is gone entirely, so the threshold can drop from 0.20 to 0.05 (blurred gradients are smaller; their maximum is 0.17) while still giving a clean edge map. The edges are also thicker and smoother, since the blur spreads each edge over several pixels. The cost is lost detail: thin, low-contrast structure such as small buildings on the skyline and fine camera parts merges or disappears.</p>
+<figure class=""><a href="media/part1_3_dog.jpg"><img src="media/part1_3_dog.jpg" alt="The DoG&lt;sub&gt;x&lt;/sub&gt; and DoG&lt;sub&gt;y&lt;/sub&gt; filters displayed as images, the result of applying each in one convol" loading="lazy"></a><figcaption><span class="fig-label">Fig. 1.5.</span> The DoG<sub>x</sub> and DoG<sub>y</sub> filters displayed as images, the result of applying each in one convolution, the resulting edges, and the difference from the two-step result (scale 0 to 0.01; the maximum is 1.8×10<sup>-15</sup>, so the panel is black).</figcaption></figure>
+<h3>Verification</h3>
+<p class="no-indent">Convolution is associative, so \((f * G) * D = f * (G * D)\) exactly. In full-convolution mode the largest difference between the two routes is 9.7×10<sup>-16</sup>, and the binarized edge maps are identical. I used a symmetric boundary for the final images; the difference there is also about 10<sup>-15</sup>.</p>
+</section>
+
+<section id="bw1">
+<h2>Bells and Whistles: Gradient Orientation</h2>
+<p class="no-indent">I visualise gradient orientation in HSV. Hue encodes the direction of the gradient, saturation is 1, and value is the gradient magnitude divided by its maximum, so flat regions (where the angle is meaningless) stay black. The assignment asks for this <strong>without built-in angle functions</strong>, so I wrote my own <code>atan2</code>. It uses the arctangent polynomial from Abramowitz and Stegun (4.4.49) on the ratio of the smaller to the larger component, which is at most 1, and then restores the quadrant with <code>abs</code>, comparisons and reflections. Against <code>np.arctan2</code> on 200,000 random vectors its maximum error is 1.1×10<sup>-5</sup> rad, which is invisible in a hue.</p>
+<div class="codeblock"><div class="codehead">part1_3.py</div><pre><code>def my_atan2(y, x):
+    &quot;&quot;&quot;Angle of (x, y) in (-pi, pi], without built-in angle functions.
+
+    arctan(z) on [0, 1] uses the polynomial of Abramowitz &amp; Stegun 4.4.49 (max error about 1e-5 rad);
+    the octant / quadrant is then recovered with abs, comparisons and reflections.
+    &quot;&quot;&quot;
+    ax, ay = np.abs(x), np.abs(y)
+    swap = ay &gt; ax                                   # keep the ratio z = small / large &lt;= 1
+    num, den = np.where(swap, ax, ay), np.where(swap, ay, ax)
+    z = np.divide(num, den, out=np.zeros_like(num, dtype=float), where=den &gt; 0)
+    z2 = z * z
+    a = z * (0.9998660 + z2 * (-0.3302995 + z2 * (0.1801410 + z2 * (-0.0851330 + z2 * 0.0208351))))
+    a = np.where(swap, np.pi / 2 - a, a)             # angle in the first quadrant, [0, pi/2]
+    a = np.where(x &lt; 0, np.pi - a, a)                # reflect across the y axis
+    return np.where(y &lt; 0, -a, a)
+def orientation_hsv(gx, gy):
+    &quot;&quot;&quot;Hue = gradient direction, saturation = 1, value = normalized magnitude.&quot;&quot;&quot;
+    ang = (my_atan2(gy, gx) % (2 * np.pi)) / (2 * np.pi)
+    mag = np.hypot(gx, gy)
+    hsv = np.dstack([ang, np.ones_like(ang), mag / mag.max()])
+    return hsv_to_rgb(hsv)</code></pre></div>
+<figure class=""><a href="media/part1_3_orientation.jpg"><img src="media/part1_3_orientation.jpg" alt="Gradient orientation of the cameraman image computed from the DoG filters, with a colour wheel. The hue is the" loading="lazy"></a><figcaption><span class="fig-label">Fig. 1.6.</span> Gradient orientation of the cameraman image computed from the DoG filters, with a colour wheel. The hue is the direction in which intensity increases; image rows count downward, so right is red and down is yellow-green. For example, the top-left coat edge (bright sky above, dark coat below) shows as blue, which is up-left on the wheel.</figcaption></figure>
+<p class="no-indent">Two caveats. Hue is cyclic over the full 360°, so a dark-to-light edge and a light-to-dark edge along the same line receive opposite hues; edge <em>orientation</em>, defined only modulo 180°, would use half the circle. And hue is meaningless where the magnitude is near zero, which is why brightness is scaled by magnitude.</p>
+</section>
+
+<section id="part-two">
+<h2 class="part-heading">Part 2: Fun with Frequencies</h2>
+</section>
+
+<section id="p21">
+<h2>2.1 Image Sharpening</h2>
+<p class="no-indent">A Gaussian filter keeps only low frequencies. Subtracting the blurred image from the original leaves the high frequencies, and adding a multiple of them back makes edges look stronger:</p>
+<div class="equation">\[ f_{\text{sharp}} = f + \alpha\,(f - G*f) = \big((1+\alpha)\,\delta - \alpha\,G\big) * f, \]</div>
+<p class="no-indent">where δ is the impulse (identity) kernel. The right-hand form is the single <em>unsharp mask</em> kernel. I use the 13×13, σ = 2 Gaussian from Part 1.3, apply it to each colour channel, and clip to the displayable range.</p>
+<div class="codeblock"><div class="codehead">part2_1.py</div><pre><code>def unsharp_kernel(G, alpha):
+    &quot;&quot;&quot;Single-convolution unsharp mask: (1 + alpha) * impulse - alpha * G.&quot;&quot;&quot;
+    impulse = np.zeros_like(G)
+    impulse[G.shape[0] // 2, G.shape[1] // 2] = 1.0
+    return (1 + alpha) * impulse - alpha * G
+def sharpen(img, G, alpha):
+    &quot;&quot;&quot;Apply the single unsharp kernel (clipped to the valid display range).&quot;&quot;&quot;
+    K = unsharp_kernel(G, alpha)
+    if img.ndim == 2:
+        out = convolve2d(img, K, mode=&quot;same&quot;, boundary=&quot;symm&quot;)
+    else:
+        out = np.dstack([convolve2d(img[..., c], K, mode=&quot;same&quot;, boundary=&quot;symm&quot;) for c in range(img.shape[2])])
+    return np.clip(out, 0, 1)</code></pre></div>
+<p>The single kernel matches the three-step recipe <code>img + α·(img − blur)</code> to about 2×10<sup>-15</sup> on both test images.</p>
+<figure class=""><a href="media/part2_1_steps.jpg"><img src="media/part2_1_steps.jpg" alt="The Taj Mahal image (top) and a selfie (bottom): original, blurred (low frequencies), high frequencies (image " loading="lazy"></a><figcaption><span class="fig-label">Fig. 2.1.</span> The Taj Mahal image (top) and a selfie (bottom): original, blurred (low frequencies), high frequencies (image minus blur, shown around mid-gray), and sharpened with α = 1.5.</figcaption></figure>
+<h3>Varying the sharpening amount and the blur width</h3>
+<figure class=""><a href="media/part2_1_alpha.jpg"><img src="media/part2_1_alpha.jpg" alt="Sharpening the Taj image with α = 0, 0.5, 1, 2, 4 and 8 (α = 0 is the original). Detail improves up to roughly" loading="lazy"></a><figcaption><span class="fig-label">Fig. 2.2.</span> Sharpening the Taj image with α = 0, 0.5, 1, 2, 4 and 8 (α = 0 is the original). Detail improves up to roughly α = 1 to 2; by α = 4 there are bright halos along strong edges, such as the dome against the sky, and at α = 8 the halos are heavy and noise is amplified.</figcaption></figure>
+<figure class=""><a href="media/part2_1_sigma.jpg"><img src="media/part2_1_sigma.jpg" alt="Fixed α = 1.5 with Gaussian σ = 0.5, 1, 2, 4 and 8. The width of the Gaussian decides which frequencies count " loading="lazy"></a><figcaption><span class="fig-label">Fig. 2.3.</span> Fixed α = 1.5 with Gaussian σ = 0.5, 1, 2, 4 and 8. The width of the Gaussian decides which frequencies count as “high”: a small σ sharpens only the finest texture, and a large σ boosts broad edges and produces wide halos.</figcaption></figure>
+<h3>Evaluation: sharp, then blur, then sharpen</h3>
+<p class="no-indent">I blurred the sharp cameraman image with σ = 2 and tried to recover it with unsharp masking, sweeping α and measuring the mean squared error against the original.</p>
+<figure class=""><a href="media/part2_1_eval.jpg"><img src="media/part2_1_eval.jpg" alt="Original, blurred (MSE 0.0026), re-sharpened at the MSE-optimal α = 2.3 (MSE 0.0016), the difference from the " loading="lazy"></a><figcaption><span class="fig-label">Fig. 2.4.</span> Original, blurred (MSE 0.0026), re-sharpened at the MSE-optimal α = 2.3 (MSE 0.0016), the difference from the original, and the error as a function of α.</figcaption></figure>
+<p class="no-indent">Sharpening reduces the error by about 37% (0.00256 to 0.00161), but never recovers the original. The difference image still shows outlines and ringing, and the error curve has a minimum at α = 2.3 and rises on either side, because beyond the optimum the overshoot adds new error. The main lesson is that unsharp masking can only boost frequencies that survived the blur; it cannot recreate detail the blur removed. The MSE-optimal α is also not the best-looking one; by eye, α around 1 to 2 looks best on the Taj image. The supplied Taj image is only mildly blurry, so its results are subtle at low α.</p>
+</section>
+
+<section id="p22">
+<h2>2.2 Hybrid Images</h2>
+<p class="no-indent">A hybrid image (Oliva, Torralba and Schyns, 2006) adds the low frequencies of one image to the high frequencies of another. Up close the high frequencies dominate perception; from far away only the smooth part survives. The low-pass part is a Gaussian-blurred image; the high-pass part is the image minus its own Gaussian blur.</p>
+<div class="codeblock"><div class="codehead">part2_2.py</div><pre><code>def hybrid(low_img, high_img, s_low, s_high):
+    &quot;&quot;&quot;low-pass of one image + high-pass (image minus its own Gaussian blur) of the other.&quot;&quot;&quot;
+    low = lowpass(low_img, s_low)
+    high = high_img - lowpass(high_img, s_high)
+    return np.clip(low + high, 0, 1), low, high</code></pre></div>
+<h3>Alignment</h3>
+<p class="no-indent">Alignment matters because it decides what the viewer groups together. For each image I picked two points (the eyes) from zoomed crops. A scale, rotation and translation that moves one image's two points onto the other's follows directly if points are treated as complex numbers: \(q = a\,p + t\), where |a| is the scale and arg(a) is the rotation. The reference image keeps its orientation, and the other image is warped onto it. Both go onto a common canvas.</p>
+<div class="codeblock"><div class="codehead">part2_2.py</div><pre><code>def similarity(p, q):
+    &quot;&quot;&quot;2x3 matrix of the scale + rotation + translation that maps the two points p onto the two points q.
+
+    Treat points as complex numbers: q = a * p + t, where |a| is the scale and arg(a) the rotation.
+    &quot;&quot;&quot;
+    p, q = np.asarray(p, float), np.asarray(q, float)
+    a = complex(*(q[1] - q[0])) / complex(*(p[1] - p[0]))
+    t = complex(*q[0]) - a * complex(*p[0])
+    return np.array([[a.real, -a.imag, t.real], [a.imag, a.real, t.imag]])
+def align(cfg):
+    &quot;&quot;&quot;Warp both images onto a common canvas so that their two eye points coincide.&quot;&quot;&quot;
+    ref, oth = load_rgb(cfg[&quot;ref&quot;]), load_rgb(cfg[&quot;oth&quot;])
+    r = np.asarray(cfg[&quot;ref_pts&quot;], float)
+    mid = r.mean(axis=0)
+    target = cfg[&quot;zoom&quot;] * (r - mid) + np.asarray(cfg[&quot;anchor&quot;], float)  # reference eyes, zoomed, on the canvas
+
+    def warp(img, pts):
+        M = similarity(pts, target)
+        return np.clip(cv2.warpAffine(img.astype(np.float32), M, cfg[&quot;canvas&quot;], flags=cv2.INTER_CUBIC,
+                                      borderMode=cv2.BORDER_REFLECT), 0, 1).astype(float)
+
+    return ref, oth, warp(ref, cfg[&quot;ref_pts&quot;]), warp(oth, cfg[&quot;oth_pts&quot;]), target</code></pre></div>
+<h3>Choosing the cutoff frequency</h3>
+<p class="no-indent">The Gaussian low-pass of width σ pixels has a frequency response that is itself a Gaussian with standard deviation f = 1/(2πσ) cycles per pixel, so each σ corresponds to a cutoff frequency. The two widths are chosen independently for the low-pass and high-pass parts. The test of a good choice is the “distance strip”: the hybrid shrunk to 50%, 25% and 12% to simulate viewing from farther away.</p>
+
+<h3>Hybrid 1 (full process): Derek and Nutmeg</h3>
+<p class="no-indent">Derek supplies the low frequencies and Nutmeg the high frequencies, with σ<sub>low</sub> = 10 (f = 0.016) and σ<sub>high</sub> = 5 (f = 0.032).</p>
+<figure class=""><a href="media/part2_2_derek_nutmeg_align.jpg"><img src="media/part2_2_derek_nutmeg_align.jpg" alt="Original images with the chosen eye points, then both images aligned on a common canvas." loading="lazy"></a><figcaption><span class="fig-label">Fig. 2.5.</span> Original images with the chosen eye points, then both images aligned on a common canvas.</figcaption></figure>
+<figure class="medium"><a href="media/part2_2_derek_nutmeg_cutoff_sweep.jpg"><img src="media/part2_2_derek_nutmeg_cutoff_sweep.jpg" alt="Grayscale hybrids for σ&lt;sub&gt;low&lt;/sub&gt; = 6, 10, 14 (columns) and σ&lt;sub&gt;high&lt;/sub&gt; = 3, 5, 8 (rows), with the cu" loading="lazy"></a><figcaption><span class="fig-label">Fig. 2.6.</span> Grayscale hybrids for σ<sub>low</sub> = 6, 10, 14 (columns) and σ<sub>high</sub> = 3, 5, 8 (rows), with the cutoff frequency of each. With σ<sub>high</sub> = 3, Derek's smile still ghosts through up close because the two bands overlap too much. With σ<sub>high</sub> = 8 the cat dominates and Derek appears only at a distance. σ<sub>low</sub> = 10 and σ<sub>high</sub> = 5 is the balance.</figcaption></figure>
+<figure class=""><a href="media/part2_2_derek_nutmeg_fourier.jpg"><img src="media/part2_2_derek_nutmeg_fourier.jpg" alt="Frequency analysis, in grayscale. Top: low-frequency source, high-frequency source, low-pass filtered, high-pa" loading="lazy"></a><figcaption><span class="fig-label">Fig. 2.7.</span> Frequency analysis, in grayscale. Top: low-frequency source, high-frequency source, low-pass filtered, high-pass filtered, hybrid. Bottom: the log magnitude of the 2D Fourier transform of each. The low-passed spectrum has its energy near the centre; the high-passed spectrum has a hole at the centre; the hybrid contains both. The bright cross is an artefact of the image borders.</figcaption></figure>
+<figure class=""><a href="media/part2_2_derek_nutmeg_distance.jpg"><img src="media/part2_2_derek_nutmeg_distance.jpg" alt="The final hybrid at 100%, 50%, 25% and 12% size. Up close it reads as a cat, with whiskers and fur; at 12% it " loading="lazy"></a><figcaption><span class="fig-label">Fig. 2.8.</span> The final hybrid at 100%, 50%, 25% and 12% size. Up close it reads as a cat, with whiskers and fur; at 12% it is clearly Derek smiling.</figcaption></figure>
+<h3>Bells and whistles: colour</h3>
+<p class="no-indent">I compared grayscale with colour in the low-frequency part only, the high-frequency part only, and both.</p>
+<figure class=""><a href="media/part2_2_derek_nutmeg_color.jpg"><img src="media/part2_2_derek_nutmeg_color.jpg" alt="Top: full size. Bottom: 25% size. Left to right: grayscale, colour on the low part only, colour on the high pa" loading="lazy"></a><figcaption><span class="fig-label">Fig. 2.9.</span> Top: full size. Bottom: 25% size. Left to right: grayscale, colour on the low part only, colour on the high part only, colour on both.</figcaption></figure>
+<p class="no-indent"><strong>Colour on the low-frequency part works best.</strong> It supplies Derek's skin tone and makes him very recognisable at 25% size. Colour on the high-frequency part is almost invisible, because fine detail carries little colour that the eye can resolve, and “both” looks nearly the same as “low only”. The trade-off is that low-only colour tints the cat's face with skin tone, which weakens the cat reading up close.</p>
+
+<h3>Hybrids 2 and 3: two pairs of painted character portraits</h3>
+<p class="no-indent">The other two hybrids use painted game-card portraits. These are low-resolution sources (the faces are only about 50 px wide), so they were enlarged about 3.5× before filtering. I looked for pairs with similar pose, framing and tonal layout, since those match the low-frequency structure. Eye points were read from zoomed crops: Xiao Qiao (262, 148), (293, 151); Cao Zhi (296, 177), (332, 186); Zhao Yun (262, 202), (297, 204); Zhao Tong (126, 326), (168, 321).</p>
+<p class="no-indent"><strong>Which image goes where.</strong> I tested both directions for each pair. The best results put the crisp, line-rich painting in the high-frequency (near) role and the soft, colour-rich painting in the low-frequency (far) role. A soft image has too little fine detail to carry the near view.</p>
+<figure class=""><a href="media/part2_2_xiaoqiao_caozhi_align.jpg"><img src="media/part2_2_xiaoqiao_caozhi_align.jpg" alt="Hybrid 2, originals and aligned images: Xiao Qiao (reference) and Cao Zhi." loading="lazy"></a><figcaption><span class="fig-label">Fig. 2.10.</span> Hybrid 2, originals and aligned images: Xiao Qiao (reference) and Cao Zhi.</figcaption></figure>
+<figure class=""><a href="media/part2_2_xiaoqiao_caozhi_distance.jpg"><img src="media/part2_2_xiaoqiao_caozhi_distance.jpg" alt="Hybrid 2 at four sizes. Cao Zhi supplies the low frequencies and Xiao Qiao the high frequencies (σ&lt;sub&gt;low&lt;/su" loading="lazy"></a><figcaption><span class="fig-label">Fig. 2.11.</span> Hybrid 2 at four sizes. Cao Zhi supplies the low frequencies and Xiao Qiao the high frequencies (σ<sub>low</sub> = 8, f = 0.020; σ<sub>high</sub> = 4, f = 0.040). Up close it is clearly Xiao Qiao, with crisp eyes, lips and hair lines. At a distance it becomes a dark-haired figure against blue sky with an orange scarf, which reads as Cao Zhi, but his face stays blurry and ambiguous, and her outlines remain faintly visible even at 12%.</figcaption></figure>
+<figure class=""><a href="media/part2_2_zhaoyun_zhaotong_align.jpg"><img src="media/part2_2_zhaoyun_zhaotong_align.jpg" alt="Hybrid 3, originals and aligned images: Zhao Yun (reference) and Zhao Tong." loading="lazy"></a><figcaption><span class="fig-label">Fig. 2.12.</span> Hybrid 3, originals and aligned images: Zhao Yun (reference) and Zhao Tong.</figcaption></figure>
+<figure class=""><a href="media/part2_2_zhaoyun_zhaotong_distance.jpg"><img src="media/part2_2_zhaoyun_zhaotong_distance.jpg" alt="Hybrid 3 at four sizes. Zhao Tong supplies the low frequencies and Zhao Yun the high frequencies (σ&lt;sub&gt;low&lt;/s" loading="lazy"></a><figcaption><span class="fig-label">Fig. 2.13.</span> Hybrid 3 at four sizes. Zhao Tong supplies the low frequencies and Zhao Yun the high frequencies (σ<sub>low</sub> = 8, σ<sub>high</sub> = 4). Up close it is clearly Zhao Yun, with his red headband, green eyes and armour lines; at 12% it becomes a warm orange-and-blond figure, which is Zhao Tong's colouring. This is the stronger of the two flips.</figcaption></figure>
+<div class="downloads"><a href="media/part2_2_xiaoqiao_caozhi_cutoff_sweep.jpg">Cutoff sweep, hybrid 2</a><a href="media/part2_2_zhaoyun_zhaotong_cutoff_sweep.jpg">Cutoff sweep, hybrid 3</a><a href="media/part2_2_xiaoqiao_caozhi_hybrid.jpg">Hybrid 2, full size</a><a href="media/part2_2_zhaoyun_zhaotong_hybrid.jpg">Hybrid 3, full size</a></div>
+<p class="no-indent">For both pairs, I chose σ<sub>low</sub> = 8 and σ<sub>high</sub> = 4 from the sweeps (linked above). A small σ<sub>low</sub> (4) lets the far image's edges overlap the near image's; a large one (12) leaves the far image as shapeless blobs. A very small σ<sub>high</sub> (2) keeps only the finest lines, so the near image loses facial structure, and a larger one (6) pulls in mid-frequency shading that competes with the far image.</p>
+</section>
+
+<section id="p23">
+<h2>2.3 Gaussian and Laplacian Stacks</h2>
+<p class="no-indent">A stack is a pyramid without downsampling: every level has the original size. The Gaussian stack blurs the original with widths σ = 0 (the image itself), 2, 4, 8, 16, 32, so the blur doubles each level as it would in a pyramid whose resolution halves. The Laplacian stack takes differences of neighbouring levels, \(L_i = G_i - G_{i+1}\), and keeps the last Gaussian level as a residual, so the levels sum back to the original. No built-in pyramid function is used.</p>
+<div class="codeblock"><div class="codehead">part2_3.py</div><pre><code>def blur(img, sigma):
+    &quot;&quot;&quot;Separable Gaussian blur on a 2D or HxWxC array, reflecting at the border.&quot;&quot;&quot;
+    if sigma == 0:
+        return img.copy()
+    k = cv2.getGaussianKernel(int(6 * sigma) | 1, sigma).ravel()
+    return convolve1d(convolve1d(img, k, axis=0, mode=&quot;reflect&quot;), k, axis=1, mode=&quot;reflect&quot;)
+def gaussian_stack(img, sigmas=SIGMAS):
+    return [blur(img, s) for s in sigmas]
+def laplacian_stack(img, sigmas=SIGMAS):
+    &quot;&quot;&quot;Band-pass levels G_i - G_{i+1}; the last level is the remaining low-pass image, so the levels sum to img.&quot;&quot;&quot;
+    g = gaussian_stack(img, sigmas)
+    return [g[i] - g[i + 1] for i in range(len(g) - 1)] + [g[-1]]</code></pre></div>
+<p>Three checks, all passing: the Laplacian stack sums back to the image with maximum error 1.1×10<sup>-16</sup>; blending an image with itself returns it (1.4×10<sup>-16</sup>); and blending with an all-ones mask returns the first image (2.2×10<sup>-16</sup>).</p>
+<figure class=""><a href="media/part2_3_stack_apple.jpg"><img src="media/part2_3_stack_apple.jpg" alt="Apple: Gaussian stack (top), Laplacian stack (middle, bands shown around mid-gray, with the last panel being t" loading="lazy"></a><figcaption><span class="fig-label">Fig. 2.14.</span> Apple: Gaussian stack (top), Laplacian stack (middle, bands shown around mid-gray, with the last panel being the residual), and the Gaussian stack of the step mask (bottom). The mask edge gets progressively blurrier, which is what smooths the seam at coarse levels.</figcaption></figure>
+<figure class=""><a href="media/part2_3_stack_orange.jpg"><img src="media/part2_3_stack_orange.jpg" alt="Orange: the same stacks, with the inverse mask." loading="lazy"></a><figcaption><span class="fig-label">Fig. 2.15.</span> Orange: the same stacks, with the inverse mask.</figcaption></figure>
+<h3>Recreating Szeliski Figure 3.42</h3>
+<p class="no-indent">Figure 3.42 shows the Laplacian blend level by level. Rows are levels 0, 2 and 4 (high, medium and low frequencies); the left and middle columns are the apple and orange weighted by the smooth masks, and the right column is their sum. The bottom row shows the whole masked apple, the whole masked orange, and the final blend.</p>
+<figure class="narrow"><a href="media/part2_3_fig342.jpg"><img src="media/part2_3_fig342.jpg" alt="Recreation of Figure 3.42, panels (a) to (l)." loading="lazy"></a><figcaption><span class="fig-label">Fig. 2.16.</span> Recreation of Figure 3.42, panels (a) to (l).</figcaption></figure>
+</section>
+
+<section id="p24">
+<h2>2.4 Multiresolution Blending</h2>
+<p class="no-indent">Following Burt and Adelson (1983), I blend two images A and B with a mask M. With stacks in place of pyramids, the page-226 algorithm leaves a visible seam, because there is no downsample–blur–upsample step to soften the mask. Instead I use the page-230 algorithm: build a Gaussian stack of the mask as well, and blend each band with its own mask level,</p>
+<div class="equation">\[ \text{blend} = \sum_i GM_i \cdot LA_i + (1-GM_i)\cdot LB_i . \]</div>
+<div class="codeblock"><div class="codehead">part2_3.py</div><pre><code>def blend(a, b, mask, sigmas=SIGMAS):
+    &quot;&quot;&quot;Burt &amp; Adelson multiresolution blend using stacks: sum_i GM_i * LA_i + (1 - GM_i) * LB_i.&quot;&quot;&quot;
+    return sum(gm * la + (1 - gm) * lb
+               for gm, la, lb in zip(gaussian_stack(mask, sigmas), laplacian_stack(a, sigmas), laplacian_stack(b, sigmas)))</code></pre></div>
+<h3>The Oraple</h3>
+<figure class="medium"><a href="media/part2_4_oraple.jpg"><img src="media/part2_4_oraple.jpg" alt="Apple, orange, the step-function mask (white = apple) and the blend." loading="lazy"></a><figcaption><span class="fig-label">Fig. 2.17.</span> Apple, orange, the step-function mask (white = apple) and the blend.</figcaption></figure>
+<figure class=""><a href="media/part2_4_oraple_methods.jpg"><img src="media/part2_4_oraple_methods.jpg" alt="Why the stack matters. A hard seam, single-scale feathering (the mask blurred once with σ = 16), and multireso" loading="lazy"></a><figcaption><span class="fig-label">Fig. 2.18.</span> Why the stack matters. A hard seam, single-scale feathering (the mask blurred once with σ = 16), and multiresolution blends with 1, 2, 3, 4 and 6 levels. With one or two levels the seam is still visible; with six it disappears, because coarse bands are mixed over a wide transition and fine bands over a narrow one. Single-scale feathering smears colours across the seam instead.</figcaption></figure>
+<h3>Bells and whistles: colour</h3>
+<figure class="medium"><a href="media/part2_4_oraple_color.jpg"><img src="media/part2_4_oraple_color.jpg" alt="The Oraple blended in grayscale and in colour (each channel blended separately). The grayscale blend is plausi" loading="lazy"></a><figcaption><span class="fig-label">Fig. 2.19.</span> The Oraple blended in grayscale and in colour (each channel blended separately). The grayscale blend is plausible, but colour is what makes the apple read as an apple and the orange as an orange, and the colour transition across the seam is smooth in every channel.</figcaption></figure>
+<h3>Custom blends</h3>
+<p class="no-indent">The three custom blends use the same blend function with different masks. In all of them, where the mask is 1 the result takes image A.</p>
+<p class="no-indent"><strong>Irregular mask 1: Taj Mahal in the glasses.</strong> The mask is a pair of soft ellipses (value 0.75) over the two lenses of my glasses, and image A is the Taj Mahal pasted into the lens areas. The mask value below 1 keeps the eyes faintly visible through the lenses, like a reflection. This is my favourite result.</p>
+<figure class="medium"><a href="media/part2_4_taj_glasses.jpg"><img src="media/part2_4_taj_glasses.jpg" alt="Taj Mahal pasted over the lenses, the selfie, the mask, and the blend." loading="lazy"></a><figcaption><span class="fig-label">Fig. 2.20.</span> Taj Mahal pasted over the lenses, the selfie, the mask, and the blend.</figcaption></figure>
+<figure class="narrow"><a href="media/part2_4_taj_glasses_process.jpg"><img src="media/part2_4_taj_glasses_process.jpg" alt="The process for this blend, in the style of Burt and Adelson Figure 10 (panels (a) to (l)): weighted bands of " loading="lazy"></a><figcaption><span class="fig-label">Fig. 2.21.</span> The process for this blend, in the style of Burt and Adelson Figure 10 (panels (a) to (l)): weighted bands of the Taj image, weighted bands of the selfie, and their sum, at levels 0, 2 and 4; the bottom row shows the two weighted images and the result.</figcaption></figure>
+<p class="no-indent"><strong>Irregular mask 2: face swap.</strong> Cao Zhi's face goes inside Xiao Qiao's hair and background through an elliptical mask, with the two portraits aligned on the eyes.</p>
+<figure class="medium"><a href="media/part2_4_face_swap.jpg"><img src="media/part2_4_face_swap.jpg" alt="Cao Zhi (A), Xiao Qiao (B), the elliptical mask, and the blend. The face region comes from A and the hair and " loading="lazy"></a><figcaption><span class="fig-label">Fig. 2.22.</span> Cao Zhi (A), Xiao Qiao (B), the elliptical mask, and the blend. The face region comes from A and the hair and background from B.</figcaption></figure>
+<p class="no-indent"><strong>Straight seam: two faces.</strong> Da Qiao and Sun Ce, aligned on the eyes, joined along a vertical seam through the middle of the face. The seam itself is smooth. The halves do not fully match, because the two characters are in different poses and the lighting differs.</p>
+<figure class="medium"><a href="media/part2_4_daqiao_sunce_seam.jpg"><img src="media/part2_4_daqiao_sunce_seam.jpg" alt="Da Qiao (A, left of the seam), Sun Ce (B), the mask, and the blend." loading="lazy"></a><figcaption><span class="fig-label">Fig. 2.23.</span> Da Qiao (A, left of the seam), Sun Ce (B), the mask, and the blend.</figcaption></figure>
+</section>
+
+<section id="limits">
+<h2>Limitations</h2>
+<p class="no-indent">The Derek and Nutmeg hybrid is clean, but the two hybrids made from painted portraits are weaker. The faces are small and the sources are low-resolution, and the painted style has a lot of mid-frequency detail, so the transition between near and far is only moderate. In the Cao Zhi and Xiao Qiao hybrid, the near image's outlines remain faintly visible at 12% size. Eye points and mask shapes were placed by hand and checked by eye, not found automatically. The unsharp-mask evaluation uses a single image. The Taj image used for sharpening is only mildly blurry.</p>
+</section>
+
+<section id="learned">
+<h2>What I Learned</h2>
+<p class="no-indent">Sharpening, hybrid images and multiresolution blending are the same idea applied three times: split an image into frequency bands, treat each band separately, and add them back. Unsharp masking boosts one band; hybrids swap the bands of two images; blending uses a different mask width for each band. Once I wrote everything as differences of Gaussians, the stacks and the sharpening kernel turned out to be the same operation. The second lesson was practical: algebraic identities make good tests. Associativity of convolution, a stack that sums back to the image, and a blend of an image with itself all gave exact answers to about 10<sup>-15</sup>, which is a quick, unambiguous check that the code is right. Looking at the figures caught a different kind of mistake: for example, my first colour wheel for the orientation figure was flipped vertically, and only the picture showed it. Choices such as σ, α and the threshold could only be made by looking at sweeps, and the best-looking value was not the same as the error-minimising one.</p>
+</section>
+
+<section id="files">
+<h2>Files, Sources, and Credits</h2>
+<div class="downloads">
+<a href="part1_1.py">part1_1.py</a><a href="part1_2.py">part1_2.py</a><a href="part1_3.py">part1_3.py</a><a href="part2_1.py">part2_1.py</a><a href="part2_2.py">part2_2.py</a><a href="part2_3.py">part2_3.py</a><a href="part2_4.py">part2_4.py</a><a href="requirements.txt">requirements.txt</a>
+</div>
+<p class="no-indent small">Run any script from this folder with <code>python part1_1.py</code> and so on, in an environment with the packages in <code>requirements.txt</code>. Figures are written to <code>outputs/</code>; the web copies on this page are in <code>media/</code>.</p>
+<p class="no-indent small"><strong>Image sources.</strong> Derek and Nutmeg are from the course starter code (Hoiem's Computational Photography class). The apple and orange are from Burt and Adelson (1983). The cameraman image is the standard test image from the scikit-image repository, and the Taj Mahal image is from the course. The portraits used in Parts 2.2 and 2.4 are Three Kingdoms character card art, used here only for coursework; the artwork belongs to its artists and publisher. The selfie is my own.</p>
+<ol class="references">
+<li>P. J. Burt and E. H. Adelson, “A multiresolution spline with application to image mosaics,” <em>ACM Trans. Graphics</em>, vol. 2, no. 4, pp. 217–236, 1983.</li>
+<li>A. Oliva, A. Torralba and P. G. Schyns, “Hybrid images,” <em>ACM Trans. Graphics</em> (SIGGRAPH), vol. 25, no. 3, pp. 527–532, 2006.</li>
+<li>R. Szeliski, <em>Computer Vision: Algorithms and Applications</em>, 2nd ed., Springer, 2022, Fig. 3.42.</li>
+<li>M. Abramowitz and I. A. Stegun, <em>Handbook of Mathematical Functions</em>, formula 4.4.49.</li>
+</ol>
+</section>
+</main>
+
+</body>
+</html>

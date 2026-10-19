@@ -1,0 +1,7 @@
+# Python 3.11 (conda env: syde671)
+numpy>=1.26
+scipy>=1.11
+matplotlib>=3.8
+imageio>=2.33
+pillow>=10.0
+opencv-python-headless>=4.8

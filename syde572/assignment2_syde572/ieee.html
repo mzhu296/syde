@@ -1,0 +1,351 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="SYDE 572 Assignment 2: linear basis-function regression.">
+  <title>SYDE 572 Assignment 2</title>
+  <style>
+    :root {
+      --ink: #111;
+      --muted: #4b5563;
+      --rule: #9ca3af;
+      --light-rule: #d1d5db;
+      --accent: #075985;
+      --paper: #fff;
+      --canvas: #e9edf1;
+      --soft: #f4f7f9;
+      --result: #eef6fa;
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; scroll-padding-top: 4.5rem; }
+    body {
+      margin: 0;
+      color: var(--ink);
+      background: var(--canvas);
+      font-family: "Times New Roman", Times, serif;
+      font-size: 16px;
+      line-height: 1.52;
+    }
+    a { color: var(--accent); text-underline-offset: .16em; }
+    a:hover { color: #9a3412; }
+    img { max-width: 100%; }
+
+    .review-bar {
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 1rem;
+      padding: .65rem max(1rem, calc((100% - 1040px) / 2));
+      border-bottom: 1px solid #cbd5e1;
+      background: rgba(248, 250, 252, .96);
+      font-family: Arial, Helvetica, sans-serif;
+      font-size: .86rem;
+      backdrop-filter: blur(10px);
+    }
+    .review-bar strong { letter-spacing: .04em; text-transform: uppercase; }
+    .review-bar nav { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: .75rem; }
+    .review-bar a { font-weight: 700; text-decoration: none; }
+
+    .paper {
+      width: min(1040px, calc(100% - 2rem));
+      margin: 2rem auto 4rem;
+      padding: clamp(2rem, 6vw, 4.75rem);
+      background: var(--paper);
+      box-shadow: 0 16px 44px rgba(15, 23, 42, .14);
+    }
+    .paper-header { text-align: center; }
+    .paper-header .course {
+      margin: 0 0 .75rem;
+      font-family: Arial, Helvetica, sans-serif;
+      font-size: .78rem;
+      font-weight: 700;
+      letter-spacing: .13em;
+      text-transform: uppercase;
+    }
+    h1 {
+      max-width: 760px;
+      margin: 0 auto .85rem;
+      font-size: clamp(1.85rem, 4.4vw, 2.7rem);
+      font-weight: 400;
+      line-height: 1.12;
+    }
+    .author-line { margin: 0 0 2rem; font-size: 1rem; }
+
+    .abstract {
+      max-width: 820px;
+      margin: 0 auto 2rem;
+      padding: 1rem 1.25rem;
+      border-top: 1.5px solid var(--ink);
+      border-bottom: 1px solid var(--rule);
+      text-align: justify;
+    }
+    .abstract p { margin: 0 0 .6rem; text-indent: 0; }
+    .abstract p:last-child { margin-bottom: 0; }
+    .label { font-variant: small-caps; font-weight: 700; letter-spacing: .04em; }
+
+    .contents {
+      margin: 2rem 0 2.5rem;
+      padding: 1rem 1.2rem;
+      border-left: 3px solid var(--accent);
+      background: var(--soft);
+      font-family: Arial, Helvetica, sans-serif;
+      font-size: .9rem;
+    }
+    .contents strong { display: block; margin-bottom: .4rem; text-transform: uppercase; letter-spacing: .06em; }
+    .contents ol { columns: 2; margin: 0; padding-left: 1.3rem; }
+    .contents li { margin: .25rem 0; padding-right: 1rem; break-inside: avoid; }
+    .contents a { color: #1f2937; }
+
+    section { margin: 0 0 2.5rem; scroll-margin-top: 5rem; }
+    h2, h3, h4 { break-after: avoid; }
+    h2 {
+      margin: 2.8rem 0 1rem;
+      border-bottom: 1px solid var(--ink);
+      font-family: Arial, Helvetica, sans-serif;
+      font-size: 1.08rem;
+      line-height: 1.35;
+      letter-spacing: .045em;
+      text-align: center;
+      text-transform: uppercase;
+    }
+    h3 {
+      margin: 1.8rem 0 .55rem;
+      font-size: 1rem;
+      font-style: italic;
+      font-weight: 700;
+    }
+    h4 { margin: 1.2rem 0 .35rem; font-size: .95rem; }
+    section > p, .prose > p {
+      margin: .55rem 0;
+      text-align: justify;
+      text-indent: 1.35rem;
+    }
+    section > p.no-indent, .no-indent { text-indent: 0; }
+
+    .equation {
+      margin: 1rem 0;
+      padding: .35rem 1rem;
+      overflow-x: auto;
+      border-left: 2px solid var(--rule);
+      font-size: 1.02rem;
+      text-align: center;
+    }
+    .result-box {
+      margin: 1rem 0;
+      padding: .8rem 1rem;
+      border-top: 1.5px solid var(--accent);
+      border-bottom: 1px solid var(--accent);
+      background: var(--result);
+      text-align: center;
+    }
+    .method-note {
+      margin: 1rem 0;
+      padding: .75rem 1rem;
+      border-left: 3px solid #a16207;
+      background: #fffbeb;
+      text-align: justify;
+    }
+
+    .table-wrap { margin: 1.25rem 0 1.8rem; overflow-x: auto; }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      border-top: 1.8px solid #000;
+      border-bottom: 1.8px solid #000;
+      font-family: "Times New Roman", Times, serif;
+      font-size: .875rem;
+      line-height: 1.3;
+      font-variant-numeric: tabular-nums;
+    }
+    caption {
+      padding: 0 0 .5rem;
+      font-size: .82rem;
+      line-height: 1.25;
+      text-align: center;
+      text-transform: uppercase;
+    }
+    caption mjx-container { text-transform: none; }
+    thead { border-bottom: 1px solid #000; }
+    th, td { padding: .42rem .52rem; text-align: center; vertical-align: middle; }
+    th { font-weight: 700; }
+    tbody tr + tr { border-top: .5px solid var(--light-rule); }
+    tbody tr:last-child { font-weight: 600; }
+
+    .figure-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1.4rem; margin: 1.5rem 0 2rem; }
+    figure { margin: 0; break-inside: avoid; }
+    figure.wide { grid-column: 1 / -1; }
+    figure img { display: block; width: 100%; height: auto; border: 1px solid var(--light-rule); background: white; }
+    figcaption {
+      margin-top: .48rem;
+      font-size: .86rem;
+      line-height: 1.35;
+      text-align: justify;
+    }
+    .fig-label { font-variant: small-caps; font-weight: 700; }
+
+    .downloads {
+      display: flex;
+      flex-wrap: wrap;
+      gap: .55rem;
+      margin: 1rem 0 1.4rem;
+      font-family: Arial, Helvetica, sans-serif;
+      font-size: .82rem;
+    }
+    .downloads a {
+      display: inline-flex;
+      align-items: center;
+      min-height: 2.25rem;
+      padding: .42rem .7rem;
+      border: 1px solid #94a3b8;
+      background: #f8fafc;
+      color: #0f172a;
+      font-weight: 700;
+      text-decoration: none;
+    }
+    .downloads a:hover { border-color: var(--accent); color: var(--accent); }
+    .print-only { display: none; }
+    .pdf-frame { width: 100%; min-height: 620px; border: 1px solid var(--rule); background: var(--soft); }
+    .small { color: var(--muted); font-size: .88rem; }
+    .references { padding-left: 1.4rem; font-size: .92rem; }
+    .references li { margin-bottom: .55rem; }
+
+    @media (max-width: 760px) {
+      .review-bar { align-items: flex-start; flex-direction: column; }
+      .review-bar nav { justify-content: flex-start; }
+      .paper { width: 100%; margin: 0; padding: 1.5rem 1rem 3rem; box-shadow: none; }
+      .contents ol { columns: 1; }
+      .figure-grid { grid-template-columns: 1fr; }
+      figure.wide { grid-column: auto; }
+      .pdf-frame { min-height: 480px; }
+      th, td { min-width: 6.2rem; }
+    }
+
+    @media print {
+      @page { size: letter; margin: .65in; }
+      body { background: white; font-size: 10pt; line-height: 1.28; }
+      .review-bar, .contents, .downloads, .screen-only { display: none !important; }
+      .print-only { display: block; }
+      /* Wide content: let it use the full width and shrink rather than being clipped */
+      .equation, .table-wrap { overflow: visible; }
+      .equation { padding: .3rem .5rem; }
+      .equation mjx-container[display="true"] { font-size: 82% !important; }
+      th, td { padding: .3rem .3rem; }
+      .paper { width: auto; margin: 0; padding: 0; box-shadow: none; }
+      h1 { font-size: 20pt; }
+      h2 { font-size: 11pt; }
+      section { margin-bottom: 1.3rem; }
+      section > p, .prose > p { orphans: 3; widows: 3; }
+      .figure-grid { display: block; }
+      figure { margin: 0 0 1rem; page-break-inside: avoid; }
+      table { font-size: 8pt; }
+      .table-wrap, .result-box, .equation { page-break-inside: avoid; }
+      a { color: inherit; text-decoration: none; }
+    }
+  </style>
+  <script>
+    window.MathJax = {
+      tex: { inlineMath: [['\\(', '\\)']], displayMath: [['\\[', '\\]']] },
+      options: { skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code'] }
+    };
+  </script>
+  <script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+</head>
+<body>
+  <div class="review-bar">
+    <strong>SYDE 572 · Assignment 2</strong>
+    <nav aria-label="Review page links">
+      <a href="../index.html">Course home</a>
+      <a href="#part-one">Part 1</a>
+      <a href="#part-two">Part 2</a>
+      <a href="#files">Files</a>
+    </nav>
+  </div>
+  <main class="paper">
+    <header class="paper-header">
+      <p class="course">SYDE 572 · Introduction to Pattern Recognition · Assignment 2</p>
+      <h1>Linear Basis-Function Regression with Polynomial and Gaussian Bases</h1>
+      <p class="author-line">Assignment Report</p>
+    </header>
+    <div class="abstract">
+      <p><span class="label">Abstract—</span>This report fits linear basis-function regression models to the Boston Housing data, predicting median house value (MEDV) from 13 town features. The first 100 observations are used for training and the remaining 406 for testing. Part 1 uses single-variable polynomial bases, examining overfitting, the degree-1 weights, one-dimensional fits, and L2 regularization selected by 10-fold cross-validation. Part 2 uses Gaussian bases centred on randomly chosen training points, examining the effect of the number of bases and of regularization.</p>
+      <p><span class="label">Index Terms—</span>linear regression, basis functions, overfitting, ridge regularization, cross-validation.</p>
+    </div>
+    <nav class="contents" aria-label="Table of contents"><strong>Contents</strong><ol>
+      <li><a href="#setup">Data and setup</a></li><li><a href="#part-one">Part 1: Polynomial basis</a></li>
+      <li><a href="#p1a">1(a) Degree vs. error</a></li><li><a href="#p1b">1(b) Degree-1 weights</a></li>
+      <li><a href="#p1c">1(c) One-dimensional fits</a></li><li><a href="#p1d">1(d) Regularization</a></li>
+      <li><a href="#part-two">Part 2: Gaussian basis</a></li><li><a href="#p2e">2(e) Number of bases</a></li>
+      <li><a href="#p2f">2(f) Regularization</a></li><li><a href="#files">Supporting files</a></li></ol></nav>
+
+    <section id="setup">
+      <h2>I. Data and Setup</h2>
+      <p>The Housing data contain 506 observations with 13 features and the target MEDV (in $1000s). Observations 1–100 form the training set and 101–506 the test set. Every feature is standardized as \(z_j=(x_j-\mu_j)/\sigma_j\) using training-set statistics only, and the same transformation is applied to the test data. The feature CHAS is 0 for all 100 training rows, so its scale is set to 1 and its weight is unidentifiable (zero). Error is reported as root-mean-square error</p>
+      <div class="equation">\[\mathrm{RMS}=\sqrt{\tfrac1N\sum_{i}(y_i-\hat y_i)^2}.\]</div>
+      <p>Unregularized fits use least squares (<code>numpy.linalg.lstsq</code>); regularized fits solve \(\mathbf w=(\Phi^\top\Phi+\lambda I')^{-1}\Phi^\top\mathbf y\), where \(I'\) leaves the bias unpenalized. All random choices use seed 572.</p>
+    </section>
+
+    <section id="part-one">
+      <h2>II. Part 1 — Polynomial Basis Functions</h2>
+      <p>The basis is \((1,x_1,x_1^2,\dots,x_1^M,x_2,x_2^2,\dots,x_{13}^M)\): monomials of a single variable with no cross-terms, giving \(1+13M\) weights for degree \(M\).</p>
+
+      <h3 id="p1a">A. Part 1(a): Training and Test Error versus Degree</h3>
+      <div class="table-wrap"><table><caption>Table I. Part 1(a): RMS error versus polynomial degree</caption><thead><tr><th>Degree</th><th>Training RMS</th><th>Testing RMS</th></tr></thead><tbody><tr><td>1</td><td>2.0372</td><td>36.44</td></tr><tr><td>2</td><td>1.5781</td><td>1097</td></tr><tr><td>3</td><td>1.4491</td><td>4.867e+04</td></tr><tr><td>4</td><td>1.2705</td><td>2.186e+07</td></tr><tr><td>5</td><td>1.0966</td><td>1.836e+10</td></tr><tr><td>6</td><td>1.0725</td><td>5.024e+12</td></tr><tr><td>7</td><td>0.8815</td><td>6.879e+15</td></tr></tbody></table></div>
+      <figure class="wide"><img src="./output/part1a_polynomial_rms.png" alt="Training and testing RMS versus polynomial degree on a log scale" loading="lazy"><figcaption><span class="fig-label">Fig. 1.</span> Training and testing RMS for unregularized polynomial regression, degrees 1–7 (log vertical axis).</figcaption></figure>
+      <p>Training error falls steadily with degree, but test error grows by many orders of magnitude, a severe case of overfitting. Degree 7 has 92 weights for only 100 training points, so it fits the training sample closely. The first 100 rows are also not representative of the rest: after standardization with training statistics, some test features lie far outside the training range (CRIM reaches \(|z|\approx229\), RAD 14.5), and a degree-7 term on such a value is of order \(10^{16}\), which matches the observed test RMS. Even degree 1 has a test RMS of 36.4 for the same reason. Degree 1 is the best of those evaluated.</p>
+
+      <h3 id="p1b">B. Part 1(b): Degree-1 Weights</h3>
+      <div class="table-wrap"><table><caption>Table II. Part 1(b): degree-1 weights (bias plus 13 standardized features)</caption><thead><tr><th>Index</th><th>Term</th><th>Weight</th><th>Train mean</th><th>Train std</th></tr></thead><tbody><tr><td>0</td><td>bias</td><td>22.3090</td><td>—</td><td>—</td></tr><tr><td>1</td><td>CRIM</td><td>-1.3380</td><td>0.2833008</td><td>0.3871512704</td></tr><tr><td>2</td><td>ZN</td><td>0.1230</td><td>12.385</td><td>22.85167992</td></tr><tr><td>3</td><td>INDUS</td><td>-0.5311</td><td>6.6687</td><td>3.146500168</td></tr><tr><td>4</td><td>CHAS</td><td>0</td><td>0</td><td>0</td></tr><tr><td>5</td><td>NOX</td><td>1.0027</td><td>0.471321</td><td>0.04660157786</td></tr><tr><td>6</td><td>RM</td><td>4.1956</td><td>6.23441</td><td>0.4883777656</td></tr><tr><td>7</td><td>AGE</td><td>-2.1663</td><td>56.252</td><td>27.33905807</td></tr><tr><td>8</td><td>DIS</td><td>0.0107</td><td>5.177271</td><td>1.404997525</td></tr><tr><td>9</td><td>RAD</td><td>-0.1938</td><td>3.96</td><td>1.385063175</td></tr><tr><td>10</td><td>TAX</td><td>-0.3486</td><td>289.49</td><td>45.69190191</td></tr><tr><td>11</td><td>PTRATIO</td><td>0.2613</td><td>18.69</td><td>1.69041415</td></tr><tr><td>12</td><td>B</td><td>0.1811</td><td>385.3015</td><td>27.24965825</td></tr><tr><td>13</td><td>LSTAT</td><td>0.1488</td><td>10.7729</td><td>5.671459653</td></tr></tbody></table></div>
+      <figure class="wide"><img src="./output/part1b_degree1_weights.png" alt="Bar chart of degree-1 weights" loading="lazy"><figcaption><span class="fig-label">Fig. 2.</span> Bias and standardized feature weights of the degree-1 model.</figcaption></figure>
+      <p>The weight on the 6th feature, RM (average rooms), is \(w_5=4.196\). One training standard deviation of RM is 0.488 rooms, so this is about \(4.196/0.488\approx 8.6\) thousand dollars per extra room. The positive sign and large magnitude are reasonable, since larger dwellings are worth more. The weight on the 8th feature, DIS (weighted distance to employment centres), is \(0.0107\), effectively zero. This is plausible because DIS is correlated with other location variables and adds little once they are included. Coefficients are conditional and not causal; correlated predictors and the unrepresentative training split can produce unexpected signs. The bias (22.31) is the mean training MEDV.</p>
+
+      <h3 id="p1c">C. Part 1(c): One-Dimensional Visualization (ZN)</h3>
+      <p>Using only the standardized second feature ZN, polynomials of degree 1, 3 and 7 are fitted.</p>
+      <div class="table-wrap"><table><caption>Table III. Part 1(c): ZN-only polynomial RMS</caption><thead><tr><th>Degree</th><th>Training RMS</th><th>Testing RMS</th></tr></thead><tbody><tr><td>1</td><td>5.695</td><td>9.352</td></tr><tr><td>3</td><td>5.665</td><td>9.434</td></tr><tr><td>7</td><td>5.501</td><td>10.423</td></tr></tbody></table></div>
+      <div class="figure-grid">
+        <figure><img src="./output/part1c_zn_degree_1.png" alt="Degree 1 fit on ZN" loading="lazy"><figcaption><span class="fig-label">Fig. 3.</span> Degree 1.</figcaption></figure>
+        <figure><img src="./output/part1c_zn_degree_3.png" alt="Degree 3 fit on ZN" loading="lazy"><figcaption><span class="fig-label">Fig. 4.</span> Degree 3.</figcaption></figure>
+        <figure><img src="./output/part1c_zn_degree_7.png" alt="Degree 7 fit on ZN" loading="lazy"><figcaption><span class="fig-label">Fig. 5.</span> Degree 7.</figcaption></figure>
+        <figure><img src="./output/part1c_zn_polynomial_overlay.png" alt="Overlay of the three fits" loading="lazy"><figcaption><span class="fig-label">Fig. 6.</span> Overlay of the three curves.</figcaption></figure>
+      </div>
+      <p>The degree-1 fit shows a modest positive trend, but points with the same ZN (especially ZN = 0) span a wide range of MEDV, so ZN alone explains little. Degree 3 adds mild curvature without improving test error (9.352 to 9.434). Degree 7 oscillates in sparsely sampled regions; its training RMS falls to 5.50 while test RMS rises to 10.42, again overfitting. Degree 1 is the most defensible.</p>
+
+      <h3 id="p1d">D. Part 1(d): L2 Regularization with Cross-Validation</h3>
+      <p>A degree-8 polynomial in ZN is fitted to the first 100 points, with \(\lambda\in\{0,0.01,0.1,1,10,100,1000\}\) and 10-fold cross-validation. Normalization is re-estimated inside each fold from its 90 fitting points.</p>
+      <div class="table-wrap"><table><caption>Table IV. Part 1(d): 10-fold CV, degree-8 polynomial on ZN</caption><thead><tr><th>\(\lambda\)</th><th>Mean validation RMS</th><th>Std. error</th></tr></thead><tbody><tr><td>0</td><td>9.985</td><td>4.135</td></tr><tr><td>0.01</td><td>6.586</td><td>0.907</td></tr><tr><td>0.1</td><td>7.674</td><td>1.906</td></tr><tr><td>1</td><td>9.344</td><td>3.474</td></tr><tr><td>10</td><td>10.251</td><td>4.279</td></tr><tr><td>100</td><td>9.792</td><td>3.803</td></tr><tr><td>1000</td><td>7.422</td><td>1.518</td></tr></tbody></table></div>
+      <figure class="wide"><img src="./output/part1d_regularization_cv.png" alt="Validation RMS versus lambda, semilog" loading="lazy"><figcaption><span class="fig-label">Fig. 7.</span> Mean 10-fold validation RMS versus \(\lambda\) (log axis); error bars are one standard error; the dashed line is the \(\lambda=0\) baseline.</figcaption></figure>
+      <p>The lowest validation error (6.586) occurs at \(\lambda=0.01\), versus 9.985 unregularized, so I would choose \(\lambda=0.01\). Small shrinkage tames the high-variance degree-8 fit, while large penalties bias it toward a flat model. The curve is not monotonic and the error bars are wide because the dataset is small.</p>
+    </section>
+
+    <section id="part-two">
+      <h2>III. Part 2 — Gaussian Basis Functions</h2>
+      <p>The basis is \(\phi_j(\mathbf x)=\exp(-\lVert\mathbf z-\boldsymbol\mu_j\rVert^2/2\sigma^2)\) with \(\sigma=1\) on all 13 standardized features, plus a bias. Centres \(\boldsymbol\mu_j\) are the first \(K\) points of a random permutation of the training points.</p>
+
+      <h3 id="p2e">A. Part 2(e): Number of Basis Functions</h3>
+      <div class="table-wrap"><table><caption>Table V. Part 2(e): Gaussian basis, RMS versus number of bases</caption><thead><tr><th>K</th><th>Training RMS</th><th>Testing RMS</th></tr></thead><tbody><tr><td>5</td><td>5.193</td><td>9.848</td></tr><tr><td>15</td><td>4.293</td><td>9.792</td></tr><tr><td>25</td><td>3.847</td><td>9.811</td></tr><tr><td>35</td><td>3.663</td><td>9.914</td></tr><tr><td>45</td><td>3.244</td><td>9.817</td></tr><tr><td>55</td><td>3.061</td><td>9.864</td></tr><tr><td>65</td><td>2.858</td><td>9.846</td></tr><tr><td>75</td><td>1.908</td><td>11.935</td></tr><tr><td>85</td><td>0.764</td><td>11.798</td></tr><tr><td>95</td><td>0.299</td><td>11.755</td></tr></tbody></table></div>
+      <figure class="wide"><img src="./output/part2e_gaussian_rms.png" alt="Training and testing RMS versus number of Gaussian bases" loading="lazy"><figcaption><span class="fig-label">Fig. 8.</span> Training and testing RMS for unregularized Gaussian regression, \(K=5,15,\dots,95\).</figcaption></figure>
+      <p>Training error decreases monotonically from 5.19 to 0.30. Test error stays near 9.8 for \(K\le65\) (minimum 9.79 at \(K=15\)), then jumps to about 11.8–11.9 for \(K\ge75\), as the model (up to 96 weights for 100 points) nearly interpolates the training data. This is overfitting. Exact values depend on the random centres and on \(\sigma\).</p>
+
+      <h3 id="p2f">B. Part 2(f): L2 Regularization with Cross-Validation</h3>
+      <p>With 90 basis functions and all features, 10-fold cross-validation is run per \(\lambda\). In each fold, normalization and the 90 centres come from the fitting points only.</p>
+      <div class="table-wrap"><table><caption>Table VI. Part 2(f): 10-fold CV, 90 Gaussian bases</caption><thead><tr><th>\(\lambda\)</th><th>Mean validation RMS</th><th>Std. error</th></tr></thead><tbody><tr><td>0</td><td>3.999</td><td>0.487</td></tr><tr><td>0.01</td><td>3.840</td><td>0.440</td></tr><tr><td>0.1</td><td>3.731</td><td>0.426</td></tr><tr><td>1</td><td>4.026</td><td>0.442</td></tr><tr><td>10</td><td>4.998</td><td>0.412</td></tr><tr><td>100</td><td>5.635</td><td>0.401</td></tr><tr><td>1000</td><td>5.789</td><td>0.402</td></tr></tbody></table></div>
+      <figure class="wide"><img src="./output/part2f_gaussian_regularization_cv.png" alt="Validation RMS versus lambda, semilog" loading="lazy"><figcaption><span class="fig-label">Fig. 9.</span> Mean 10-fold validation RMS versus \(\lambda\) for 90 Gaussian bases (log axis, one-standard-error bars, dashed \(\lambda=0\) baseline).</figcaption></figure>
+      <p>The minimum validation RMS (3.731) is at \(\lambda=0.1\), so I would choose \(\lambda=0.1\). Modest shrinkage improves on the unregularized 3.999, while \(\lambda\ge10\) underfits.</p>
+    </section>
+
+    <section id="files">
+      <h2>IV. Supporting Files</h2>
+      <div class="downloads">
+        <a href="./SYDE572 assn2.pdf">Assignment handout</a>
+        <a href="./part1a.py">part1a.py</a><a href="./part1b.py">part1b.py</a><a href="./part1c.py">part1c.py</a><a href="./part1d.py">part1d.py</a>
+        <a href="./part2e.py">part2e.py</a><a href="./part2f.py">part2f.py</a>
+      </div>
+      <p class="small">Run from this folder with <code>python part1a.py</code> etc.; each script writes its figure and CSV to <code>output/</code>.</p>
+    </section>
+  </main>
+</body>
+</html>

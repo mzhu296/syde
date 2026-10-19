@@ -13,8 +13,7 @@ syde/
 │   └── assignment1/
 └── syde671/
     ├── index.html
-    ├── data/
-    └── outputs/
+    └── assignment1/
 ```
 
 Visit the published portfolio at <https://mzhu296.github.io/syde/>.

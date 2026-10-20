@@ -208,6 +208,7 @@
       text-decoration: none;
     }
     .downloads a:hover { border-color: var(--accent); color: var(--accent); }
+    .print-only { display: none; }
     .pdf-frame { width: 100%; min-height: 620px; border: 1px solid var(--rule); background: var(--soft); }
     .small { color: var(--muted); font-size: .88rem; }
     .references { padding-left: 1.4rem; font-size: .92rem; }
@@ -227,7 +228,13 @@
     @media print {
       @page { size: letter; margin: .65in; }
       body { background: white; font-size: 10pt; line-height: 1.28; }
-      .review-bar, .contents, .downloads, .pdf-section { display: none !important; }
+      .review-bar, .contents, .downloads, .screen-only { display: none !important; }
+      .print-only { display: block; }
+      /* Wide content: let it use the full width and shrink rather than being clipped */
+      .equation, .table-wrap { overflow: visible; }
+      .equation { padding: .3rem .5rem; }
+      .equation mjx-container[display="true"] { font-size: 82% !important; }
+      th, td { padding: .3rem .3rem; }
       .paper { width: auto; margin: 0; padding: 0; box-shadow: none; }
       h1 { font-size: 20pt; }
       h2 { font-size: 11pt; }
@@ -264,6 +271,7 @@
       <p class="course">SYDE 572 · Introduction to Pattern Recognition · Assignment 1</p>
       <h1>Distance Minimization and Least-Squares Function Fitting Using Analytical and Numerical Methods</h1>
       <p class="author-line">Assignment Report</p>
+      <p class="print-only small">Online version with animations: https://mzhu296.github.io/syde/syde572/assignment1/ieee.html</p>
     </header>
 
     <div class="abstract">
@@ -853,15 +861,16 @@
 
     <section class="pdf-section" id="files">
       <h2>IX. Handwritten Work and Supporting Files</h2>
-      <p class="no-indent">The handwritten derivations are embedded for direct comparison with the typed report. Each document can also be opened in a separate tab.</p>
-      <h3>A. Part I Handwritten Solution</h3>
-      <p class="no-indent small"><a href="./part1/part1.pdf">Open or download the Part I handwritten PDF.</a></p>
-      <object class="pdf-frame" data="./part1/part1.pdf" type="application/pdf" aria-label="Part I handwritten analytical solution">
+      <p class="no-indent screen-only">The handwritten derivations are embedded for direct comparison with the typed report. Each document can also be opened in a separate tab.</p>
+      <p class="no-indent print-only">The handwritten derivations are attached at the end of this PDF: Appendix A contains the Part I analytical solutions for all five points, and Appendix B contains the Part II normal-equation solutions for the line and the parabola. The online version embeds both documents in this section.</p>
+      <h3 class="screen-only">A. Part I Handwritten Solution</h3>
+      <p class="no-indent small screen-only"><a href="./part1/part1.pdf">Open or download the Part I handwritten PDF.</a></p>
+      <object class="pdf-frame screen-only" data="./part1/part1.pdf" type="application/pdf" aria-label="Part I handwritten analytical solution">
         <p>Your browser cannot display this PDF. <a href="./part1/part1.pdf">Open Part I handwritten solution</a>.</p>
       </object>
-      <h3>B. Part II Handwritten Solution</h3>
-      <p class="no-indent small"><a href="./part2/part2.pdf">Open or download the Part II handwritten PDF.</a></p>
-      <object class="pdf-frame" data="./part2/part2.pdf" type="application/pdf" aria-label="Part II handwritten analytical solution">
+      <h3 class="screen-only">B. Part II Handwritten Solution</h3>
+      <p class="no-indent small screen-only"><a href="./part2/part2.pdf">Open or download the Part II handwritten PDF.</a></p>
+      <object class="pdf-frame screen-only" data="./part2/part2.pdf" type="application/pdf" aria-label="Part II handwritten analytical solution">
         <p>Your browser cannot display this PDF. <a href="./part2/part2.pdf">Open Part II handwritten solution</a>.</p>
       </object>
     </section>

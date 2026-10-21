@@ -228,8 +228,10 @@
     @media print {
       @page { size: letter; margin: .65in; }
       body { background: white; font-size: 10pt; line-height: 1.28; }
-      .review-bar, .contents, .downloads, .screen-only { display: none !important; }
+      .review-bar, .contents, .screen-only { display: none !important; }
       .print-only { display: block; }
+      .downloads { display: flex !important; gap: .3rem; margin: .5rem 0 .7rem; font-size: 7.5pt; }
+      .downloads a { min-height: 0; padding: .2rem .35rem; background: white; }
       /* Wide content: let it use the full width and shrink rather than being clipped */
       .equation, .table-wrap { overflow: visible; }
       .equation { padding: .3rem .5rem; }
@@ -240,8 +242,8 @@
       h2 { font-size: 11pt; }
       section { margin-bottom: 1.3rem; }
       section > p, .prose > p { orphans: 3; widows: 3; }
-      .figure-grid { display: block; }
-      figure { margin: 0 0 1rem; page-break-inside: avoid; }
+      .figure-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .55rem; margin: .7rem 0 1rem; page-break-inside: avoid; }
+      figure { margin: 0 0 .7rem; page-break-inside: avoid; }
       table { font-size: 8pt; }
       .table-wrap, .result-box, .equation { page-break-inside: avoid; }
       a { color: inherit; text-decoration: none; }

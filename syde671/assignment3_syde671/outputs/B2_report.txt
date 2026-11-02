@@ -1,0 +1,1 @@
+bias/gain test (I -> 0.6 I + 0.15, 200 descriptors): max |difference| 5.22e-07; mean 1.3e-15, std 1.000..1.000; matched pairs shown: mean distance 2.60 vs random pairs 11.32

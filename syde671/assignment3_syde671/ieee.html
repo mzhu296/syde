@@ -1,0 +1,403 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="SYDE 671 Assignment 3: homography estimation, inverse warping, rectification, blended mosaics, and automatic stitching with Harris, ANMS, MOPS descriptors, and RANSAC.">
+  <title>SYDE 671 Assignment 3 | [Auto]Stitching Photo Mosaics</title>
+  <style>
+    :root { --ink:#111; --muted:#4b5563; --rule:#9ca3af; --light-rule:#d1d5db; --accent:#075985; --paper:#fff; --canvas:#e9edf1; --soft:#f4f7f9; --result:#eef6fa; }
+    * { box-sizing:border-box; }
+    html { scroll-behavior:smooth; scroll-padding-top:4.5rem; }
+    body { margin:0; color:var(--ink); background:var(--canvas); font-family:"Times New Roman",Times,serif; font-size:16px; line-height:1.52; }
+    a { color:var(--accent); text-underline-offset:.16em; }
+    a:hover { color:#9a3412; }
+    a:focus-visible { outline:3px solid #f59e0b; outline-offset:3px; border-radius:2px; }
+    img { max-width:100%; }
+    .skip-link { position:fixed; top:.5rem; left:.5rem; z-index:100; padding:.65rem .9rem; transform:translateY(-200%); background:#111; color:#fff; font:700 1rem Arial,Helvetica,sans-serif; }
+    .skip-link:focus { transform:translateY(0); }
+    .review-bar { position:sticky; top:0; z-index:20; display:flex; justify-content:space-between; align-items:center; gap:1rem; padding:.65rem max(1rem,calc((100% - 1120px)/2)); border-bottom:1px solid #cbd5e1; background:rgba(248,250,252,.96); font-family:Arial,Helvetica,sans-serif; font-size:.86rem; backdrop-filter:blur(10px); }
+    .review-bar strong { letter-spacing:.04em; text-transform:uppercase; }
+    .review-bar nav { display:flex; flex-wrap:wrap; justify-content:flex-end; gap:.75rem; }
+    .review-bar a { font-weight:700; text-decoration:none; }
+    .paper { width:min(1120px,calc(100% - 2rem)); margin:2rem auto 4rem; padding:clamp(2rem,6vw,4.75rem); background:var(--paper); box-shadow:0 16px 44px rgba(15,23,42,.14); }
+    .paper-header { text-align:center; }
+    .paper-header .course { margin:0 0 .75rem; font-family:Arial,Helvetica,sans-serif; font-size:.85rem; font-weight:700; letter-spacing:.13em; text-transform:uppercase; }
+    h1 { max-width:820px; margin:0 auto .85rem; font-size:clamp(1.85rem,4.4vw,2.7rem); font-weight:400; line-height:1.12; }
+    .author-line { margin:0; font-size:1rem; }
+    .version-line { margin:.25rem 0 2rem; color:var(--muted); font-size:.9rem; }
+    .abstract { max-width:880px; margin:0 auto 2rem; padding:1rem 1.25rem; border-top:1.5px solid var(--ink); border-bottom:1px solid var(--rule); text-align:justify; }
+    .abstract p { margin:0 0 .6rem; }
+    .abstract p:last-child { margin-bottom:0; }
+    .label { font-variant:small-caps; font-weight:700; letter-spacing:.04em; }
+    .contents { margin:2rem 0 2.5rem; padding:1rem 1.2rem; border-left:3px solid var(--accent); background:var(--soft); font-family:Arial,Helvetica,sans-serif; font-size:.9rem; }
+    .contents strong { display:block; margin-bottom:.4rem; text-transform:uppercase; letter-spacing:.06em; }
+    .contents ol { columns:2; margin:0; padding-left:1.3rem; }
+    .contents li { margin:.25rem 0; padding-right:1rem; break-inside:avoid; }
+    .contents a { color:#1f2937; }
+    section { margin:0 0 2.5rem; scroll-margin-top:5rem; }
+    h2,h3 { break-after:avoid; }
+    h2 { margin:2.8rem 0 1rem; border-bottom:1px solid var(--ink); font-family:Arial,Helvetica,sans-serif; font-size:1.08rem; line-height:1.35; letter-spacing:.045em; text-align:center; text-transform:uppercase; }
+    h2.part-heading { margin-top:3.4rem; padding-bottom:.35rem; border-bottom:3px double var(--ink); font-size:1.3rem; }
+    h3 { margin:1.8rem 0 .55rem; font-size:1rem; font-style:italic; font-weight:700; }
+    section>p,.prose>p { margin:.55rem 0; text-align:justify; text-indent:1.35rem; }
+    section>p.no-indent,.no-indent { text-indent:0; }
+    section>ul { margin:.5rem 0; padding-left:1.8rem; text-align:justify; }
+    section>ul li { margin:.25rem 0; }
+    .equation { margin:1rem 0; padding:.35rem 1rem; overflow-x:auto; border-left:2px solid var(--rule); font-size:1.02rem; text-align:center; }
+    .result-box { margin:1rem 0; padding:.8rem 1rem; border-top:1.5px solid var(--accent); border-bottom:1px solid var(--accent); background:var(--result); text-align:center; }
+    .method-note { margin:1rem 0; padding:.75rem 1rem; border-left:3px solid #a16207; background:#fffbeb; text-align:justify; }
+    .table-wrap { margin:1.25rem 0 1.8rem; overflow-x:auto; }
+    table { width:100%; border-collapse:collapse; border-top:1.8px solid #000; border-bottom:1.8px solid #000; font-size:.88rem; line-height:1.3; font-variant-numeric:tabular-nums; }
+    caption { padding:0 0 .5rem; font-size:.82rem; line-height:1.25; text-align:center; text-transform:uppercase; }
+    thead { border-bottom:1px solid #000; }
+    th,td { padding:.4rem .5rem; text-align:center; vertical-align:middle; }
+    th { font-weight:700; }
+    td.left,th.left { text-align:left; }
+    tbody tr+tr { border-top:.5px solid var(--light-rule); }
+    figure { margin:1.2rem 0 1.6rem; break-inside:avoid; }
+    figure img { display:block; width:100%; height:auto; border:1px solid var(--light-rule); background:white; }
+    figure.narrow { max-width:620px; margin-left:auto; margin-right:auto; }
+    figure.medium { max-width:820px; margin-left:auto; margin-right:auto; }
+    figcaption { margin-top:.45rem; font-size:.84rem; line-height:1.35; text-align:justify; }
+    .fig-label { font-variant:small-caps; font-weight:700; }
+    .codeblock { margin:1rem 0 1.4rem; border:1px solid var(--light-rule); background:#f8fafc; break-inside:avoid; }
+    .codehead { padding:.25rem .7rem; border-bottom:1px solid var(--light-rule); background:#eef2f6; font:700 .82rem Arial,Helvetica,sans-serif; color:#334155; letter-spacing:.03em; }
+    pre { margin:0; padding:.7rem .85rem; overflow-x:auto; }
+    pre code { font:.85rem/1.5 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; color:#0f172a; }
+    code { font:.88em ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; }
+    .downloads { display:flex; flex-wrap:wrap; gap:.55rem; margin:1rem 0 1.4rem; font-family:Arial,Helvetica,sans-serif; font-size:.9rem; }
+    .downloads a { display:inline-flex; align-items:center; min-height:2.25rem; padding:.42rem .7rem; border:1px solid #94a3b8; background:#f8fafc; color:#0f172a; font-weight:700; text-decoration:none; }
+    .downloads a:hover { border-color:var(--accent); color:var(--accent); }
+    .small { color:var(--muted); font-size:.88rem; }
+    .references { padding-left:1.4rem; font-size:.92rem; }
+    .references li { margin-bottom:.55rem; }
+    @media (max-width:680px) { .review-bar { align-items:flex-start; flex-direction:column; } .review-bar nav { justify-content:flex-start; } .paper { width:100%; margin:0; padding:1.5rem 1rem 3rem; box-shadow:none; } .contents ol { columns:1; } }
+    @media (prefers-reduced-motion:reduce) { html { scroll-behavior:auto; } }
+    @media print {
+      @page { size:letter; margin:.6in; }
+      body { background:white; font-size:10pt; line-height:1.28; }
+      .skip-link,.review-bar,.contents,.downloads { display:none!important; }
+      .paper { width:auto; margin:0; padding:0; box-shadow:none; }
+      h1 { font-size:20pt; }
+      h2 { font-size:11pt; }
+      section { margin-bottom:.8rem; }
+      figure { margin:.7rem auto; }
+      figure,figure img,figcaption,.table-wrap,.result-box,.equation,.codeblock { break-inside:avoid; page-break-inside:avoid; }
+      figure.narrow { max-width:55%; }
+      figure.narrow img { width:auto; max-height:8.2in; margin:auto; }
+      .codeblock,.codeblock pre { overflow:visible; }
+      .codeblock pre { white-space:pre-wrap; overflow-wrap:anywhere; word-break:break-word; }
+      .codeblock code { font-size:7.5pt; }
+      a { color:inherit; text-decoration:none; }
+    }
+  </style>
+  <script>window.MathJax={tex:{inlineMath:[['\\(','\\)']],displayMath:[['\\[','\\]']]},options:{skipHtmlTags:['script','noscript','style','textarea','pre','code']}};</script>
+  <script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+</head>
+<body>
+
+<a class="skip-link" href="#main-content">Skip to main content</a>
+
+<div class="review-bar">
+  <strong>SYDE 671 · Assignment 3</strong>
+  <nav aria-label="Page links"><a href="../">Course home</a><a href="#part-a">Part A</a><a href="#part-b">Part B</a><a href="#limits">Limitations</a><a href="#learned">What I learned</a><a href="#files">Files</a></nav>
+</div>
+<main class="paper" id="main-content" tabindex="-1">
+<header class="paper-header">
+  <p class="course">SYDE 671 · Introduction to Computer Vision · Assignment 3</p>
+  <h1>[Auto]Stitching Photo Mosaics</h1>
+  <p class="author-line">Assignment Report · Parts A and B</p>
+  <p class="version-line">Homographies, inverse warping, rectification, blended mosaics, and automatic feature matching with RANSAC</p>
+</header>
+
+<div class="abstract">
+  <p><span class="label">Abstract—</span>Part A recovers homographies by least squares from hand-chosen correspondences (<code>computeH</code>, a 2<i>n</i>×8 system with <i>h</i><sub>33</sub> = 1), and warps images with two inverse-warping routines written from scratch: nearest neighbour and bilinear. Both are used to rectify a tower facade and two banners; on a synthetic test with a known answer, bilinear reaches 49.5 dB against 32.8 dB for nearest neighbour, at about 2.3 times the run time. Three clifftop beach photographs are then registered to the middle view and blended into one mosaic with a distance-transform feather and a two-band (low/high frequency) blend. Part B automates the correspondences: Harris corners (28,883 in the reference image) are thinned to 1,500 by adaptive non-maximal suppression, described by blurred, bias/gain-normalised 8×8 patches sampled from a 40×40 window, matched with Lowe's ratio test (0.7), and filtered by a from-scratch 4-point RANSAC (342 and 45 inliers for the two image pairs). The automatic mosaic is shown beside the manual one; the two agree closely, but the manual points were partly checked against the automatic result, so the agreement is not an independent test.</p>
+  <p><span class="label">Index Terms—</span>homography, direct linear transform, inverse warping, bilinear interpolation, image rectification, feathering, Harris corners, ANMS, MOPS descriptors, RANSAC, image mosaicing.</p>
+</div>
+
+<nav class="contents" aria-label="Table of contents"><strong>Contents</strong><ol>
+<li><a href="#part-a">Part A: Image warping and mosaicing</a></li>
+<li><a href="#a1">A.1 Shoot the pictures</a></li>
+<li><a href="#a2">A.2 Recover homographies</a></li>
+<li><a href="#a3">A.3 Warp the images</a></li>
+<li><a href="#a4">A.4 Blend into a mosaic</a></li>
+<li><a href="#part-b">Part B: Feature matching for autostitching</a></li>
+<li><a href="#b1">B.1 Harris corners and ANMS</a></li>
+<li><a href="#b2">B.2 Feature descriptors</a></li>
+<li><a href="#b3">B.3 Feature matching</a></li>
+<li><a href="#b4">B.4 RANSAC and automatic mosaic</a></li>
+<li><a href="#limits">Limitations</a></li>
+<li><a href="#learned">What I learned</a></li>
+<li><a href="#files">Files, sources, and credits</a></li>
+</ol></nav>
+
+<section id="scope">
+<p class="no-indent"><strong>Scope.</strong> The assignment text asks for several mosaics. Following the course clarification, this report presents one mosaic with at least two images for Part A and one with at least three images for Part B. Both use the same three photographs, so the manual and automatic results can be compared directly. All code is written with NumPy and SciPy; none of the banned functions (<code>cv2.findHomography</code>, <code>cv2.warpPerspective</code>, <code>cv2.getPerspectiveTransform</code>, <code>skimage.transform.warp</code>, <code>ProjectiveTransform</code>) is used. The Harris detector is the supplied <code>harris.py</code>.</p>
+</section>
+
+<section id="part-a">
+<h2 class="part-heading">Part A: Image Warping and Mosaicing</h2>
+</section>
+
+<section id="a1">
+<h2>A.1 Shoot the Pictures</h2>
+<p class="no-indent">The mosaic set is three handheld phone photographs taken from a cliff top over a beach: IMG_4826, IMG_4827 and IMG_4828, each downsized to 1200×900. I turned on the spot between shots, so the views are related by a rotation of the camera and a projective transform. Adjacent photographs overlap by roughly half of their width. IMG_4828, the middle view, is the reference frame, which keeps the distortion of the two outer images as small as possible.</p>
+<figure><a href="media/A1_sources.jpg"><img src="media/A1_sources.jpg" alt="" loading="lazy"></a><figcaption><span class="fig-label">Fig. A.1.</span> The three source photographs. Left to right: IMG_4826, IMG_4827, IMG_4828. The shoreline, beach, and cliff run through all three.</figcaption></figure>
+<p>The rectification experiments in A.3 use two further photographs: a tower facade (IMG_5185) and a photograph containing two banners (IMG_1456).</p>
+<div class="method-note"><strong>Caveat on the fixed centre of projection.</strong> The camera was handheld, so it did not rotate exactly about its optical centre. Distant content (sea, beach, far cliff) obeys a single homography well, but the shrubs in the foreground are close to the camera and show parallax. A homography cannot model that, and it appears as slight stretching in the mosaics.</div>
+</section>
+
+<section id="a2">
+<h2>A.2 Recover Homographies</h2>
+<p class="no-indent">A homography maps a point \((x,y)\) in image 1 to \((u,v)\) in image 2 as \(p'\sim Hp\), with \(H\) a 3×3 matrix whose lower-right entry is fixed at 1. Multiplying out the projective division gives two linear equations in the eight unknowns \(h=(a,b,c,d,e,f,g,h)^T\) for every correspondence:</p>
+<div class="equation">\[ \begin{bmatrix} x & y & 1 & 0 & 0 & 0 & -ux & -uy \\ 0 & 0 & 0 & x & y & 1 & -vx & -vy \end{bmatrix} h = \begin{bmatrix} u \\ v \end{bmatrix}. \]</div>
+<p>Stacking \(n\) correspondences gives a \(2n\times 8\) system \(Ah=b\). With \(n=4\) it can be solved exactly, but it is unstable under noise, so I use more points and solve in the least-squares sense with <code>numpy.linalg.lstsq</code>.</p>
+<div class="codeblock"><div class="codehead">stitch.py</div><pre><code>def computeH(im1_pts, im2_pts):
+    """Least-squares homography with h33 = 1. Needs n &gt;= 4 points."""
+    p1 = np.asarray(im1_pts, float); p2 = np.asarray(im2_pts, float)
+    n = len(p1)
+    A = np.zeros((2 * n, 8)); b = np.zeros(2 * n)
+    x, y = p1[:, 0], p1[:, 1]; u, v = p2[:, 0], p2[:, 1]
+    A[0::2, 0:3] = np.c_[x, y, np.ones(n)]
+    A[0::2, 6] = -u * x;  A[0::2, 7] = -u * y
+    A[1::2, 3:6] = np.c_[x, y, np.ones(n)]
+    A[1::2, 6] = -v * x;  A[1::2, 7] = -v * y
+    b[0::2] = u; b[1::2] = v
+    h, *_ = np.linalg.lstsq(A, b, rcond=None)
+    return np.append(h, 1.0).reshape(3, 3)</code></pre></div>
+
+<h3>How the correspondences were obtained</h3>
+<p class="no-indent">I did not click the points with a mouse. They were found in three steps, and the third step matters for how the results should be read.</p>
+<ul>
+<li><strong>Estimate by eye.</strong> I read distinctive static landmarks (shore rocks, two people on the beach, a beach rock, the cliff groove, a hill clearing) off gridded, zoomed views of both images. Accuracy was about 5–20 px.</li>
+<li><strong>Refine by correlation.</strong> For each landmark, a 45×45 grey patch around the image-1 point was matched by normalised cross-correlation (<code>skimage.feature.match_template</code>) inside a ±18 px window around the eyeballed position in image 2. The best match replaced the estimate. The points were then checked visually by me.</li>
+<li><strong>Sanity check against the automatic pipeline.</strong> Points that disagreed with the Part B homography were dropped (one hill-clearing match, 7 px off, and one low-correlation rock) and one pairing was corrected. For the six extra 4826 points added to fix conditioning (below), the search window in IMG_4828 was centred on the automatic prediction.</li>
+</ul>
+<div class="method-note"><strong>Consequence.</strong> The final points agree with the automatic method partly because they were screened against it. The manual-versus-automatic comparison in B.4 is therefore not an independent test, and it is weakest for the 4826 link.</div>
+
+<h3>Results</h3>
+<div class="table-wrap"><table><caption>Table A.1. Correspondences and recovered homographies (images to IMG_4828)</caption>
+<thead><tr><th scope="col" class="left">Pair</th><th scope="col"><i>n</i></th><th scope="col">System size</th><th scope="col">Residual mean / max</th><th scope="col" class="left">Recovered <i>H</i></th></tr></thead>
+<tbody>
+<tr><td class="left">IMG_4827 → IMG_4828</td><td>8</td><td>16×8</td><td>1.35 / 2.60 px</td><td class="left">[[0.4799, 0.0235, 460.84], [−0.2132, 0.8436, 78.04], [−0.0004, 0.0000, 1]]</td></tr>
+<tr><td class="left">IMG_4826 → IMG_4828</td><td>13</td><td>26×8</td><td>1.40 / 3.13 px</td><td class="left">[[1.718, −0.0151, −786.31], [0.1084, 1.3408, 52.03], [0.0007, −0.0002, 1]]</td></tr>
+</tbody></table></div>
+<p>The residual is the distance between \(Hp_1\) and the clicked \(p_2\). The full point tables, the complete \(2n\times 8\) matrix \(A\), the vector \(b\), \(h\) and \(H\) are in <code>outputs/A2_p4827_4828.txt</code> and <code>outputs/A2_p4826_4828.txt</code>. As an example, the first two rows of the 4827 system (shore rock at \((64,403)\) mapped to \((513,414)\)) are</p>
+<div class="equation">\[ \begin{bmatrix} 64 & 403 & 1 & 0 & 0 & 0 & -32832 & -206739 \\ 0 & 0 & 0 & 64 & 403 & 1 & -26496 & -166842 \end{bmatrix} h = \begin{bmatrix} 513 \\ 414 \end{bmatrix}. \]</div>
+<figure><a href="media/A2_p4827_4828.jpg"><img src="media/A2_p4827_4828.jpg" alt="" loading="lazy"></a><figcaption><span class="fig-label">Fig. A.2a.</span> The eight correspondences between IMG_4827 (left) and IMG_4828 (right), numbered. Points 2–4 are the two people and a rock on the beach; 6–8 are on the cliff.</figcaption></figure>
+<figure><a href="media/A2_p4826_4828.jpg"><img src="media/A2_p4826_4828.jpg" alt="" loading="lazy"></a><figcaption><span class="fig-label">Fig. A.2b.</span> The thirteen correspondences between IMG_4826 (left) and IMG_4828 (right).</figcaption></figure>
+<h3>A conditioning problem and its fix</h3>
+<p class="no-indent">My first 4826 → 4828 fit used seven points and had a residual of about 2 px, which looks fine. But all seven lay in one patch of roughly 190×260 px, and the fitted homography sent the image corners thousands of pixels away from where the automatic homography (45 inliers) sends them. A small residual only says that \(H\) is consistent at the points; it says nothing about extrapolation. Adding six points across the overlap (the hill-clearing edges, a boulder pair, a boulder, a dark rock, a tidal pool) fixed this: the corners now land 3–51 px from the automatic result, while the residual stays at 1.4 px.</p>
+<p>The 4827 homography was well conditioned from the start. Compared with the automatic one, the two agree to 0.7 px at the image centre and to 5 px at the left corners, but they differ by 47–57 px at the far right corners, which are extrapolated beyond the overlap.</p>
+</section>
+
+<section id="a3">
+<h2>A.3 Warp the Images</h2>
+<p class="no-indent">Both warping functions use inverse warping: for each pixel of the output canvas, the inverse homography gives a source position, and the output takes its value from there. This leaves no holes. The output canvas is found by sending the four image corners through \(H\) and taking the integer bounding box. The convention is that \((0,0)\) is the centre of the first pixel, so \((0.5,0)\) lies halfway between the first and second pixels.</p>
+<div class="codeblock"><div class="codehead">stitch.py</div><pre><code>def warpImageNearestNeighbor(im, H, bbox=None):
+    h, w = im.shape[:2]
+    bbox = bbox or warp_bbox(im.shape, H)
+    sx, sy = _inverse_coords(im.shape, H, bbox)
+    xi, yi = np.rint(sx).astype(int), np.rint(sy).astype(int)
+    valid = (xi &gt;= 0) &amp; (xi &lt; w) &amp; (yi &gt;= 0) &amp; (yi &lt; h)
+    out = np.zeros(sx.shape + im.shape[2:])
+    out[valid] = im[yi[valid], xi[valid]]
+    return out, valid.astype(float), (bbox[0], bbox[1])
+
+def warpImageBilinear(im, H, bbox=None):
+    h, w = im.shape[:2]
+    bbox = bbox or warp_bbox(im.shape, H)
+    sx, sy = _inverse_coords(im.shape, H, bbox)
+    valid = (sx &gt;= 0) &amp; (sx &lt;= w - 1) &amp; (sy &gt;= 0) &amp; (sy &lt;= h - 1)
+    x0 = np.clip(np.floor(sx).astype(int), 0, w - 2)
+    y0 = np.clip(np.floor(sy).astype(int), 0, h - 2)
+    dx = np.clip(sx - x0, 0, 1)[..., None]; dy = np.clip(sy - y0, 0, 1)[..., None]
+    out = ((1 - dx) * (1 - dy) * im[y0, x0] + dx * (1 - dy) * im[y0, x0 + 1]
+           + (1 - dx) * dy * im[y0 + 1, x0] + dx * dy * im[y0 + 1, x0 + 1])
+    out[~valid] = 0
+    return out, valid.astype(float), (bbox[0], bbox[1])</code></pre></div>
+<p>Each function returns the warped image, an alpha mask (1 where the output pixel came from inside the source image and 0 where it is empty), and the canvas offset. The alpha mask is what the blending in A.4 uses to ignore empty regions. Neither function calls a library interpolator; the four-neighbour weights are written out explicitly. (The only library interpolation in the project is <code>scipy.ndimage.map_coordinates</code>, used when sampling descriptors in B.2, which is not part of the warping.)</p>
+
+<h3>Rectification</h3>
+<p class="no-indent">To test the code, I rectified three known rectangles: a tower facade, and two banners that both appear in IMG_1456. For each, the four corners of the object in the photograph were mapped to an upright rectangle with <code>computeH</code>. The corners were read off zoomed, gridded views of the photographs. The target sizes (300×600 for the tower, 300×700 for each banner) are my assumptions about the proportions of the real objects; I did not measure them, so the rectified shapes are plausible but not metrically exact.</p>
+<figure><a href="media/A3_tower.jpg"><img src="media/A3_tower.jpg" alt="" loading="lazy"></a><figcaption><span class="fig-label">Fig. A.3a.</span> Tower facade (IMG_5185). Left: the source photograph with the chosen quadrilateral. Centre: nearest-neighbour result. Right: bilinear result. The window rows become level. The right edge stays slightly curved because the building itself is curved, which no homography can remove.</figcaption></figure>
+<figure><a href="media/A3_banner_rotman.jpg"><img src="media/A3_banner_rotman.jpg" alt="" loading="lazy"></a><figcaption><span class="fig-label">Fig. A.3b.</span> First banner (IMG_1456). The converging edges become parallel and the text lines become horizontal.</figcaption></figure>
+<figure><a href="media/A3_banner_roberta.jpg"><img src="media/A3_banner_roberta.jpg" alt="" loading="lazy"></a><figcaption><span class="fig-label">Fig. A.3c.</span> Second banner (IMG_1456), warped with its own homography from the same photograph.</figcaption></figure>
+<figure class="medium"><a href="media/A3_tower_full.jpg"><img src="media/A3_tower_full.jpg" alt="" loading="lazy"></a><figcaption><span class="fig-label">Fig. A.3d.</span> The full warped canvas for the tower (2524×1079, from the four transformed corners) and its alpha mask. Black pixels in the image are empty (alpha 0). For the banners the full canvases are about 2900×2900 and 3500×3000 px because the rectifying homography stretches the image far outside the object, so only the cropped rectangles are shown.</figcaption></figure>
+
+<h3>Nearest neighbour versus bilinear</h3>
+<p class="no-indent">Rendering the output at 4× makes the difference visible. Nearest neighbour copies the single closest pixel, so edges become staircases and thin lines break up. Bilinear mixes the four surrounding pixels, so edges are smooth, at the cost of a small amount of softening.</p>
+<figure class="medium"><a href="media/A3_tower_zoom.jpg"><img src="media/A3_tower_zoom.jpg" alt="" loading="lazy"></a><figcaption><span class="fig-label">Fig. A.3e.</span> A 160×160 crop of the tower rendered at 4×. Left: nearest neighbour (blocky steps along edges). Right: bilinear (smooth).</figcaption></figure>
+<figure class="medium"><a href="media/A3_banner_rotman_zoom.jpg"><img src="media/A3_banner_rotman_zoom.jpg" alt="" loading="lazy"></a><figcaption><span class="fig-label">Fig. A.3f.</span> The same comparison for the first banner. The letters show the same blocky versus smooth difference.</figcaption></figure>
+<p>To measure quality rather than only look at it, I built a test with a known answer. The plane texture is an analytic function \(f(u,v)\) (a sum of three sinusoids). The "photograph" is \(f\) sampled exactly through the tower homography, with no interpolation anywhere. Rectifying it back with each method and comparing against \(f\) on the 180,000 valid pixels gives:</p>
+<div class="table-wrap"><table><caption>Table A.2. Accuracy and speed of the two interpolation methods</caption>
+<thead><tr><th scope="col" class="left">Method</th><th scope="col">RMSE</th><th scope="col">PSNR</th><th scope="col">300×700 output</th><th scope="col">1200×2800 output</th><th scope="col">Typical slow-down</th></tr></thead>
+<tbody>
+<tr><td class="left">Nearest neighbour</td><td>0.0228</td><td>32.8 dB</td><td>16–20 ms</td><td>355 ms</td><td>1×</td></tr>
+<tr><td class="left">Bilinear</td><td>0.0034</td><td>49.5 dB</td><td>31–48 ms</td><td>690–750 ms</td><td>about 2.3× (range 1.6–3.6×)</td></tr>
+</tbody></table></div>
+<p>Timings are the best of five runs on the banner homographies at three output scales; the full list is in <code>outputs/A3_report.txt</code>.</p>
+<div class="result-box"><strong>Trade-off.</strong> Bilinear is roughly twice as slow as nearest neighbour but about 16 dB better in PSNR. Nearest neighbour does one rounded lookup per pixel and one array read; bilinear does four reads and a weighted sum of them. Nearest neighbour is acceptable for quick previews or when the output is a downsample, and bilinear is the better choice for a final image. In a mosaic the extra cost is small next to the rest of the pipeline, so I use bilinear throughout.</div>
+<div class="method-note"><strong>A metric I rejected.</strong> My first accuracy test warped an image forward and back and compared with the original. Nearest neighbour scored "infinite" PSNR, because the round trip is an upsample followed by a downsample that returns the very same pixels. That number said nothing about interpolation quality, so I replaced it with the analytic test above.</div>
+</section>
+
+<section id="a4">
+<h2>A.4 Blend the Images into a Mosaic</h2>
+<p class="no-indent">The mosaic uses all three photographs, with IMG_4828 as the reference. I use the three images because they give a wider panorama than two, and the same set is required for Part B. The procedure is:</p>
+<ul>
+<li><strong>Homographies.</strong> \(H_{27}\) (4827 → 4828) and \(H_{26}\) (4826 → 4828) come from the A.2 correspondences; 4828 maps by the identity.</li>
+<li><strong>Canvas.</strong> The four corners of each image are sent through its homography; the canvas is the union of the three bounding boxes (3243×1987 px).</li>
+<li><strong>Warp.</strong> Each image is inverse-warped into the shared canvas with <code>warpImageBilinear</code>, giving one layer and one alpha mask per image.</li>
+<li><strong>Weights.</strong> Each layer's weight is the Euclidean distance transform of its alpha mask, normalised to 1. It is largest deep inside the image and falls linearly to 0 at the image border, which is the "distance transform" suggestion in the assignment. At every canvas pixel the weights of the layers that cover it are normalised to sum to 1.</li>
+<li><strong>Feathering (1 band).</strong> The output is the weighted average of the layers. This alone removes hard seams, but misaligned content in the overlap is averaged into a blur (ghosting).</li>
+<li><strong>Two-band blend.</strong> Each layer is split into a low-pass part (Gaussian, \(\sigma=15\)) and a high-pass remainder. The low-pass parts are combined with the feather weights, which gives a smooth exposure transition. The high-pass parts, which carry the edges and texture, are taken from the image with the largest weight at each pixel, so they are not averaged. A hard choice produced thin lines where the winner changes, so the hand-over is softened by blurring the winner masks (\(\sigma=2.5\) px).</li>
+</ul>
+<figure><a href="media/A4_manual.jpg"><img src="media/A4_manual.jpg" alt="" loading="lazy"></a><figcaption><span class="fig-label">Fig. A.4a.</span> The manual mosaic of IMG_4826, IMG_4827 and IMG_4828 (two-band blend). The black areas are canvas that no photograph covers; they come from the camera tilting between shots.</figcaption></figure>
+<figure class="medium"><a href="media/A4_blend_compare.jpg"><img src="media/A4_blend_compare.jpg" alt="" loading="lazy"></a><figcaption><span class="fig-label">Fig. A.4b.</span> A crop of the 4827/4828 overlap in the foreground vegetation. Left: feathering only. Right: the two-band blend. The shrubs are visibly blurrier on the left, because the foreground has parallax and the averaged images do not line up. The two-band version keeps their detail.</figcaption></figure>
+<p>On the sky and the far shoreline the two methods look the same: the exposures of the three photographs already match, and distant content is well aligned, so a wide feather is enough there. The two-band blend matters in the near-field texture, where it avoids averaging misaligned pixels. The mean absolute difference between the two mosaics is only about 1.3 grey levels out of 255, so the benefit is local rather than global.</p>
+<h3>Remaining artifacts</h3>
+<ul>
+<li>A faint diagonal line is visible in the sky at the left boundary of IMG_4826. It appears in both the feather-only and the two-band result, so it is not caused by the high-frequency selection. I suspect a slight exposure or vignetting difference at that image's edge, which a per-image gain correction would remove. I did not add one.</li>
+<li>The foreground shrubs are slightly stretched, and a few edges in them do not line up, because of parallax.</li>
+</ul>
+</section>
+
+<section id="part-b">
+<h2 class="part-heading">Part B: Feature Matching for Autostitching</h2>
+</section>
+
+<section id="b1">
+<h2>B.1 Harris Corners and ANMS</h2>
+<p class="no-indent">I used the supplied Harris detector (single scale, 20 px border discarded). On IMG_4828 it returns 28,883 local maxima. Most of them are weak maxima in textureless sky, which are useless for matching and would swamp the later stages.</p>
+<p>Adaptive non-maximal suppression (Brown et al., Section 3) keeps points that are both strong and well spread out. For each corner \(i\) with strength \(f_i\), its suppression radius is the distance to the nearest corner that is clearly stronger:</p>
+<div class="equation">\[ r_i = \min_j \lVert x_i - x_j \rVert \quad \text{subject to} \quad f_i < c_{\text{robust}}\, f_j, \qquad c_{\text{robust}} = 0.9, \]</div>
+<p>and the 1,500 points with the largest radii are kept. Because this needs a distance matrix over all candidate pairs, I only consider the 4,000 strongest corners; with all 28,883 the matrix does not fit in practical memory and the first version hung.</p>
+<div class="codeblock"><div class="codehead">stitch.py</div><pre><code>def anms(pts, strengths, n_keep=500, c_robust=0.9, max_candidates=4000):
+    top = np.argsort(-strengths)[:max_candidates]
+    pts, strengths = pts[top], strengths[top]
+    d2 = dist2(pts.astype(float), pts.astype(float))
+    stronger = strengths[:, None] &lt; c_robust * strengths[None, :]
+    d2 = np.where(stronger, d2, np.inf)
+    radii = d2.min(axis=1)
+    keep = np.argsort(-radii)[:n_keep]
+    return pts[keep], radii[keep]</code></pre></div>
+<figure><a href="media/B1_corners.jpg"><img src="media/B1_corners.jpg" alt="" loading="lazy"></a><figcaption><span class="fig-label">Fig. B.1.</span> IMG_4828. Left: all 28,883 Harris corners; the sky is covered in weak maxima. Right: the 1,500 points kept by ANMS, which sit on real texture (cliff, rocks, shrubs) and are spread out instead of clumped.</figcaption></figure>
+<p>ANMS leaves the sky and open sea nearly empty, because their corner response is weak, and it places many points on the foreground shrubs. That is a poor place for matching, since the shrubs are the content with the most parallax (see B.3).</p>
+</section>
+
+<section id="b2">
+<h2>B.2 Feature Descriptors</h2>
+<p class="no-indent">For each kept corner I take a 40×40 window from the grey image, blurred with a Gaussian (\(\sigma=2\)), and sample an 8×8 grid from it with a spacing of 5 px (bilinear sampling, axis-aligned, no rotation). Sampling from the blurred larger window makes the descriptor insensitive to small localisation errors. Each descriptor is then bias/gain normalised, \(\hat d = (d-\mu)/\sigma\), so that it is unchanged by a uniform brightness offset and contrast scale. This gives a 64-vector per point.</p>
+<div class="codeblock"><div class="codehead">stitch.py</div><pre><code>def extract_descriptors(im, pts, window=40, size=8):
+    g = gaussian_filter(to_gray(im), 2)
+    step = window // size
+    offs = (np.arange(size) - size / 2 + 0.5) * step
+    oy, ox = np.meshgrid(offs, offs, indexing='ij')
+    desc = []
+    for x, y in pts:
+        p = map_coordinates(g, [oy + y, ox + x], order=1, mode='nearest')
+        desc.append(((p - p.mean()) / (p.std() + 1e-8)).ravel())
+    return np.array(desc)</code></pre></div>
+<figure><a href="media/B2_descriptors.jpg"><img src="media/B2_descriptors.jpg" alt="" loading="lazy"></a><figcaption><span class="fig-label">Fig. B.2.</span> Eight spread-out landmarks that RANSAC accepted as correct matches between IMG_4827 and IMG_4828 (chosen by farthest-point sampling). Row 1: the 40×40 grey window in IMG_4827. Row 2: its normalised 8×8 descriptor, displayed with its own contrast. Rows 3 and 4: the same for the matching point in IMG_4828, with the Euclidean distance between the two descriptors under it. Each pair looks alike despite the change of viewpoint.</figcaption></figure>
+<p>Two checks support the descriptors. First, bias/gain normalisation works as claimed: applying \(I\rightarrow 0.6\,I+0.15\) to the whole image changes the 200 test descriptors by at most \(5\times10^{-7}\) (the small residual comes from the \(10^{-8}\) added to the standard deviation), and every descriptor has mean 0 and standard deviation 1. Second, the descriptors discriminate: the eight matched pairs in Fig. B.2 are on average 2.6 apart, against 11.3 for randomly paired descriptors. The matched pairs were selected because they passed the ratio test and RANSAC, so the first number is optimistic; it shows that correct matches are close, not how often a close pair is correct. The check is in <code>outputs/B2_report.txt</code>.</p>
+</section>
+
+<section id="b3">
+<h2>B.3 Feature Matching</h2>
+<p class="no-indent">Each descriptor in one image is compared with all descriptors in the other by Euclidean distance. Following Lowe, a match is accepted only if the distance to the best neighbour is below a fixed fraction of the distance to the second-best neighbour. This rejects ambiguous features (repeated textures such as waves and foliage), whose two best matches are almost equally good. I tried three thresholds (Table B.0) and use 0.7. At 0.6 the weak 4826 link keeps only 12 matches, too few for a stable fit across the overlap. At 0.8 there are more inliers in absolute terms, but the share of rejected matches rises (16% against 10% for 4826 and 9% against 5% for 4827), so 0.7 is a compromise between quantity and purity rather than a sharp optimum.</p>
+<div class="table-wrap"><table><caption>Table B.0. Effect of the ratio threshold (matches / RANSAC inliers)</caption>
+<thead><tr><th scope="col" class="left">Pair</th><th scope="col">0.6</th><th scope="col">0.7 (used)</th><th scope="col">0.8</th></tr></thead>
+<tbody>
+<tr><td class="left">IMG_4826 → IMG_4828</td><td>12 / 12</td><td>50 / 45</td><td>97 / 81</td></tr>
+<tr><td class="left">IMG_4827 → IMG_4828</td><td>248 / 241</td><td>359 / 342</td><td>473 / 430</td></tr>
+</tbody></table></div>
+<div class="codeblock"><div class="codehead">stitch.py</div><pre><code>def match_features(d1, d2, ratio=0.6):
+    D = dist2(d1, d2)
+    order = np.argsort(D, axis=1)
+    i = np.arange(len(d1))
+    nn1, nn2 = D[i, order[:, 0]], D[i, order[:, 1]]
+    ok = np.sqrt(np.maximum(nn1, 0)) &lt; ratio * np.sqrt(np.maximum(nn2, 0))
+    return np.c_[i[ok], order[ok, 0]]</code></pre></div>
+<figure><a href="media/B3_IMG_4827.jpg"><img src="media/B3_IMG_4827.jpg" alt="" loading="lazy"></a><figcaption><span class="fig-label">Fig. B.3a.</span> IMG_4827 → IMG_4828: 359 ratio-test matches, of which RANSAC keeps 342 (green) and rejects 17 (red).</figcaption></figure>
+<figure><a href="media/B3_IMG_4826.jpg"><img src="media/B3_IMG_4826.jpg" alt="" loading="lazy"></a><figcaption><span class="fig-label">Fig. B.3b.</span> IMG_4826 → IMG_4828: only 50 matches, of which 45 are RANSAC inliers. The matches sit on the beach and rocks in the middle distance. The red outliers are in the foreground shrubs, where the repeated texture and parallax confuse the descriptors.</figcaption></figure>
+<p>The descriptors are not scale- or rotation-invariant, so they work only because the three photographs share a focal length and orientation. Pairs with a zoom change would not match.</p>
+</section>
+
+<section id="b4">
+<h2>B.4 RANSAC and Automatic Mosaic</h2>
+<p class="no-indent">Some of the ratio-test matches are still wrong, and a least-squares fit is pulled far off by even a few of them. 4-point RANSAC fits the homography to random minimal samples and keeps the model that most matches agree with: repeat 5,000 times, pick four random matches, compute \(H\) with <code>computeH</code>, count the matches whose reprojection error is below \(\varepsilon=3\) px, and keep the largest consensus set. The final homography is refit by least squares on all inliers of the best model.</p>
+<div class="codeblock"><div class="codehead">stitch.py</div><pre><code>def ransac_homography(p1, p2, n_iter=5000, eps=3.0, seed=0):
+    rng = np.random.default_rng(seed)
+    best = np.zeros(len(p1), bool)
+    for _ in range(n_iter):
+        idx = rng.choice(len(p1), 4, replace=False)
+        H = computeH(p1[idx], p2[idx])
+        if not np.all(np.isfinite(H)):
+            continue
+        err = np.linalg.norm(apply_H(H, p1) - p2, axis=1)
+        inl = err &lt; eps
+        if inl.sum() &gt; best.sum():
+            best = inl
+    return computeH(p1[best], p2[best]), best</code></pre></div>
+<div class="table-wrap"><table><caption>Table B.1. Automatic pipeline results (1,500 ANMS points per image, ratio 0.7, ε = 3 px)</caption>
+<thead><tr><th scope="col" class="left">Pair</th><th scope="col">Ratio-test matches</th><th scope="col">RANSAC inliers</th><th scope="col" class="left">Automatic <i>H</i></th></tr></thead>
+<tbody>
+<tr><td class="left">IMG_4827 → IMG_4828</td><td>359</td><td>342</td><td class="left">[[0.4759, 0.0085, 461.90], [−0.2100, 0.8202, 82.82], [−0.0004, −0.00002, 1]]</td></tr>
+<tr><td class="left">IMG_4826 → IMG_4828</td><td>50</td><td>45</td><td class="left">[[1.7756, −0.0134, −812.62], [0.1263, 1.3828, 40.59], [0.0007, −0.0002, 1]]</td></tr>
+</tbody></table></div>
+<p>Both automatic homographies were then used with the same blending code as in A.4 (three images, 4828 as the reference, two-band blend), so the only difference between the two mosaics is where the homographies come from.</p>
+<figure><a href="media/compare_manual_vs_auto.jpg"><img src="media/compare_manual_vs_auto.jpg" alt="" loading="lazy"></a><figcaption><span class="fig-label">Fig. B.4.</span> Top: the manual mosaic from Part A (hand-chosen correspondences). Bottom: the automatic mosaic (Harris, ANMS, MOPS descriptors, ratio test, RANSAC). The two are almost identical in layout and are equally seamless; they differ by a few pixels along the outer edges of the canvas, as Table B.2 predicts.</figcaption></figure>
+<h3>Manual versus automatic</h3>
+<div class="table-wrap"><table><caption>Table B.2. Disagreement between the manual and automatic homographies, in pixels, after mapping points into IMG_4828</caption>
+<thead><tr><th scope="col" class="left">Pair</th><th scope="col">Image centre</th><th scope="col">Top left</th><th scope="col">Top right</th><th scope="col">Bottom right</th><th scope="col">Bottom left</th></tr></thead>
+<tbody>
+<tr><td class="left">IMG_4827 → IMG_4828</td><td>0.7</td><td>4.9</td><td>56.5</td><td>46.6</td><td>5.3</td></tr>
+<tr><td class="left">IMG_4826 → IMG_4828</td><td>2.4</td><td>28.7</td><td>2.6</td><td>5.6</td><td>51.2</td></tr>
+</tbody></table></div>
+<p>At the image centres, where the correspondences are, the two methods agree to 1–2 px. The disagreement grows at the corners that lie farthest from the overlap, where each homography is an extrapolation; in the mosaic those are the outer edges, which is why the canvas outline differs slightly. Because the manual points were screened against the automatic result (A.2), this agreement is expected and should not be read as proof that the manual points are independently correct. Where the two do differ, I cannot say from this data which is closer to the truth.</p>
+<p>The advantage of the automatic pipeline is that it uses hundreds of points spread over the overlap (342 for the 4827 link) with no manual work, and it needs no judgement about which features are reliable. Its weakness is the 4826 link, where only 45 inliers survive and all lie in the middle distance, so the extrapolation to the far corners is the least certain part of that homography.</p>
+</section>
+
+<section id="limits">
+<h2>Limitations</h2>
+<ul>
+<li><strong>Manual points were not independent.</strong> They were estimated by eye, refined by correlation, and screened against the automatic homography (A.2). They were not mouse-clicked. A strictly manual comparison would need points chosen without the automatic result; <code>pick_points.py</code> is included for that.</li>
+<li><strong>Parallax.</strong> The camera was handheld and the foreground is close, so a single homography cannot align the shrubs. The two-band blend hides most of the resulting ghosting but not the stretching.</li>
+<li><strong>Rectification sizes are assumed.</strong> The output proportions of the tower and banners (1:2 and 3:7) are plausible guesses, not measurements, and the tower is curved.</li>
+<li><strong>Descriptors are not scale or rotation invariant</strong>, and the 4826 link has only 45 inliers.</li>
+<li><strong>One mosaic per part.</strong> Following the clarification, I present one mosaic for Part A and one for Part B on the same three images.</li>
+<li><strong>Exposure.</strong> A faint seam remains at the left edge of IMG_4826; no gain compensation is applied.</li>
+</ul>
+</section>
+
+<section id="learned">
+<h2>What I Learned</h2>
+<p class="no-indent">A small fitting residual does not mean a good homography. Seven well-fitting points in one corner of the image gave a homography that was off by thousands of pixels at the image corners, and only spreading the points across the overlap fixed it. Residuals at the data points must be paired with a check where the transform will actually be used.</p>
+<p>Evaluating interpolation needs a ground truth. My first metric looked precise and meant nothing, while a synthetic texture with a known answer gave a clear 16 dB gap between the methods. Blending also showed that feathering is enough where images agree, and that the extra frequency band earns its place only where they do not.</p>
+<p>Finally, ANMS and the ratio test do different jobs. ANMS decides where to look, and removes the thousands of noise corners in the sky; the ratio test decides which matches to trust, and removes ambiguous texture; RANSAC then removes what is left. The weak 4826 link shows what happens when each of those has little to work with.</p>
+</section>
+
+<section id="files">
+<h2>Files, Sources, and Credits</h2>
+<div class="downloads">
+<a href="stitch.py">stitch.py</a><a href="a2.py">a2.py</a><a href="a3.py">a3.py</a><a href="run_all.py">run_all.py</a><a href="report_figs.py">report_figs.py</a><a href="pick_points.py">pick_points.py</a><a href="harris.py">harris.py</a><a href="requirements.txt">requirements.txt</a><a href="A2_notes.md">A2_notes.md</a><a href="code.zip">code.zip</a><a href="SYDE 671 Assignment 3 _ AutoStitching Photo Mosaics.pdf">Report PDF</a>
+</div>
+<p class="no-indent small">Run <code>python a2.py</code>, <code>python a3.py</code>, <code>python run_all.py</code> and <code>python report_figs.py</code> in that order from this folder, in an environment with the packages in <code>requirements.txt</code>. Figures are written to <code>outputs/</code>; the web copies on this page are in <code>media/</code>.</p>
+<ul>
+<li><code>stitch.py</code>: <code>computeH</code>, <code>apply_H</code>, <code>warpImageNearestNeighbor</code>, <code>warpImageBilinear</code>, <code>blend</code>, <code>harris</code>, <code>anms</code>, <code>extract_descriptors</code>, <code>match_features</code>, <code>ransac_homography</code>.</li>
+<li><code>a2.py</code> (A.2 tables and figures), <code>a3.py</code> (rectification and the interpolation study), <code>run_all.py</code> (A.4 and Part B), <code>report_figs.py</code> (extra report figures), <code>pick_points.py</code> (point-clicking tool).</li>
+<li><code>harris.py</code>: sample Harris code supplied with the assignment, unmodified.</li>
+<li><code>points/*.json</code>: the correspondences; <code>A2_notes.md</code>: how they were obtained; <code>outputs/</code>: figures and text reports.</li>
+</ul>
+<ol class="references">
+<li>M. Brown, R. Szeliski, S. Winder, "Multi-Image Matching using Multi-Scale Oriented Patches", CVPR 2005.</li>
+<li>D. G. Lowe, "Distinctive Image Features from Scale-Invariant Keypoints", IJCV 2004 (ratio test).</li>
+<li>A. R. Smith, "A Pixel Is Not a Little Square" (pixel-centre convention).</li>
+<li>Assignment adapted from Berkeley CS 180 Project 3, and the course assignment sheet.</li>
+</ol>
+<p class="small">Photographs IMG_4826–4828 and IMG_5185 are my own. IMG_1456 (the banners) is an image obtained from the internet; its original source was not recorded.</p>
+</section>
+</main>
+</body>
+</html>

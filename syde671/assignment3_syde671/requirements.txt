@@ -1,0 +1,6 @@
+# Python 3.11 (conda env: syde671)
+numpy>=1.26
+scipy>=1.11
+matplotlib>=3.8
+imageio>=2.33
+scikit-image>=0.22

@@ -1,0 +1,33 @@
+== tower (IMG_5185) -> 300x600
+H =
+[[ 1.9213900e+00  2.5555000e-01 -3.5404665e+02]
+ [-0.0000000e+00  1.9557600e+00 -3.9115200e+00]
+ [-8.0000000e-05  8.2000000e-04  1.0000000e+00]]
+full-canvas size from corners: 2524x1079
+  300x600: nearest   17.1 ms  bilinear   39.4 ms  ratio 2.30x
+  600x1200: nearest   69.0 ms  bilinear  172.0 ms  ratio 2.49x
+  1200x2400: nearest  295.7 ms  bilinear  595.5 ms  ratio 2.01x
+
+== banner_rotman (IMG_1456) -> 300x700
+H =
+[[ 3.16169000e+00  0.00000000e+00 -2.23215089e+03]
+ [ 1.16138000e+00  3.30818000e+00 -1.38563298e+03]
+ [ 1.09000000e-03  4.00000000e-05  1.00000000e+00]]
+full-canvas size from corners: 2909x2887 (too large to plot)
+  300x700: nearest   16.3 ms  bilinear   30.6 ms  ratio 1.88x
+  600x1400: nearest   55.9 ms  bilinear  200.9 ms  ratio 3.60x
+  1200x2800: nearest  354.7 ms  bilinear  752.0 ms  ratio 2.12x
+
+== banner_roberta (IMG_1456) -> 300x700
+H =
+[[ 4.03017000e+00 -2.45000000e-02 -2.08968738e+03]
+ [ 1.21245000e+00  3.22460000e+00 -1.42050074e+03]
+ [ 1.08000000e-03 -8.00000000e-05  1.00000000e+00]]
+full-canvas size from corners: 3500x2985 (too large to plot)
+  300x700: nearest   20.1 ms  bilinear   47.5 ms  ratio 2.37x
+  600x1400: nearest   90.7 ms  bilinear  145.7 ms  ratio 1.61x
+  1200x2800: nearest  356.3 ms  bilinear  685.7 ms  ratio 1.92x
+
+== synthetic accuracy test (tower homography, analytic texture, photo sampled exactly)
+  nearest   RMSE 0.0228  PSNR 32.84 dB  (valid px 180000)
+  bilinear  RMSE 0.0034  PSNR 49.47 dB  (valid px 180000)

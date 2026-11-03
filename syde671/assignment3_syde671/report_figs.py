@@ -2,7 +2,8 @@
 
     python report_figs.py
 
-Writes outputs/A1_sources.png, outputs/A4_blend_compare.png and prints how far the manual and
+Writes outputs/A1_sources.png, outputs/A4_blend_compare.png, outputs/A1_river.png (second image set)
+and prints the river-set match statistics and how far the manual and
 automatic homographies disagree at the image corners.
 """
 import json
@@ -49,3 +50,23 @@ for i, f in ((0, 'p4826_4828'), (1, 'p4827_4828')):
     pts = np.array([[W_ / 2, H_ / 2]])
     dc = np.linalg.norm(apply_H(Hm, pts) - apply_H(Ha, pts))
     print(f'{NAMES[i]}: manual vs automatic corner disagreement (px) {np.round(d, 1)}, centre {dc:.1f}')
+
+# ---- A.1 second image set (river, IMG_3361 / IMG_3364): evidence of a projective relation
+r = [iio.imread(f'data/{n}.jpg')[:, :, :3] / 255. for n in ('IMG_3361', 'IMG_3364')]
+rf = []
+for im in r:
+    _, p, s = harris(im); q, _ = anms(p, s, 1500); rf.append((q, extract_descriptors(im, q)))
+m = match_features(rf[0][1], rf[1][1], 0.7)
+Hr, inl = ransac_homography(rf[0][0][m[:, 0]], rf[1][0][m[:, 1]])
+a_, b_ = rf[0][0][m[inl, 0]], rf[1][0][m[inl, 1]]
+err = np.linalg.norm(apply_H(Hr, a_) - b_, axis=1)
+print(f'river set: {len(m)} matches, {inl.sum()} inliers, inlier error mean {err.mean():.2f} px, '
+      f'inlier extent x {a_[:, 0].min():.0f}-{a_[:, 0].max():.0f} y {a_[:, 1].min():.0f}-{a_[:, 1].max():.0f}')
+print(np.round(Hr, 4))
+W = r[0].shape[1]
+sel = np.random.default_rng(0).choice(len(a_), 60, replace=False)
+plt.figure(figsize=(16, 6)); plt.imshow(np.hstack(r))
+for k in sel:
+    plt.plot([a_[k, 0], b_[k, 0] + W], [a_[k, 1], b_[k, 1]], '-', lw=.8, color='lime')
+plt.title(f'IMG_3361 / IMG_3364: {inl.sum()} of {len(m)} matches fit one homography (60 shown)'); plt.axis('off')
+plt.tight_layout(); plt.savefig(f'{OUT}/A1_river.png', dpi=110); plt.close()

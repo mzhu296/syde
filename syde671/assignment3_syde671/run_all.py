@@ -122,3 +122,44 @@ ax[0].imshow(man); ax[0].set_title('manual correspondences (Part A)')
 ax[1].imshow(aut); ax[1].set_title(f'automatic: Harris + ANMS({N_ANMS}) + MOPS + ratio {RATIO} + RANSAC (Part B)')
 for x in ax: x.axis('off')
 save_fig('compare_manual_vs_auto.png')
+
+# ---------------- two more image sets (two images each): river and sea
+# manual homography from points/p*.json (estimate_points.py), automatic from the Part B pipeline;
+# image 2 is the reference frame, so the blend is blend([im1, im2], [H, I]).
+EXTRA = {'river': ('IMG_3361', 'IMG_3364', 'p3361_3364'), 'sea': ('IMG_4806', 'IMG_4807', 'p4806_4807')}
+lines = []
+for name, (a, b, f) in EXTRA.items():
+    pair = [load(a), load(b)]
+    ft = []
+    for im in pair:
+        _, p, s = harris(im)
+        q, _ = anms(p, s, N_ANMS)
+        ft.append((q, extract_descriptors(im, q)))
+    m = match_features(ft[0][1], ft[1][1], RATIO)
+    Ha, inl = ransac_homography(ft[0][0][m[:, 0]], ft[1][0][m[:, 1]])
+    p1, p2 = (np.array(x, float) for x in json.load(open(f'points/{f}.json'))['points'])
+    Hm = computeH(p1, p2)
+    h, w = pair[0].shape[:2]
+    c = np.array([[0, 0], [w, 0], [w, h], [0, h], [w / 2, h / 2]], float)
+    dis = np.linalg.norm(apply_H(Hm, c) - apply_H(Ha, c), axis=1)
+    lines.append(f'{a} -> {b}: {len(m)} ratio-test matches, {inl.sum()} RANSAC inliers\nH =\n{np.round(Ha, 5)}\n'
+                 f'manual vs automatic disagreement (px): corners {np.round(dis[:4], 1)}, centre {dis[4]:.1f}\n')
+    W = pair[0].shape[1]
+    plt.figure(figsize=(16, 6)); plt.imshow(np.hstack(pair))
+    for (i, j), good in zip(m, inl):
+        plt.plot([ft[0][0][i, 0], ft[1][0][j, 0] + W], [ft[0][0][i, 1], ft[1][0][j, 1]], '-', lw=.6, color='lime' if good else 'red')
+    plt.title(f'{a} -> {b}: {len(m)} matches, {inl.sum()} RANSAC inliers (green); outliers red'); plt.axis('off')
+    save_fig(f'B3_{name}.png')
+    man, _, _ = blend(pair, [Hm, I])
+    fea, _, _ = blend(pair, [Hm, I], bands=1)
+    aut, _, _ = blend(pair, [Ha, I])
+    iio.imwrite(f'{OUT}/A4_{name}_manual.jpg', u8(man))
+    iio.imwrite(f'{OUT}/A4_{name}_feather_only.jpg', u8(fea))
+    iio.imwrite(f'{OUT}/B4_{name}_auto.jpg', u8(aut))
+    fig, ax = plt.subplots(2, 1, figsize=(12, 11))
+    ax[0].imshow(man); ax[0].set_title('manual correspondences (Part A)')
+    ax[1].imshow(aut); ax[1].set_title(f'automatic: Harris + ANMS({N_ANMS}) + MOPS + ratio {RATIO} + RANSAC (Part B)')
+    for x in ax: x.axis('off')
+    save_fig(f'compare_{name}.png')
+open(f'{OUT}/B3_report_extra.txt', 'w').write('\n'.join(lines))
+print('\n'.join(lines))

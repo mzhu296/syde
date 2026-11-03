@@ -13,7 +13,7 @@ matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 from stitch import computeH, apply_H
 
-PAIRS = ['p4827_4828', 'p4826_4828']
+PAIRS = ['p4827_4828', 'p4826_4828', 'p3361_3364', 'p4806_4807']
 
 
 def system(p1, p2):

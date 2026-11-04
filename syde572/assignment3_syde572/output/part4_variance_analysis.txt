@@ -1,0 +1,11 @@
+Preprocessing: mean-centered; not standardized to unit variance.
+
+If lambda_i is the eigenvalue associated with PC i, its explained-variance ratio is lambda_i / sum_j(lambda_j). For centered X, total variance is proportional to ||X||_F^2. After projection onto the first k orthonormal principal components, retained variance is proportional to ||X W_k||_F^2. Therefore the retained fraction is ||X W_k||_F^2 / ||X||_F^2, equivalently the sum of the first k explained-variance ratios.
+
+Explained-variance ratios: [0.924616 0.053016 0.017185 0.005183]
+1. First two PCs: 0.977632 = 97.76% of total variance.
+   Frobenius check: 665.595567 / 680.824400 = 0.977632.
+   Two-PC squared reconstruction error ||X - X_hat||_F^2: 15.228833.
+2. PCs required to reach at least 50%: 1. PC1 alone explains 92.46%.
+
+For comparison only, standardizing to unit variance would change the ratios to approximately [0.730, 0.229, 0.037, 0.005], but that is not the preprocessing used in this assignment analysis.

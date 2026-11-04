@@ -366,7 +366,7 @@ def warpImageBilinear(im, H, bbox=None):
 <tr><td class="left">IMG_4806 → IMG_4807 (sea)</td><td>701</td><td>645</td><td class="left">[[1.1405, −0.0324, −135.49], [0.0601, 1.0491, −9.24], [0.0001, −0.00005, 1]]</td></tr>
 </tbody></table></div>
 <p>Both automatic homographies were then used with the same blending code as in A.4 (three images, 4828 as the reference, two-band blend), so the only difference between the two mosaics is where the homographies come from.</p>
-<figure><a href="media/compare_manual_vs_auto.jpg"><img src="media/compare_manual_vs_auto.jpg" alt="" loading="lazy"></a><figcaption><span class="fig-label">Fig. B.4.</span> Top: the manual mosaic from Part A (hand-chosen correspondences). Bottom: the automatic mosaic (Harris, ANMS, MOPS descriptors, ratio test, RANSAC). The two are almost identical in layout and are equally seamless; they differ by a few pixels along the outer edges of the canvas, as Table B.2 predicts.</figcaption></figure>
+<figure><a href="media/compare_manual_vs_auto.jpg"><img src="media/compare_manual_vs_auto.jpg" alt="" loading="lazy"></a><figcaption><span class="fig-label">Fig. B.4a.</span> Top: the manual mosaic from Part A (hand-chosen correspondences). Bottom: the automatic mosaic (Harris, ANMS, MOPS descriptors, ratio test, RANSAC). The two are almost identical in layout and are equally seamless; they differ by a few pixels along the outer edges of the canvas, as Table B.2 predicts.</figcaption></figure>
 <h3>Automatic mosaics: river and sea</h3>
 <figure class="medium"><a href="media/compare_river.jpg"><img src="media/compare_river.jpg" alt="" loading="lazy"></a><figcaption><span class="fig-label">Fig. B.4b.</span> River set. Top: manual mosaic (Part A). Bottom: automatic mosaic (Part B). They are visually indistinguishable.</figcaption></figure>
 <figure class="medium"><a href="media/compare_sea.jpg"><img src="media/compare_sea.jpg" alt="" loading="lazy"></a><figcaption><span class="fig-label">Fig. B.4c.</span> Sea set. Top: manual. Bottom: automatic. The two differ by up to about 11 px at the top-left corner of the canvas (Table B.2).</figcaption></figure>
@@ -419,9 +419,7 @@ def warpImageBilinear(im, H, bbox=None):
 <li>M. Brown, R. Szeliski, S. Winder, "Multi-Image Matching using Multi-Scale Oriented Patches", CVPR 2005.</li>
 <li>D. G. Lowe, "Distinctive Image Features from Scale-Invariant Keypoints", IJCV 2004 (ratio test).</li>
 <li>A. R. Smith, "A Pixel Is Not a Little Square" (pixel-centre convention).</li>
-<li>Assignment adapted from Berkeley CS 180 Project 3, and the course assignment sheet.</li>
-</ol>
-<p class="small">All photographs (IMG_4826–4828, IMG_5185 and IMG_1456) were taken by me.</p>
+<p class="small">All photographs were taken by me.</p>
 </section>
 </main>
 </body>

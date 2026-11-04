@@ -1,0 +1,13 @@
+Preprocessing: each feature was mean-centered. Features were NOT standardized to unit variance. This same choice is used in later parts.
+
+PCA axis vectors (rows of components_):
+PC1: [ 0.36159  -0.082269  0.856572  0.358844]
+PC2: [ 0.65654   0.729712 -0.175767 -0.074706]
+PC3: [-0.580997  0.596418  0.072524  0.549061]
+PC4: [ 0.317255 -0.324094 -0.479719  0.751121]
+
+Explained variance ratios:
+PC1: 0.924616
+PC2: 0.053016
+PC3: 0.017185
+PC4: 0.005183

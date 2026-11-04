@@ -1,0 +1,25 @@
+Preprocessing: mean-centered; not standardized to unit variance.
+
+Method comparison
+PCA is linear, has a closed-form eigendecomposition/SVD solution, supplies an explained-variance compression measure, and supports inverse transformation and reconstruction-error analysis. Isomap instead builds a nearest-neighbor graph and attempts to preserve graph-geodesic distances, so it can unroll a curved manifold. It does not provide a PCA-style explained-variance measure or a simple inverse reconstruction.
+
+Quantitative comparison
+A 5-neighbor classifier was evaluated on each completed 2D embedding using stratified 10-fold cross-validation. Because the embeddings were fitted to the full dataset before validation, these scores are descriptive rather than a leakage-free estimate of an end-to-end prediction pipeline.
+PCA 2D accuracy: 0.967 +/- 0.057
+Isomap 2D accuracy: 0.920 +/- 0.053
+
+Neighbor-graph diagnostic
+Isomap warning(s) observed:
+- The number of connected components of the neighbors graph is 2 > 1. Completing the graph to fit Isomap might be slow. Increase the number of neighbors to avoid this issue.
+- Changing the sparsity structure of a csr_matrix is expensive. lil and dok are more efficient.
+- Changing the sparsity structure of a csr_matrix is expensive. lil and dok are more efficient.
+
+The setosa points form their own connected component. The graph stays disconnected for every k tried (3, 5, 10), because setosa is separated from the other two species by a gap larger than its k-nearest-neighbor links can bridge. sklearn joins disconnected components with extra edges before the geodesic computation, so setosa is compressed into a thin strip in the embedding and its internal spread is not preserved; increasing k changes that shape but does not remove the gap.
+
+Neighbor sweep
+k = 3: 2 connected component(s), 2D kNN accuracy 0.920 +/- 0.053
+k = 5: 2 connected component(s), 2D kNN accuracy 0.940 +/- 0.073
+k = 10: 2 connected component(s), 2D kNN accuracy 0.940 +/- 0.066
+
+Conclusion
+The Iris structure is already close to linear: both embeddings show a cleanly separated setosa cluster and partial versicolor/virginica overlap. Isomap gains little here. PCA is the better compression choice because its two-dimensional representation retains 97.76% of the variance, is directly invertible, and has a meaningful reconstruction error.

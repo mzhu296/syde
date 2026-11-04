@@ -1,0 +1,7 @@
+Best single-threshold versicolor-vs-virginica accuracy per feature:
+  Sepal length (cm): 73.0% (setosa vs rest: overlapping)
+  Sepal width (cm): 63.0% (setosa vs rest: overlapping)
+  Petal length (cm): 93.0% (setosa vs rest: separable)
+  Petal width (cm): 94.0% (setosa vs rest: separable)
+
+Setosa separates cleanly from the other species on petal length (1.0-1.9 cm vs >=3.0 cm) and petal width (0.1-0.6 cm vs >=1.0 cm). Versicolor and virginica overlap in every single feature; the overlap is smallest for petal width and petal length, and in the petal length versus petal width plane. Sepal width alone separates the classes poorly. The 3D view adds little over the petal plane, so versicolor and virginica still touch.

@@ -21,5 +21,11 @@ k = 3: 2 connected component(s), 2D kNN accuracy 0.920 +/- 0.053
 k = 5: 2 connected component(s), 2D kNN accuracy 0.940 +/- 0.073
 k = 10: 2 connected component(s), 2D kNN accuracy 0.940 +/- 0.066
 
+Reconstruction / distortion (2D embeddings)
+PCA relative Frobenius reconstruction error ||X - X_hat||_F^2/||X||_F^2: 0.0224
+Isomap (k=3) reconstruction_error() (kernel-space, geodesic distances): 0.4374
+Relative pairwise-distance stress vs original Euclidean distances: PCA 0.0418, Isomap 0.6205
+Isomap's reconstruction_error() is measured between geodesic-distance kernels, so it is not on the same scale as PCA's data-space error; the pairwise-distance stress is the common yardstick.
+
 Conclusion
 The Iris structure is already close to linear: both embeddings show a cleanly separated setosa cluster and partial versicolor/virginica overlap. Isomap gains little here. PCA is the better compression choice because its two-dimensional representation retains 97.76% of the variance, is directly invertible, and has a meaningful reconstruction error.

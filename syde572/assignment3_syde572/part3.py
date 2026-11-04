@@ -89,29 +89,33 @@ def save_2d_projection(scores: np.ndarray, y: np.ndarray) -> Path:
 
 
 def save_3d_projection(scores: np.ndarray, y: np.ndarray) -> Path:
-    fig = plt.figure(figsize=(10, 8), constrained_layout=True)
-    ax = fig.add_subplot(111, projection="3d")
-    for species in SPECIES:
-        mask = y == species
-        ax.scatter(
-            scores[mask, 0],
-            scores[mask, 1],
-            scores[mask, 2],
-            s=42,
-            alpha=0.82,
-            color=COLORS[species],
-            edgecolors="white",
-            linewidths=0.35,
-            label=species.removeprefix("Iris-"),
-        )
-    ax.set_xlabel("PC1 score", labelpad=10)
-    ax.set_ylabel("PC2 score", labelpad=10)
-    ax.set_zlabel("PC3 score", labelpad=10)
-    ax.set_title("Iris PCA projection: first three components", pad=18)
-    ax.view_init(elev=23, azim=-57)
-    ax.legend(frameon=False)
+    """Plot the top three PC scores from two viewpoints."""
+    fig = plt.figure(figsize=(14, 6.5), constrained_layout=True)
+    for panel, (elev, azim) in enumerate(((23, -57), (12, 35)), start=1):
+        ax = fig.add_subplot(1, 2, panel, projection="3d")
+        for species in SPECIES:
+            mask = y == species
+            ax.scatter(
+                scores[mask, 0],
+                scores[mask, 1],
+                scores[mask, 2],
+                s=36,
+                alpha=0.82,
+                color=COLORS[species],
+                edgecolors="white",
+                linewidths=0.3,
+                label=species.removeprefix("Iris-"),
+            )
+        ax.set_xlabel("PC1 score", labelpad=8)
+        ax.set_ylabel("PC2 score", labelpad=8)
+        ax.set_zlabel("PC3 score", labelpad=8)
+        ax.set_title(f"View {panel} (elev={elev}, azim={azim})")
+        ax.view_init(elev=elev, azim=azim)
+        if panel == 1:
+            ax.legend(frameon=False, loc="upper left")
+    fig.suptitle("Iris PCA projection: first three components")
     output_path = OUTPUT_DIR / "part3_pca_3d.png"
-    fig.savefig(output_path, dpi=220, bbox_inches="tight")
+    fig.savefig(output_path, dpi=200, bbox_inches="tight")
     plt.close(fig)
     return output_path
 

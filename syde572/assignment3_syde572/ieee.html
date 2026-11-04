@@ -248,7 +248,7 @@
       .table-wrap, .result-box, .equation { page-break-inside: avoid; }
       a { color: inherit; text-decoration: none; }
     }
-  </style><style>@media print{figure img{max-height:6.3in;width:auto;max-width:100%;margin:0 auto}}</style>
+  </style><style>tbody tr:last-child{font-weight:400}@media print{figure img{max-height:6.3in;width:auto;max-width:100%;margin:0 auto}}</style>
   <script>
     window.MathJax = {
       tex: { inlineMath: [['\\(', '\\)']], displayMath: [['\\[', '\\]']] },
@@ -330,8 +330,8 @@
       <p>PC1 is dominated by petal length (loading 0.86), with smaller equal contributions from sepal length and petal width: it is essentially an overall flower-size axis. PC2 mixes sepal length and sepal width (0.66, 0.73) with almost no petal content. The overall sign of each axis is arbitrary.</p>
       <figure class="wide" style="width:92%;margin-left:auto;margin-right:auto"><img src="./output/part3_pca_1d.png" alt="Data projected onto PC1" loading="lazy"><figcaption><span class="fig-label">Fig. 6.</span> Projection onto the first principal axis (vertical jitter added for visibility).</figcaption></figure>
       <figure class="wide" style="width:60%;margin-left:auto;margin-right:auto"><img src="./output/part3_pca_2d.png" alt="PC1 versus PC2" loading="lazy"><figcaption><span class="fig-label">Fig. 7.</span> Projection onto the top two principal axes.</figcaption></figure>
-      <figure class="wide" style="width:58%;margin-left:auto;margin-right:auto"><img src="./output/part3_pca_3d.png" alt="First three principal components" loading="lazy"><figcaption><span class="fig-label">Fig. 8.</span> Projection onto the top three principal axes.</figcaption></figure>
-      <p>On PC1 alone (Fig. 6) setosa is cleanly separated, while versicolor and virginica overlap for PC1 scores of roughly 0.5–1.5. Adding PC2 (Fig. 7) spreads the points vertically but does little to separate those two species, because PC2 carries only 5.3% of the variance and mostly sepal information. The third component (Fig. 8) carries 1.7% of the variance and adds essentially no visible class structure. Most of the usable information is therefore already in PC1 and PC2.</p>
+      <figure class="wide" style="width:100%;margin-left:auto;margin-right:auto"><img src="./output/part3_pca_3d.png" alt="First three principal components" loading="lazy"><figcaption><span class="fig-label">Fig. 8.</span> Projection onto the top three principal axes, shown from two viewpoints.</figcaption></figure>
+      <p>On PC1 alone (Fig. 6) setosa is cleanly separated, while versicolor and virginica overlap for PC1 scores of roughly 0.5–1.5. Adding PC2 (Fig. 7) spreads the points vertically but does little to separate those two species, because PC2 carries only 5.3% of the variance and mostly sepal information. The third component (Fig. 8, two viewpoints) carries 1.7% of the variance and adds essentially no visible class structure: from either viewpoint the versicolor and virginica clouds remain intermixed. Most of the usable information is therefore already in PC1 and PC2.</p>
     </section>
 
     <section id="part-four">
@@ -353,8 +353,13 @@
         <tr><td>Isomap, k = 3</td><td>0.920 ± 0.053</td><td>2</td></tr>
         <tr><td>Isomap, k = 5</td><td>0.940 ± 0.073</td><td>2</td></tr>
         <tr><td>Isomap, k = 10</td><td>0.940 ± 0.066</td><td>2</td></tr></tbody></table></div>
+      <div class="table-wrap"><table><caption>Table IV. Fidelity of the 2D representations</caption><thead><tr><th>Measure</th><th>PCA (2 PCs)</th><th>Isomap (k = 3)</th></tr></thead><tbody>
+        <tr><td>Relative squared reconstruction error \(\lVert X-\hat X\rVert_F^2/\lVert X\rVert_F^2\)</td><td>0.0224</td><td>not defined (no inverse map)</td></tr>
+        <tr><td>Isomap <code>reconstruction_error()</code> (geodesic-kernel space)</td><td>—</td><td>0.4374</td></tr>
+        <tr><td>Relative pairwise-distance stress vs original distances</td><td>0.0418</td><td>0.6205</td></tr></tbody></table></div>
+      <p>Isomap's <code>reconstruction_error()</code> (0.437) compares geodesic-distance kernels, so it is not on the same scale as PCA's data-space error and is shown only for completeness. The common yardstick is the pairwise-distance stress, \(\sqrt{\sum(d^{emb}_{ij}-d^{orig}_{ij})^2/\sum (d^{orig}_{ij})^2}\): the PCA plane reproduces the original Euclidean distances to 4.2%, whereas the Isomap embedding is off by 62%. Isomap preserves geodesic rather than Euclidean distances, and the disconnected neighbor graph further inflates the distances between setosa and the other species, so this is partly expected, but it confirms that PCA is the more faithful low-dimensional summary of this dataset.</p>
       <h3>A. Which is preferable?</h3>
-      <p><strong>PCA is preferable for Iris.</strong> (i) <em>Compression:</em> PCA is linear and has a closed-form solution. It comes with an explained-variance measure (97.76% for two components), an explicit inverse map, and a reconstruction error, none of which Isomap provides. (ii) <em>Classification:</em> a 5-NN classifier on the 2D embeddings is as accurate on PCA (96.7%) as on any Isomap setting tried (92.0–94.0%), and the differences are within about one standard deviation across folds (Table III). (iii) <em>Robustness:</em> Isomap depends on k and, as shown, on graph connectivity. Isomap's advantage is unrolling a curved manifold, and the Iris data are close to linear, so there is little curvature to unroll. A caveat on Table III: both embeddings were fitted on all 150 samples before cross-validation, so the scores are descriptive rather than a leakage-free estimate of end-to-end accuracy.</p>
+      <p><strong>PCA is preferable for Iris.</strong> (i) <em>Compression:</em> PCA is linear and has a closed-form solution. It comes with an explained-variance measure (97.76% for two components), an explicit inverse map, and a reconstruction error (2.2% of the squared norm), none of which Isomap provides, and it preserves pairwise distances far better (stress 0.042 vs 0.62, Table IV). (ii) <em>Classification:</em> a 5-NN classifier on the 2D embeddings is as accurate on PCA (96.7%) as on any Isomap setting tried (92.0–94.0%), and the differences are within about one standard deviation across folds (Table III). (iii) <em>Robustness:</em> Isomap depends on k and, as shown, on graph connectivity. Isomap's advantage is unrolling a curved manifold, and the Iris data are close to linear, so there is little curvature to unroll. A caveat on Table III: both embeddings were fitted on all 150 samples before cross-validation, so the scores are descriptive rather than a leakage-free estimate of end-to-end accuracy.</p>
     </section>
 
     <section id="code">
@@ -378,6 +383,7 @@ import numpy as np
 from sklearn.manifold import Isomap
 from sklearn.model_selection import StratifiedKFold, cross_val_score
 from scipy.sparse.csgraph import connected_components
+from scipy.spatial.distance import pdist
 from sklearn.neighbors import KNeighborsClassifier, kneighbors_graph
 
 from part2 import COLORS, SPECIES, load_iris
@@ -432,6 +438,31 @@ def sweep_isomap(X_centered: np.ndarray, y: np.ndarray) -&gt; dict[int, dict]:
             &quot;accuracy&quot;: accuracy,
         }
     return results
+
+
+def distance_stress(embedding: np.ndarray, X_centered: np.ndarray) -&gt; float:
+    &quot;&quot;&quot;Relative error between embedded and original pairwise distances.&quot;&quot;&quot;
+    original = pdist(X_centered)
+    embedded = pdist(embedding)
+    return float(np.sqrt(np.sum((embedded - original) ** 2) / np.sum(original**2)))
+
+
+def reconstruction_metrics(X_centered: np.ndarray, pca_embedding: np.ndarray) -&gt; dict:
+    &quot;&quot;&quot;Quantify how faithfully each 2D embedding represents the data.&quot;&quot;&quot;
+    with warnings.catch_warnings():
+        warnings.simplefilter(&quot;ignore&quot;)
+        isomap = Isomap(n_neighbors=3, n_components=2).fit(X_centered)
+    isomap_embedding = isomap.embedding_
+    pca_scores_full = fit_pca()[1]
+    pca_frobenius = float(
+        np.sum(pca_scores_full[:, 2:] ** 2) / np.sum(X_centered**2)
+    )
+    return {
+        &quot;isomap_reconstruction_error&quot;: float(isomap.reconstruction_error()),
+        &quot;pca_relative_frobenius_error&quot;: pca_frobenius,
+        &quot;pca_distance_stress&quot;: distance_stress(pca_embedding, X_centered),
+        &quot;isomap_distance_stress&quot;: distance_stress(isomap_embedding, X_centered),
+    }
 
 
 def save_sweep_plot(sweep: dict[int, dict], y: np.ndarray) -&gt; Path:
@@ -504,6 +535,7 @@ def write_report(
     isomap_accuracy: tuple[float, float],
     warning_messages: list[str],
     sweep: dict[int, dict],
+    metrics: dict,
 ) -&gt; Path:
     warning_text = (
         &quot;Isomap warning(s) observed:\n- &quot; + &quot;\n- &quot;.join(warning_messages)
@@ -540,6 +572,17 @@ def write_report(
         &quot;embedding and its internal spread is not preserved; increasing k changes &quot;
         &quot;that shape but does not remove the gap.\n\n&quot;
         f&quot;Neighbor sweep\n{sweep_lines}\n\n&quot;
+        &quot;Reconstruction / distortion (2D embeddings)\n&quot;
+        f&quot;PCA relative Frobenius reconstruction error ||X - X_hat||_F^2/||X||_F^2: &quot;
+        f&quot;{metrics[&#x27;pca_relative_frobenius_error&#x27;]:.4f}\n&quot;
+        f&quot;Isomap (k=3) reconstruction_error() (kernel-space, geodesic distances): &quot;
+        f&quot;{metrics[&#x27;isomap_reconstruction_error&#x27;]:.4f}\n&quot;
+        f&quot;Relative pairwise-distance stress vs original Euclidean distances: &quot;
+        f&quot;PCA {metrics[&#x27;pca_distance_stress&#x27;]:.4f}, &quot;
+        f&quot;Isomap {metrics[&#x27;isomap_distance_stress&#x27;]:.4f}\n&quot;
+        &quot;Isomap&#x27;s reconstruction_error() is measured between geodesic-distance &quot;
+        &quot;kernels, so it is not on the same scale as PCA&#x27;s data-space error; the &quot;
+        &quot;pairwise-distance stress is the common yardstick.\n\n&quot;
         &quot;Conclusion\n&quot;
         &quot;The Iris structure is already close to linear: both embeddings show a &quot;
         &quot;cleanly separated setosa cluster and partial versicolor/virginica overlap. &quot;
@@ -562,7 +605,10 @@ def main() -&gt; None:
     X = np.asarray(features, dtype=float)
     sweep = sweep_isomap(X - X.mean(axis=0), labels)
     sweep_path = save_sweep_plot(sweep, labels)
-    report_path = write_report(pca_accuracy, isomap_accuracy, warning_messages, sweep)
+    metrics = reconstruction_metrics(X - X.mean(axis=0), pca_embedding)
+    report_path = write_report(pca_accuracy, isomap_accuracy, warning_messages, sweep, metrics)
+    for name, value in metrics.items():
+        print(f&quot;{name}: {value:.4f}&quot;)
     print(f&quot;PCA 2D kNN accuracy: {pca_accuracy[0]:.3f} +/- {pca_accuracy[1]:.3f}&quot;)
     print(f&quot;Isomap 2D kNN accuracy: {isomap_accuracy[0]:.3f} +/- {isomap_accuracy[1]:.3f}&quot;)
     if warning_messages:

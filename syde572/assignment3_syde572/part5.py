@@ -17,6 +17,7 @@ import numpy as np
 from sklearn.manifold import Isomap
 from sklearn.model_selection import StratifiedKFold, cross_val_score
 from scipy.sparse.csgraph import connected_components
+from scipy.spatial.distance import pdist
 from sklearn.neighbors import KNeighborsClassifier, kneighbors_graph
 
 from part2 import COLORS, SPECIES, load_iris
@@ -71,6 +72,31 @@ def sweep_isomap(X_centered: np.ndarray, y: np.ndarray) -> dict[int, dict]:
             "accuracy": accuracy,
         }
     return results
+
+
+def distance_stress(embedding: np.ndarray, X_centered: np.ndarray) -> float:
+    """Relative error between embedded and original pairwise distances."""
+    original = pdist(X_centered)
+    embedded = pdist(embedding)
+    return float(np.sqrt(np.sum((embedded - original) ** 2) / np.sum(original**2)))
+
+
+def reconstruction_metrics(X_centered: np.ndarray, pca_embedding: np.ndarray) -> dict:
+    """Quantify how faithfully each 2D embedding represents the data."""
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        isomap = Isomap(n_neighbors=3, n_components=2).fit(X_centered)
+    isomap_embedding = isomap.embedding_
+    pca_scores_full = fit_pca()[1]
+    pca_frobenius = float(
+        np.sum(pca_scores_full[:, 2:] ** 2) / np.sum(X_centered**2)
+    )
+    return {
+        "isomap_reconstruction_error": float(isomap.reconstruction_error()),
+        "pca_relative_frobenius_error": pca_frobenius,
+        "pca_distance_stress": distance_stress(pca_embedding, X_centered),
+        "isomap_distance_stress": distance_stress(isomap_embedding, X_centered),
+    }
 
 
 def save_sweep_plot(sweep: dict[int, dict], y: np.ndarray) -> Path:
@@ -143,6 +169,7 @@ def write_report(
     isomap_accuracy: tuple[float, float],
     warning_messages: list[str],
     sweep: dict[int, dict],
+    metrics: dict,
 ) -> Path:
     warning_text = (
         "Isomap warning(s) observed:\n- " + "\n- ".join(warning_messages)
@@ -179,6 +206,17 @@ def write_report(
         "embedding and its internal spread is not preserved; increasing k changes "
         "that shape but does not remove the gap.\n\n"
         f"Neighbor sweep\n{sweep_lines}\n\n"
+        "Reconstruction / distortion (2D embeddings)\n"
+        f"PCA relative Frobenius reconstruction error ||X - X_hat||_F^2/||X||_F^2: "
+        f"{metrics['pca_relative_frobenius_error']:.4f}\n"
+        f"Isomap (k=3) reconstruction_error() (kernel-space, geodesic distances): "
+        f"{metrics['isomap_reconstruction_error']:.4f}\n"
+        f"Relative pairwise-distance stress vs original Euclidean distances: "
+        f"PCA {metrics['pca_distance_stress']:.4f}, "
+        f"Isomap {metrics['isomap_distance_stress']:.4f}\n"
+        "Isomap's reconstruction_error() is measured between geodesic-distance "
+        "kernels, so it is not on the same scale as PCA's data-space error; the "
+        "pairwise-distance stress is the common yardstick.\n\n"
         "Conclusion\n"
         "The Iris structure is already close to linear: both embeddings show a "
         "cleanly separated setosa cluster and partial versicolor/virginica overlap. "
@@ -201,7 +239,10 @@ def main() -> None:
     X = np.asarray(features, dtype=float)
     sweep = sweep_isomap(X - X.mean(axis=0), labels)
     sweep_path = save_sweep_plot(sweep, labels)
-    report_path = write_report(pca_accuracy, isomap_accuracy, warning_messages, sweep)
+    metrics = reconstruction_metrics(X - X.mean(axis=0), pca_embedding)
+    report_path = write_report(pca_accuracy, isomap_accuracy, warning_messages, sweep, metrics)
+    for name, value in metrics.items():
+        print(f"{name}: {value:.4f}")
     print(f"PCA 2D kNN accuracy: {pca_accuracy[0]:.3f} +/- {pca_accuracy[1]:.3f}")
     print(f"Isomap 2D kNN accuracy: {isomap_accuracy[0]:.3f} +/- {isomap_accuracy[1]:.3f}")
     if warning_messages:

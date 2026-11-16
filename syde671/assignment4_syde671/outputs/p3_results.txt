@@ -1,0 +1,8 @@
+== set1  N=37
+singular values = [959.5852 540.4761 184.4317  27.9152]
+rmse of best affine fit to ground truth = 1.0634 (GT extent [27.2 36.2 24.7])
+
+== set1_subset  N=18
+singular values = [264.544  210.0607   7.2192   5.1286]
+rmse of best affine fit to ground truth = 0.1152 (GT extent [13.7  0.4 10.6])
+

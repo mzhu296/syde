@@ -1,0 +1,459 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="SYDE 671 Assignment 4: fundamental matrix estimation, image rectification, affine factorization, and projective structure from motion with triangulation.">
+  <title>SYDE 671 Assignment 4 | Epipolar Geometry and Structure from Motion</title>
+  <style>
+    :root { --ink:#111; --muted:#4b5563; --rule:#9ca3af; --light-rule:#d1d5db; --accent:#075985; --paper:#fff; --canvas:#e9edf1; --soft:#f4f7f9; --result:#eef6fa; }
+    * { box-sizing:border-box; }
+    html { scroll-behavior:smooth; scroll-padding-top:4.5rem; }
+    body { margin:0; color:var(--ink); background:var(--canvas); font-family:"Times New Roman",Times,serif; font-size:16px; line-height:1.52; }
+    a { color:var(--accent); text-underline-offset:.16em; }
+    a:hover { color:#9a3412; }
+    a:focus-visible { outline:3px solid #f59e0b; outline-offset:3px; border-radius:2px; }
+    img { max-width:100%; }
+    .skip-link { position:fixed; top:.5rem; left:.5rem; z-index:100; padding:.65rem .9rem; transform:translateY(-200%); background:#111; color:#fff; font:700 1rem Arial,Helvetica,sans-serif; }
+    .skip-link:focus { transform:translateY(0); }
+    .review-bar { position:sticky; top:0; z-index:20; display:flex; justify-content:space-between; align-items:center; gap:1rem; padding:.65rem max(1rem,calc((100% - 1120px)/2)); border-bottom:1px solid #cbd5e1; background:rgba(248,250,252,.96); font-family:Arial,Helvetica,sans-serif; font-size:.86rem; backdrop-filter:blur(10px); }
+    .review-bar strong { letter-spacing:.04em; text-transform:uppercase; }
+    .review-bar nav { display:flex; flex-wrap:wrap; justify-content:flex-end; gap:.75rem; }
+    .review-bar a { font-weight:700; text-decoration:none; }
+    .paper { width:min(1120px,calc(100% - 2rem)); margin:2rem auto 4rem; padding:clamp(2rem,6vw,4.75rem); background:var(--paper); box-shadow:0 16px 44px rgba(15,23,42,.14); }
+    .paper-header { text-align:center; }
+    .paper-header .course { margin:0 0 .75rem; font-family:Arial,Helvetica,sans-serif; font-size:.85rem; font-weight:700; letter-spacing:.13em; text-transform:uppercase; }
+    h1 { max-width:820px; margin:0 auto .85rem; font-size:clamp(1.85rem,4.4vw,2.7rem); font-weight:400; line-height:1.12; }
+    .author-line { margin:0; font-size:1rem; }
+    .version-line { margin:.25rem 0 2rem; color:var(--muted); font-size:.9rem; }
+    .abstract { max-width:880px; margin:0 auto 2rem; padding:1rem 1.25rem; border-top:1.5px solid var(--ink); border-bottom:1px solid var(--rule); text-align:justify; }
+    .abstract p { margin:0 0 .6rem; }
+    .abstract p:last-child { margin-bottom:0; }
+    .label { font-variant:small-caps; font-weight:700; letter-spacing:.04em; }
+    .contents { margin:2rem 0 2.5rem; padding:1rem 1.2rem; border-left:3px solid var(--accent); background:var(--soft); font-family:Arial,Helvetica,sans-serif; font-size:.9rem; }
+    .contents strong { display:block; margin-bottom:.4rem; text-transform:uppercase; letter-spacing:.06em; }
+    .contents ol { columns:2; margin:0; padding-left:1.3rem; }
+    .contents li { margin:.25rem 0; padding-right:1rem; break-inside:avoid; }
+    .contents a { color:#1f2937; }
+    section { margin:0 0 2.5rem; scroll-margin-top:5rem; }
+    h2,h3 { break-after:avoid; }
+    h2 { margin:2.8rem 0 1rem; border-bottom:1px solid var(--ink); font-family:Arial,Helvetica,sans-serif; font-size:1.08rem; line-height:1.35; letter-spacing:.045em; text-align:center; text-transform:uppercase; }
+    h2.part-heading { margin-top:3.4rem; padding-bottom:.35rem; border-bottom:3px double var(--ink); font-size:1.3rem; }
+    h3 { margin:1.8rem 0 .55rem; font-size:1rem; font-style:italic; font-weight:700; }
+    section>p,.prose>p { margin:.55rem 0; text-align:justify; text-indent:1.35rem; }
+    section>p.no-indent,.no-indent { text-indent:0; }
+    section>ul { margin:.5rem 0; padding-left:1.8rem; text-align:justify; }
+    section>ul li { margin:.25rem 0; }
+    .equation { margin:1rem 0; padding:.35rem 1rem; overflow-x:auto; border-left:2px solid var(--rule); font-size:1.02rem; text-align:center; }
+    .result-box { margin:1rem 0; padding:.8rem 1rem; border-top:1.5px solid var(--accent); border-bottom:1px solid var(--accent); background:var(--result); text-align:center; }
+    .method-note { margin:1rem 0; padding:.75rem 1rem; border-left:3px solid #a16207; background:#fffbeb; text-align:justify; }
+    .table-wrap { margin:1.25rem 0 1.8rem; overflow-x:auto; }
+    table { width:100%; border-collapse:collapse; border-top:1.8px solid #000; border-bottom:1.8px solid #000; font-size:.88rem; line-height:1.3; font-variant-numeric:tabular-nums; }
+    caption { padding:0 0 .5rem; font-size:.82rem; line-height:1.25; text-align:center; text-transform:uppercase; }
+    thead { border-bottom:1px solid #000; }
+    th,td { padding:.4rem .5rem; text-align:center; vertical-align:middle; }
+    th { font-weight:700; }
+    td.left,th.left { text-align:left; }
+    tbody tr+tr { border-top:.5px solid var(--light-rule); }
+    figure { margin:1.2rem 0 1.6rem; break-inside:avoid; }
+    figure img { display:block; width:100%; height:auto; border:1px solid var(--light-rule); background:white; }
+    figure.narrow { max-width:620px; margin-left:auto; margin-right:auto; }
+    figure.medium { max-width:820px; margin-left:auto; margin-right:auto; }
+    figcaption { margin-top:.45rem; font-size:.84rem; line-height:1.35; text-align:justify; }
+    .fig-label { font-variant:small-caps; font-weight:700; }
+    .codeblock { margin:1rem 0 1.4rem; border:1px solid var(--light-rule); background:#f8fafc; break-inside:avoid; }
+    .codehead { padding:.25rem .7rem; border-bottom:1px solid var(--light-rule); background:#eef2f6; font:700 .82rem Arial,Helvetica,sans-serif; color:#334155; letter-spacing:.03em; }
+    pre { margin:0; padding:.7rem .85rem; overflow-x:auto; }
+    pre code { font:.85rem/1.5 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; color:#0f172a; }
+    code { font:.88em ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; }
+    .downloads { display:flex; flex-wrap:wrap; gap:.55rem; margin:1rem 0 1.4rem; font-family:Arial,Helvetica,sans-serif; font-size:.9rem; }
+    .downloads a { display:inline-flex; align-items:center; min-height:2.25rem; padding:.42rem .7rem; border:1px solid #94a3b8; background:#f8fafc; color:#0f172a; font-weight:700; text-decoration:none; }
+    .downloads a:hover { border-color:var(--accent); color:var(--accent); }
+    .small { color:var(--muted); font-size:.88rem; }
+    .references { padding-left:1.4rem; font-size:.92rem; }
+    .references li { margin-bottom:.55rem; }
+    @media (max-width:680px) { .review-bar { align-items:flex-start; flex-direction:column; } .review-bar nav { justify-content:flex-start; } .paper { width:100%; margin:0; padding:1.5rem 1rem 3rem; box-shadow:none; } .contents ol { columns:1; } }
+    @media (prefers-reduced-motion:reduce) { html { scroll-behavior:auto; } }
+    @media print {
+      @page { size:letter; margin:.6in; }
+      body { background:white; font-size:10pt; line-height:1.28; }
+      .skip-link,.review-bar,.contents,.downloads { display:none!important; }
+      .paper { width:auto; margin:0; padding:0; box-shadow:none; }
+      h1 { font-size:20pt; }
+      h2 { font-size:11pt; }
+      section { margin-bottom:.8rem; }
+      figure { margin:.7rem auto; }
+      figure,figure img,figcaption,.table-wrap,.result-box,.equation,.codeblock { break-inside:avoid; page-break-inside:avoid; }
+      figure.narrow { max-width:55%; }
+      figure.narrow img { width:auto; max-height:8.2in; margin:auto; }
+      .codeblock,.codeblock pre { overflow:visible; }
+      .codeblock pre { white-space:pre-wrap; overflow-wrap:anywhere; word-break:break-word; }
+      .codeblock code { font-size:7.5pt; }
+      a { color:inherit; text-decoration:none; }
+    }
+  </style>
+  <script>window.MathJax={tex:{inlineMath:[['\\(','\\)']],displayMath:[['\\[','\\]']]},options:{skipHtmlTags:['script','noscript','style','textarea','pre','code']}};</script>
+  <script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+</head>
+<body>
+
+<a class="skip-link" href="#main-content">Skip to main content</a>
+
+<div class="review-bar">
+  <strong>SYDE 671 · Assignment 4</strong>
+  <nav aria-label="Page links"><a href="../">Course home</a><a href="#part-1">Part 1</a><a href="#part-2">Part 2</a><a href="#part-3">Part 3</a><a href="#part-4">Part 4</a><a href="#limits">Limitations</a><a href="#files">Files</a></nav>
+</div>
+<main class="paper" id="main-content" tabindex="-1">
+<header class="paper-header">
+  <p class="course">SYDE 671 · Introduction to Computer Vision · Assignment 4</p>
+  <h1>Epipolar Geometry and Structure from Motion</h1>
+  <p class="author-line">Assignment Report · Parts 1 to 4</p>
+  <p class="version-line">Eight-point algorithm, rectification, Tomasi&ndash;Kanade factorization, and projective triangulation (borrowed from Stanford CS231A)</p>
+</header>
+
+<div class="abstract">
+  <p><span class="label">Abstract—</span>Part 1 estimates the fundamental matrix from point correspondences with the linear least-squares eight-point algorithm and its normalized version. On the two supplied image pairs the normalized algorithm brings the mean distance from a point to its epipolar line down from 28.0 and 25.2 px (set 1, images 1 and 2) and 9.7 and 14.6 px (set 2) to 0.83&ndash;0.89 px. Part 2 uses the fundamental matrix to compute epipoles and a matching pair of rectifying homographies; after rectification the matched points of both pairs lie on the same row to within a mean of 0.9 px. Part 3 recovers affine structure from two views by factorizing the centred measurement matrix; the full set reproduces the ground truth up to an affine map (RMSE 1.06 on a 25&ndash;36 unit extent), and a subset whose points are nearly coplanar shows why the third and fourth singular values then become comparable (7.2 and 5.1). Part 4 implements the projective pipeline: the four candidate (<i>R</i>, <i>T</i>) pairs from the essential matrix, DLT triangulation, reprojection error with its Jacobian, ten Gauss&ndash;Newton iterations, and a positive-depth test that selects the correct pair. All starter-code checks agree, and the full pipeline reconstructs 66,385 dense points of a statue from five photographs in about 21 s.</p>
+  <p><span class="label">Index Terms—</span>fundamental matrix, eight-point algorithm, epipolar geometry, image rectification, factorization, essential matrix, triangulation, Gauss&ndash;Newton, structure from motion.</p>
+</div>
+
+<nav class="contents" aria-label="Table of contents"><strong>Contents</strong><ol>
+<li><a href="#part-1">Part 1: Fundamental matrix estimation</a></li>
+<li><a href="#part-2">Part 2: Matching homographies for rectification</a></li>
+<li><a href="#part-3">Part 3: The factorization method</a></li>
+<li><a href="#part-4">Part 4: Triangulation in structure from motion</a></li>
+<li><a href="#limits">Limitations</a></li>
+<li><a href="#files">Files and credits</a></li>
+</ol></nav>
+
+<section id="scope">
+<p class="no-indent"><strong>Scope.</strong> The assignment supplies starter code and all of its data (image pairs, point correspondences, ground-truth 3D points, and a precomputed statue sequence), so no photographs were taken for this assignment. I filled in every <code>TODO</code> in <code>p1.py</code>, <code>p2.py</code>, <code>p3.py</code> and <code>p4.py</code>. All code uses NumPy only for the linear algebra, with SciPy and scikit-image used by the provided utilities. Throughout, the fundamental matrix follows the starter convention <i>p</i>&prime;<sup>T</sup><i>F</i><i>p</i> = 0, where <i>p</i> is a point in image 1 and <i>p</i>&prime; its match in image 2. Small driver scripts (<code>run_p1.py</code> to <code>run_p4_views.py</code>) save the numbers and figures shown here.</p>
+</section>
+
+<section id="part-1">
+<h2 class="part-heading">Part 1: Fundamental Matrix Estimation</h2>
+</section>
+
+<section id="p1a">
+<h2>1(a, b) Linear least-squares eight-point algorithm</h2>
+<p class="no-indent"><b>Implementation.</b> Each correspondence gives one linear equation in the nine entries of <i>F</i>. With <i>p</i> = (<i>u</i>, <i>v</i>, 1) and <i>p</i>&prime; = (<i>u</i>&prime;, <i>v</i>&prime;, 1), the row is the Kronecker product of <i>p</i>&prime; and <i>p</i>, and stacking all rows gives <i>A f</i> = 0. The solution is the right singular vector of <i>A</i> with the smallest singular value, reshaped to 3&times;3. Because a true fundamental matrix has rank two, a second SVD of <i>F</i> sets its smallest singular value to zero and recomposes it. Both returned matrices have numerical rank 2.</p>
+<div class="codeblock"><div class="codehead">p1.py</div><pre><code>def lls_eight_point_alg(points1, points2):
+    # each correspondence gives one row of A f = 0, with f = vec(F) row-major
+    # (points2)^T F (points1) = 0  -&gt;  row = kron(p2, p1) = [u&#x27;u u&#x27;v u&#x27; v&#x27;u v&#x27;v v&#x27; u v 1]
+    A = np.stack([np.kron(p2, p1) for p1, p2 in zip(points1, points2)])
+    # f = right singular vector of the smallest singular value
+    _, _, Vt = np.linalg.svd(A)
+    F = Vt[-1].reshape(3, 3)
+    # enforce rank 2 by zeroing the smallest singular value
+    U, S, Vt = np.linalg.svd(F)
+    S[2] = 0
+    return U @ np.diag(S) @ Vt</code></pre></div>
+<p class="no-indent">The resulting matrices are given in scientific notation because the entries range from about 10<sup>-7</sup> to 1, so fixed four-decimal output would show most of them as 0.0000. <i>F</i> is only defined up to scale; this one has unit Frobenius norm before rank enforcement.</p>
+<div class="table-wrap">
+<p class="no-indent"><b>Set 1, LLS:</b></p><table style="width:auto;margin:.4rem auto;font-size:.82rem"><tbody><tr><td>1.5522e-06</td><td>-8.1816e-06</td><td>-1.5044e-03</td></tr><tr><td>-5.8700e-06</td><td>-3.0289e-07</td><td>-1.1361e-02</td></tr><tr><td>-3.5231e-03</td><td>1.4145e-02</td><td>9.9983e-01</td></tr></tbody></table>
+<p class="no-indent"><b>Set 2, LLS:</b></p><table style="width:auto;margin:.4rem auto;font-size:.82rem"><tbody><tr><td>-5.6309e-06</td><td>2.7498e-05</td><td>-6.4265e-03</td></tr><tr><td>-2.7762e-05</td><td>-6.7475e-06</td><td>1.5218e-02</td></tr><tr><td>1.0762e-02</td><td>-1.2252e-02</td><td>-9.9973e-01</td></tr></tbody></table>
+</div>
+</section>
+
+<section id="p1c">
+<h2>1(c, d) Normalized eight-point algorithm</h2>
+<p class="no-indent"><b>Implementation.</b> Pixel coordinates are in the hundreds, so the columns of <i>A</i> differ by about five orders of magnitude (products such as <i>uu</i>&prime; against the constant 1) and the smallest singular vector is poorly conditioned. I therefore translate each point set so its centroid is at the origin and scale it so the mean distance from the origin is &radic;2, using a similarity matrix <i>T</i> per image. The same linear algorithm (including rank enforcement) runs on the normalized points to give <i>F</i><sub>n</sub>, and the result is converted back with <i>F</i> = <i>T</i>&prime;<sup>T</sup> <i>F</i><sub>n</sub> <i>T</i>.</p>
+<div class="codeblock"><div class="codehead">p1.py</div><pre><code>def normalized_eight_point_alg(points1, points2):
+    def normalize(pts):
+        # translate centroid to origin, scale so mean distance is sqrt(2)
+        mean = pts[:, :2].mean(axis=0)
+        d = np.linalg.norm(pts[:, :2] - mean, axis=1).mean()
+        s = np.sqrt(2) / d
+        T = np.array([[s, 0, -s * mean[0]],
+                      [0, s, -s * mean[1]],
+                      [0, 0, 1]])
+        return (T @ pts.T).T, T
+    q1, T1 = normalize(points1)
+    q2, T2 = normalize(points2)
+    Fn = lls_eight_point_alg(q1, q2)
+    # undo normalization: q2^T Fn q1 = p2^T (T2^T Fn T1) p1
+    return T2.T @ Fn @ T1</code></pre></div>
+<div class="table-wrap">
+<p class="no-indent"><b>Set 1, normalized:</b></p><table style="width:auto;margin:.4rem auto;font-size:.82rem"><tbody><tr><td>7.6956e-07</td><td>-6.2866e-06</td><td>1.0418e-04</td></tr><tr><td>-5.7877e-06</td><td>-4.0113e-07</td><td>-7.5858e-03</td></tr><tr><td>-1.0101e-03</td><td>1.0418e-02</td><td>1.7226e-01</td></tr></tbody></table>
+<p class="no-indent"><b>Set 2, normalized:</b></p><table style="width:auto;margin:.4rem auto;font-size:.82rem"><tbody><tr><td>-1.7626e-07</td><td>2.9350e-06</td><td>-1.8214e-04</td></tr><tr><td>4.2339e-06</td><td>3.7503e-07</td><td>8.1899e-03</td></tr><tr><td>2.7582e-04</td><td>-9.9428e-03</td><td>-2.9430e-03</td></tr></tbody></table>
+</div>
+</section>
+
+<section id="p1e">
+<h2>1(e, f) Distance to epipolar lines</h2>
+<p class="no-indent"><b>Implementation.</b> For a point <i>p</i> in image 1 with match <i>p</i>&prime;, the epipolar line in image 1 is <i>l</i> = <i>F</i><sup>T</sup><i>p</i>&prime; = (<i>a</i>, <i>b</i>, <i>c</i>). The distance from <i>p</i> to it is |<i>l</i>&middot;<i>p</i>| / &radic;(<i>a</i><sup>2</sup> + <i>b</i><sup>2</sup>), and the function returns the mean over all points. The image-2 value is the same call with the points and <i>F</i><sup>T</sup> swapped.</p>
+<div class="codeblock"><div class="codehead">p1.py</div><pre><code>def compute_distance_to_epipolar_lines(points1, points2, F):
+    # epipolar line in image 1 for each point of image 2: l = F^T p2
+    lines = (F.T @ points2.T).T
+    num = np.abs(np.sum(lines * points1, axis=1))
+    den = np.sqrt(lines[:, 0]**2 + lines[:, 1]**2)
+    return np.mean(num / den)</code></pre></div>
+<div class="table-wrap"><table>
+<caption>Mean distance from points to their epipolar lines (pixels)</caption>
+<thead><tr><th class="left">Image set</th><th>LLS, image 1</th><th>LLS, image 2</th><th>Normalized, image 1</th><th>Normalized, image 2</th></tr></thead>
+<tbody>
+<tr><td class="left">Set 1 (37 points)</td><td>28.03</td><td>25.16</td><td><b>0.89</b></td><td><b>0.83</b></td></tr>
+<tr><td class="left">Set 2</td><td>9.70</td><td>14.57</td><td><b>0.89</b></td><td><b>0.89</b></td></tr>
+</tbody></table></div>
+<p class="no-indent">Normalization cuts the error by more than an order of magnitude on set 1 and about 11&ndash;16 times on set 2, without any other change to the algorithm. The plots show the same effect: with the plain algorithm the lines miss many points by tens of pixels, whereas with the normalized one they pass through or very near each blue star.</p>
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:.6rem">
+<figure class=""><a href="media/p1_set1_lls.png"><img src="media/p1_set1_lls.png" alt="" loading="lazy"></a><figcaption><span class="fig-label">Fig. 1a.</span> Set 1, LLS eight-point. Red: epipolar lines; blue stars: matched points.</figcaption></figure>
+<figure class=""><a href="media/p1_set1_normalized.png"><img src="media/p1_set1_normalized.png" alt="" loading="lazy"></a><figcaption><span class="fig-label">Fig. 1b.</span> Set 1, normalized eight-point.</figcaption></figure>
+<figure class=""><a href="media/p1_set2_lls.png"><img src="media/p1_set2_lls.png" alt="" loading="lazy"></a><figcaption><span class="fig-label">Fig. 1c.</span> Set 2, LLS eight-point.</figcaption></figure>
+<figure class=""><a href="media/p1_set2_normalized.png"><img src="media/p1_set2_normalized.png" alt="" loading="lazy"></a><figcaption><span class="fig-label">Fig. 1d.</span> Set 2, normalized eight-point.</figcaption></figure>
+</div>
+</section>
+
+<section id="part-2">
+<h2 class="part-heading">Part 2: Matching Homographies for Image Rectification</h2>
+</section>
+
+<section id="p2a">
+<h2>2(a) Epipole</h2>
+<p class="no-indent">Since <i>F</i><sup>T</sup><i>e</i> = 0, the epipole is the null vector of <i>F</i><sup>T</sup>: the right singular vector of <i>F</i><sup>T</sup> for the smallest singular value, divided by its last coordinate. With this convention <code>compute_epipole(F)</code> gives the epipole in image 2 and <code>compute_epipole(F.T)</code> the one in image 1, as the starter <code>main</code> assumes.</p>
+<div class="codeblock"><div class="codehead">p2.py</div><pre><code>def compute_epipole(F):
+    # F^T e = 0: e is the right singular vector of F^T with smallest singular value
+    _, _, Vt = np.linalg.svd(F.T)
+    e = Vt[-1]
+    return e / e[2]</code></pre></div>
+<p class="no-indent">For set 1 the epipoles are <i>e</i><sub>1</sub> = (&minus;1300.8, &minus;142.7) and <i>e</i><sub>2</sub> = (1654.2, 45.4); for set 2 they are (&minus;1929.6, &minus;53.8) and (3378.1, 75.5). All lie far outside the 512&times;512 images, which suggests the camera motion is roughly a sideways translation, so the epipolar lines are already fairly close to horizontal.</p>
+</section>
+
+<section id="p2b">
+<h2>2(b) Sending the epipole to infinity</h2>
+<p class="no-indent">As in the handout, <i>H</i> is built in four steps: translate the image centre to the origin (<i>T</i>); rotate the translated epipole onto the <i>x</i>-axis at (<i>f</i>, 0, 1) (<i>R</i>, with &alpha; = &plusmn;1 for the sign of <i>e</i><sub>1</sub>); apply <i>G</i> to send (<i>f</i>, 0, 1) to (<i>f</i>, 0, 0); and move back with <i>T</i><sup>-1</sup>. The product is <i>H</i> = <i>T</i><sup>-1</sup><i>G</i><i>R</i><i>T</i>.</p>
+<div class="codeblock"><div class="codehead">p2.py</div><pre><code>def compute_H(e, im):
+    h, w = im.shape[:2]
+    # 1. translate image centre to the origin
+    T = np.array([[1, 0, -w / 2.0],
+                  [0, 1, -h / 2.0],
+                  [0, 0, 1]])
+    e1, e2, _ = T @ e
+    # 2. rotate the translated epipole onto the x-axis at (f, 0, 1)
+    alpha = 1.0 if e1 &gt;= 0 else -1.0
+    d = np.hypot(e1, e2)
+    R = np.array([[alpha * e1 / d, alpha * e2 / d, 0],
+                  [-alpha * e2 / d, alpha * e1 / d, 0],
+                  [0, 0, 1]])
+    f = alpha * d
+    # 3. send (f, 0, 1) to (f, 0, 0), i.e. infinity along the horizontal axis
+    G = np.array([[1, 0, 0],
+                  [0, 1, 0],
+                  [-1.0 / f, 0, 1]])
+    # 4. move back to the image frame
+    return np.linalg.inv(T) @ G @ R @ T</code></pre></div>
+<p class="no-indent">As a check, the transformed epipole <i>H</i><sub>2</sub><i>e</i><sub>2</sub> has a third coordinate of about 10<sup>-16</sup> and a second coordinate of about 10<sup>-14</sup> relative to a first coordinate of order 10<sup>3</sup>, so it is the point at infinity along the horizontal axis.</p>
+</section>
+
+<section id="p2c">
+<h2>2(c) Matching homographies</h2>
+<p class="no-indent"><i>H</i><sub>2</sub> comes from <code>compute_H</code>. To find a matching <i>H</i><sub>1</sub> = <i>H</i><sub>A</sub><i>H</i><sub>2</sub><i>M</i>, I form <i>M</i> = [<i>e</i>]<sub>&times;</sub><i>F</i> + <i>e</i><i>v</i><sup>T</sup> with <i>v</i> = (1, 1, 1) (any <i>v</i> keeps <i>F</i> = [<i>e</i>]<sub>&times;</sub><i>M</i>). With the matches transformed to <i>p̂</i><sub>1</sub> = <i>H</i><sub>2</sub><i>M</i><i>p</i><sub>1</sub> and <i>p̂</i><sub>2</sub> = <i>H</i><sub>2</sub><i>p</i><sub>2</sub> (both normalized to a last coordinate of 1), the least-squares problem <i>W</i><i>a</i> = <i>b</i> has the rows of <i>W</i> equal to <i>p̂</i><sub>1</sub> and <i>b</i> equal to the <i>x</i>-coordinates of <i>p̂</i><sub>2</sub>. The solution <i>a</i> fills the first row of <i>H</i><sub>A</sub>; the other two rows are those of the identity.</p>
+<div class="codeblock"><div class="codehead">p2.py</div><pre><code>def compute_matching_homographies(e2, F, im2, points1, points2):
+    H2 = compute_H(e2, im2)
+    # M = [e]_x F + e v^T  (v arbitrary, so that F = [e]_x M)
+    ex = np.array([[0, -e2[2], e2[1]],
+                   [e2[2], 0, -e2[0]],
+                   [-e2[1], e2[0], 0]])
+    v = np.ones(3)
+    M = ex @ F + np.outer(e2, v)
+    # least squares: choose HA (x-direction affine part) so H1 p1 matches H2 p2
+    p1_hat = (H2 @ M @ points1.T)
+    p1_hat /= p1_hat[2]
+    p2_hat = (H2 @ points2.T)
+    p2_hat /= p2_hat[2]
+    W = p1_hat.T                  # N x 3
+    b = p2_hat[0]                 # x-coordinates of the target points
+    a, *_ = np.linalg.lstsq(W, b, rcond=None)
+    HA = np.array([[a[0], a[1], a[2]],
+                   [0, 1, 0],
+                   [0, 0, 1]])
+    H1 = HA @ H2 @ M
+    return H1, H2</code></pre></div>
+<div class="table-wrap"><table>
+<caption>Row mismatch of matched points after rectification (pixels)</caption>
+<thead><tr><th class="left">Set</th><th>Mean |&Delta;y|</th><th>Max |&Delta;y|</th></tr></thead>
+<tbody><tr><td class="left">Set 1</td><td>0.86</td><td>3.87</td></tr><tr><td class="left">Set 2</td><td>0.88</td><td>4.18</td></tr></tbody></table></div>
+</section>
+
+<section id="p2d">
+<h2>2(d) Rectified images</h2>
+<figure class="medium"><a href="media/p2_set1_rectified_lines.png"><img src="media/p2_set1_rectified_lines.png" alt="" loading="lazy"></a><figcaption><span class="fig-label">Fig. 2a.</span> Set 1 rectified pair. The epipolar lines are now horizontal and parallel, and each blue star sits on the same row in both images.</figcaption></figure>
+<figure class="medium"><a href="media/p2_set2_rectified_lines.png"><img src="media/p2_set2_rectified_lines.png" alt="" loading="lazy"></a><figcaption><span class="fig-label">Fig. 2b.</span> Set 2 rectified pair, with the same behaviour. The starter <code>main</code> only runs set 1; I ran both.</figcaption></figure>
+<p class="no-indent"><b>Why rectification helps.</b> In the original pair the match of a point lies somewhere along a slanted epipolar line, so a correspondence search is two-dimensional unless <i>F</i> is used to constrain it. After rectification the epipolar lines are the image rows, so the match of a point is on the same row of the other image. The search becomes one-dimensional along a scanline, which is faster, has fewer false candidates, and lets a dense method such as stereo block matching compare windows along a row.</p>
+<p>The set 2 images are stored as three-channel colour whereas set 1 is grayscale, and the provided <code>compute_rectified_image</code> expects a single channel, so my driver converts set 2 to grayscale first.</p>
+</section>
+
+<section id="part-3">
+<h2 class="part-heading">Part 3: The Factorization Method</h2>
+</section>
+
+<section id="p3a">
+<h2>3(a, b) Implementation</h2>
+<p class="no-indent">The measurements are stacked into a 4&times;<i>N</i> matrix <i>D</i> whose rows are <i>x</i><sub>1</sub>, <i>y</i><sub>1</sub>, <i>x</i><sub>2</sub>, <i>y</i><sub>2</sub>. Subtracting each row&rsquo;s mean removes the unknown translation, so for affine cameras <i>D</i> = <i>M</i><i>S</i> with <i>M</i> a 4&times;3 motion matrix and <i>S</i> a 3&times;<i>N</i> structure matrix, and <i>D</i> has rank at most 3. An SVD <i>D</i> = <i>U</i>&Sigma;<i>V</i><sup>T</sup> is truncated to rank 3: the motion is <i>U</i><sub>:,1:3</sub>&Sigma;<sub>1:3</sub> and the structure is the first three rows of <i>V</i><sup>T</sup>.</p>
+<div class="codeblock"><div class="codehead">p3.py</div><pre><code>def factorization_method(points_im1, points_im2):
+    # measurement matrix D (4 x N): rows are x1, y1, x2, y2
+    D = np.vstack([points_im1[:, :2].T, points_im2[:, :2].T])
+    # remove the per-row mean (translation) so D = M S for a purely linear affine camera
+    D = D - D.mean(axis=1, keepdims=True)
+    U, S, Vt = np.linalg.svd(D, full_matrices=False)
+    # rank-3 truncation: motion (4 x 3) and structure (3 x N); singular values
+    # are put in the motion matrix, as in the course notes
+    motion = U[:, :3] @ np.diag(S[:3])
+    structure = Vt[:3, :]
+    return structure, motion</code></pre></div>
+</section>
+
+<section id="p3c">
+<h2>3(c, d) Full correspondence set</h2>
+<figure class="medium"><a href="media/p3_set1_a.png"><img src="media/p3_set1_a.png" alt="" loading="lazy"></a><figcaption><span class="fig-label">Fig. 3a.</span> Set 1 (37 points): recovered structure (left) and ground truth (right).</figcaption></figure>
+<p class="no-indent"><b>Comparison.</b> The recovered shape has the same arrangement as the ground truth, but its axes are on a different scale (of order 0.4 against tens of units) and it is rotated. This is expected: from two affine views the factorization is only determined up to an invertible 3&times;3 matrix, since <i>M</i><i>S</i> = (<i>M</i><i>A</i>)(<i>A</i><sup>-1</sup><i>S</i>) for any such <i>A</i>, and the SVD simply picks one. As a check I fitted the best affine map from my structure to the ground truth; the residual RMSE is 1.06 on a point cloud whose extent is 27.2, 36.2 and 24.7 units along the three axes. Resolving the ambiguity to a rotation and scale (a metric reconstruction) needs extra constraints on the camera, which the assignment does not ask for.</p>
+<div class="table-wrap"><table>
+<caption>Singular values of the centred 4&times;<i>N</i> measurement matrix</caption>
+<thead><tr><th class="left">Run</th><th>&sigma;<sub>1</sub></th><th>&sigma;<sub>2</sub></th><th>&sigma;<sub>3</sub></th><th>&sigma;<sub>4</sub></th></tr></thead>
+<tbody><tr><td class="left">Full set (<i>N</i> = 37)</td><td>959.6</td><td>540.5</td><td>184.4</td><td>27.9</td></tr>
+<tr><td class="left">Subset (<i>N</i> = 18)</td><td>264.5</td><td>210.1</td><td>7.2</td><td>5.1</td></tr></tbody></table></div>
+<p class="no-indent"><b>Why four values, and why the fourth is not zero.</b> <i>D</i> is 4&times;<i>N</i>, so its SVD always has four singular values (all four are nonzero in practice). For an idealized affine camera and noise-free measurements <i>D</i> has rank exactly 3, so I would expect three nonzero singular values and a fourth equal to zero. Here the fourth value is 27.9, small relative to &sigma;<sub>3</sub> = 184.4 but not zero. It reflects noise in the point locations together with the fact that real cameras are perspective rather than exactly affine. The rank-3 truncation discards it.</p>
+</section>
+
+<section id="p3e">
+<h2>3(e, f) Subset of correspondences</h2>
+<figure class="medium"><a href="media/p3_set1_subset_a.png"><img src="media/p3_set1_subset_a.png" alt="" loading="lazy"></a><figcaption><span class="fig-label">Fig. 3b.</span> Subset (18 points): recovered structure (left) and ground truth (right).</figcaption></figure>
+<p class="no-indent">With the subset, the reconstruction no longer resembles the ground truth. Looking at the subset&rsquo;s ground-truth coordinates shows why: the points are nearly coplanar. Their <i>y</i>-values span only 0.35 units (all between about &minus;0.35 and 0), against 13.7 and 10.6 for <i>x</i> and <i>z</i>; they form a flat grid on one face of the object. A planar point set has an essentially two-dimensional structure, so <i>D</i> is close to rank 2 and the third structure direction is determined by noise rather than by geometry. That direction is therefore arbitrary, and rotating the reconstruction shows points in the wrong depth positions.</p>
+<p class="no-indent">The singular values agree with this. &sigma;<sub>1</sub> and &sigma;<sub>2</sub> stay large (264.5 and 210.1), but &sigma;<sub>3</sub> falls from 184.4 to 7.2 and becomes comparable to &sigma;<sub>4</sub> = 5.1. When a third singular value is not separated from the noise floor, the rank-3 assumption carries no more information than rank 2. The best affine fit of the subset to its ground truth is tight (RMSE 0.12), but that is because the ground truth itself is almost flat. The fit therefore says little about whether the depth was recovered.</p>
+</section>
+
+<section id="part-4">
+<h2 class="part-heading">Part 4: Triangulation in Structure from Motion</h2>
+</section>
+
+<section id="p4a">
+<h2>4(a) Four candidate (<i>R</i>, <i>T</i>) pairs</h2>
+<p class="no-indent">From the SVD <i>E</i> = <i>U</i>&Sigma;<i>V</i><sup>T</sup> I form <i>Q</i> = <i>U</i><i>W</i><i>V</i><sup>T</sup> or <i>U</i><i>W</i><sup>T</sup><i>V</i><sup>T</sup> with <i>W</i> = [[0, &minus;1, 0], [1, 0, 0], [0, 0, 1]]. <i>Q</i> is only guaranteed to be orthogonal, so the rotation is <i>R</i> = det(<i>Q</i>)<i>Q</i>. The translation is &plusmn;<i>u</i><sub>3</sub>, the third column of <i>U</i>. The two rotations and two signs make four pairs.</p>
+<div class="codeblock"><div class="codehead">p4.py</div><pre><code>def estimate_initial_RT(E):
+    U, _, Vt = np.linalg.svd(E)
+    W = np.array([[0, -1, 0],
+                  [1, 0, 0],
+                  [0, 0, 1]], dtype=float)
+    u3 = U[:, 2]
+    RT = np.zeros((4, 3, 4))
+    i = 0
+    for Q in (U @ W @ Vt, U @ W.T @ Vt):
+        # Q is only guaranteed orthogonal; multiplying by det(Q) makes it a proper rotation
+        R = np.linalg.det(Q) * Q
+        for T in (u3, -u3):
+            RT[i, :, :3] = R
+            RT[i, :, 3] = T
+            i += 1
+    return RT</code></pre></div>
+<p class="no-indent">The third of the four estimates is identical (to four decimals) to the example (<i>R</i>, <i>T</i>) provided in the starter code, as required. The first two have a rotation with a negative second and third diagonal entry, i.e. roughly a 180&deg; rotation about the baseline, the usual alternative solution.</p>
+</section>
+
+<section id="p4b">
+<h2>4(b) Linear triangulation</h2>
+<p class="no-indent">For each image <i>i</i> with camera matrix <i>M</i><sub>i</sub> and measured point (<i>x</i>, <i>y</i>), the constraints <i>x</i>(<i>m</i><sub>3</sub>&middot;<i>P</i>) &minus; <i>m</i><sub>1</sub>&middot;<i>P</i> = 0 and <i>y</i>(<i>m</i><sub>3</sub>&middot;<i>P</i>) &minus; <i>m</i><sub>2</sub>&middot;<i>P</i> = 0 give two rows. Stacking them over all images gives a 2<i>K</i>&times;4 matrix whose smallest right singular vector is the homogeneous 3D point; dividing by its fourth coordinate gives <i>P</i>. On the starter unit test the sum of absolute differences from the expected point is 0.0029. That is small, but larger than the four-decimal rounding of the reference values would explain, and I did not track down the source of the gap.</p>
+<div class="codeblock"><div class="codehead">p4.py</div><pre><code>def linear_estimate_3d_point(image_points, camera_matrices):
+    rows = []
+    for p, M in zip(image_points, camera_matrices):
+        # x * (m3 . P) - (m1 . P) = 0   and   y * (m3 . P) - (m2 . P) = 0
+        rows.append(p[0] * M[2] - M[0])
+        rows.append(p[1] * M[2] - M[1])
+    A = np.array(rows)
+    _, _, Vt = np.linalg.svd(A)
+    P = Vt[-1]
+    return P[:3] / P[3]</code></pre></div>
+</section>
+
+<section id="p4c">
+<h2>4(c) Reprojection error and Jacobian</h2>
+<p class="no-indent">The error for image <i>i</i> is <i>e</i><sub>i</sub> = <i>p</i>&prime; &minus; <i>p</i><sub>i</sub>, where <i>p</i>&prime; = (<i>y</i><sub>1</sub>/<i>y</i><sub>3</sub>, <i>y</i><sub>2</sub>/<i>y</i><sub>3</sub>) and <i>y</i> = <i>M</i><sub>i</sub><i>P</i>. The Jacobian follows from the quotient rule: &part;(<i>y</i><sub>1</sub>/<i>y</i><sub>3</sub>)/&part;<i>P</i> = (<i>m</i><sub>1</sub><i>y</i><sub>3</sub> &minus; <i>y</i><sub>1</sub><i>m</i><sub>3</sub>)/<i>y</i><sub>3</sub><sup>2</sup>, using only the first three columns of <i>M</i><sub>i</sub>, and likewise for the second row. Both functions match the starter reference values: the error differs by 8.3&times;10<sup>-7</sup> and the Jacobian by 1.8&times;10<sup>-8</sup> (sums of absolute differences).</p>
+<div class="codeblock"><div class="codehead">p4.py</div><pre><code>def reprojection_error(point_3d, image_points, camera_matrices):
+    P = np.append(point_3d, 1.0)
+    errors = []
+    for p, M in zip(image_points, camera_matrices):
+        y = M @ P
+        errors.extend(y[:2] / y[2] - p[:2])
+    return np.array(errors)</code></pre></div>
+<div class="codeblock"><div class="codehead">p4.py</div><pre><code>def jacobian(point_3d, camera_matrices):
+    P = np.append(point_3d, 1.0)
+    J = np.zeros((2 * len(camera_matrices), 3))
+    for k, M in enumerate(camera_matrices):
+        y = M @ P
+        # quotient rule on (y1/y3, y2/y3) w.r.t. the 3 spatial coordinates
+        J[2 * k] = (M[0, :3] * y[2] - y[0] * M[2, :3]) / y[2] ** 2
+        J[2 * k + 1] = (M[1, :3] * y[2] - y[1] * M[2, :3]) / y[2] ** 2
+    return J</code></pre></div>
+</section>
+
+<section id="p4d">
+<h2>4(d) Gauss&ndash;Newton</h2>
+<p class="no-indent">Starting from the linear estimate, I run ten iterations of <i>P</i> &larr; <i>P</i> &minus; (<i>J</i><sup>T</sup><i>J</i>)<sup>-1</sup><i>J</i><sup>T</sup><i>e</i>, with no early stopping, as specified. On the starter&rsquo;s multi-view test the norm of the reprojection error falls from 98.74 for the linear estimate to 95.59 for the Gauss&ndash;Newton estimate. The improvement is modest, but the nonlinear estimate is lower, as the check requires.</p>
+<div class="codeblock"><div class="codehead">p4.py</div><pre><code>def nonlinear_estimate_3d_point(image_points, camera_matrices):
+    P = linear_estimate_3d_point(image_points, camera_matrices)
+    for _ in range(10):
+        e = reprojection_error(P, image_points, camera_matrices)
+        J = jacobian(P, camera_matrices)
+        P = P - np.linalg.inv(J.T @ J) @ J.T @ e
+    return P</code></pre></div>
+</section>
+
+<section id="p4e">
+<h2>4(e) Choosing the correct (<i>R</i>, <i>T</i>)</h2>
+<p class="no-indent">For each of the four candidates I build the cameras <i>K</i>[<i>I</i> | 0] and <i>K</i>[<i>R</i> | <i>T</i>], triangulate every correspondence with the linear estimate, and count the points whose depth is positive in both camera frames. The depth in the first camera is the <i>z</i>-coordinate of the point; for the second, the point is first transformed by [<i>R</i> | <i>T</i>]. The candidate with the most points in front of both cameras wins. On the starter test this returns exactly the example (<i>R</i>, <i>T</i>) given in the handout.</p>
+<div class="codeblock"><div class="codehead">p4.py</div><pre><code>def estimate_RT_from_E(E, image_points, K):
+    candidates = estimate_initial_RT(E)
+    cam0 = K @ np.hstack((np.eye(3), np.zeros((3, 1))))
+    best, best_count = None, -1
+    for RT in candidates:
+        cams = np.stack([cam0, K @ RT])
+        count = 0
+        for pts in image_points:
+            P = linear_estimate_3d_point(pts, cams)
+            z1 = P[2]                         # depth in camera 1 frame
+            z2 = (RT @ np.append(P, 1.0))[2]  # depth in camera 2 frame
+            count += int(z1 &gt; 0 and z2 &gt; 0)
+        if count &gt; best_count:
+            best, best_count = RT, count
+    return best</code></pre></div>
+</section>
+
+<section id="p4f">
+<h2>4(f) Full pipeline and the statue reconstruction</h2>
+<p class="no-indent">With <code>run_pipeline = True</code> the starter code estimates the camera motion for the five statue photographs with bundle adjustment, merges the frames, and triangulates the dense matches with my <code>nonlinear_estimate_3d_point</code>. The provided loop uses the first three image pairs and produces <b>66,385</b> 3D points (29,189 + 20,932 + 16,264). The whole script, including the unit tests, runs in about 21 s on this machine. The provided dense-match file also contains a fourth set of 114,612 matches that the loop does not use.</p>
+<figure class="narrow"><a href="media/p4_statue.png"><img src="media/p4_statue.png" alt="" loading="lazy"></a><figcaption><span class="fig-label">Fig. 4a.</span> Final reconstruction, in the starter plotting view (elevation &minus;100&deg;, azimuth 90&deg;), which looks along the depth axis. It is the view the handout asks for.</figcaption></figure>
+<figure class="medium"><a href="media/p4_statue_views.png"><img src="media/p4_statue_views.png" alt="" loading="lazy"></a><figcaption><span class="fig-label">Fig. 4b.</span> The same points as three orthographic projections: front (<i>x</i>, <i>y</i>), side (depth, <i>y</i>) and top (<i>x</i>, depth). Depth spans about 3.4 to 6.5 units. <i>y</i> increases downward, as in image coordinates.</figcaption></figure>
+<p class="no-indent">The cloud is dense and has real depth structure: the side view is a slanted band and the top view is a wedge, consistent with two surfaces meeting at an angle. It also contains scattered outlier points, because the starter code keeps every triangulated point (the <code>use_point</code> mask is all true). I cannot compare it to a ground truth, since none is provided for this sequence, and the statue is not easy to recognise from the single starter viewpoint.</p>
+<p class="no-indent"><b>Why a house is harder than the statue.</b></p>
+<ul>
+<li><b>Visibility and occlusion.</b> The statue is a compact object that all cameras see from the front. A house has walls, a roof and interior that no single viewpoint sees together, so any point appears in only some images and the images that overlap share fewer correspondences.</li>
+<li><b>Camera motion.</b> Covering a house means moving around or through it, so the baselines are large and the views differ strongly. Matching across such wide changes is harder, and the camera pose of each new view has to be chained from the previous ones, so errors accumulate (drift) and need global bundle adjustment.</li>
+<li><b>Texture and structure.</b> Large flat or repetitive surfaces (plain walls, windows, tiles) give few distinctive features and many false matches.</li>
+<li><b>Depth range and scale.</b> A scene with near and far parts has a wide range of depths, so triangulation accuracy varies a lot, and far points with small parallax are poorly constrained.</li>
+<li><b>Cost.</b> More images and points make the pipeline much heavier; this Python implementation took 21 s for five images.</li>
+</ul>
+</section>
+
+<section id="limits">
+<h2>Limitations</h2>
+<ul>
+<li>The two-view affine factorization in Part 3 stops at an affine reconstruction; I did not impose the metric constraints that would reduce it to a rotation and scale.</li>
+<li>The statement that the Part 3 subset is nearly coplanar comes from its ground-truth coordinates (<i>y</i> spans 0.35 units). I did not investigate how the subset was chosen.</li>
+<li>Parts 1 and 2 are evaluated only on the two supplied image pairs. Part 4 is checked against the starter&rsquo;s unit tests and visual plausibility, not against ground truth.</li>
+<li>The reconstruction keeps outliers (no filtering of triangulated points) because the provided pipeline does not filter them. The reported 66,385 points therefore include some bad ones.</li>
+<li>I changed the starter <code>p4.py</code> only to replace a call removed from current Matplotlib (<code>fig.gca(projection=&#39;3d&#39;)</code> to <code>fig.add_subplot(projection=&#39;3d&#39;)</code>) and to save the figure and the points to disk.</li>
+</ul>
+</section>
+
+<section id="files">
+<h2>Files and Credits</h2>
+<div class="downloads">
+<a href="code/p1.py">p1.py</a><a href="code/p2.py">p2.py</a><a href="code/p3.py">p3.py</a><a href="code/p4.py">p4.py</a><a href="code/run_p1.py">run_p1.py</a><a href="code/run_p2.py">run_p2.py</a><a href="code/run_p3.py">run_p3.py</a><a href="code/run_p4_views.py">run_p4_views.py</a><a href="code/requirements.txt">requirements.txt</a><a href="code.zip">code.zip</a><a href="syde671 Assignment 4.pdf">Assignment PDF</a>
+</div>
+<p class="no-indent small">From the <code>code/</code> folder run <code>python run_p1.py</code>, <code>python run_p2.py</code>, <code>python run_p3.py</code>, <code>python p4.py</code> and then <code>python run_p4_views.py</code>. Numbers and figures are written to <code>outputs/</code>; the web copies of the figures are in <code>media/</code>. The starter files <code>epipolar_utils.py</code> and <code>sfm_utils.py</code> and the contents of <code>code/data/</code> are the course-supplied versions, unmodified.</p>
+<ol class="references">
+<li>R. Hartley and A. Zisserman, <i>Multiple View Geometry in Computer Vision</i>, 2nd ed., Cambridge University Press, 2004 (eight-point algorithm, rectification).</li>
+<li>C. Tomasi and T. Kanade, &ldquo;Shape and Motion from Image Streams under Orthography: A Factorization Method&rdquo;, IJCV 1992.</li>
+<li>Stanford CS231A, Computer Vision: From 3D Perception to 3D Reconstruction and Beyond, assignment from which this one is borrowed.</li>
+</ol>
+</section>
+</main>
+</body>
+</html>

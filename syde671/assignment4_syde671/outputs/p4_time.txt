@@ -1,0 +1,1 @@
+MPLBACKEND=Agg ~/miniconda3/envs/syde671/bin/python p4.py >  2>&1  20.28s user 0.22s system 98% cpu 20.814 total

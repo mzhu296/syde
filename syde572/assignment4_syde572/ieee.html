@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="SYDE 572 Assignment 4: Naive Bayes sentiment classification.">
+  <title>SYDE 572 Assignment 4</title>
+  <style>
+    :root { --ink:#111; --muted:#4b5563; --rule:#9ca3af; --accent:#075985; --paper:#fff; --canvas:#e9edf1; --soft:#f4f7f9; }
+    * { box-sizing: border-box; }
+    body { margin:0; color:var(--ink); background:var(--canvas); font-family:"Times New Roman",Times,serif; font-size:16px; line-height:1.52; }
+    .paper { width:min(900px,calc(100% - 2rem)); margin:2rem auto 4rem; padding:clamp(1.5rem,6vw,4rem); background:var(--paper); box-shadow:0 16px 44px rgba(15,23,42,.14); }
+    header { text-align:center; }
+    .course { margin:0 0 .75rem; font-family:Arial,sans-serif; font-size:.78rem; font-weight:700; letter-spacing:.13em; text-transform:uppercase; }
+    h1 { font-size:clamp(1.7rem,4.4vw,2.4rem); font-weight:400; line-height:1.12; margin:0 0 .85rem; }
+    h2 { font-size:1.15rem; margin:2rem 0 .5rem; text-transform:uppercase; letter-spacing:.04em; }
+    h3 { font-size:1rem; font-style:italic; margin:1.2rem 0 .3rem; }
+    table { border-collapse:collapse; margin:.8rem auto; font-size:.95rem; }
+    th,td { border-top:1px solid var(--rule); border-bottom:1px solid var(--rule); padding:.3rem .9rem; text-align:center; }
+    pre { background:var(--soft); padding:.8rem 1rem; overflow-x:auto; font-size:.82rem; line-height:1.4; }
+    code { font-size:.9em; }
+    .blank { border:1.5px dashed var(--rule); color:var(--muted); padding:.7rem 1rem; font-family:Arial,sans-serif; font-size:.85rem; }
+    .abstract { border-top:1.5px solid var(--ink); border-bottom:1px solid var(--rule); padding:1rem 1.25rem; margin:1.5rem 0; }
+  </style>
+</head>
+<body>
+<main class="paper">
+<header>
+  <p class="course">SYDE 572 · Assignment 4</p>
+  <h1>Text Classification with Naive Bayes</h1>
+  <p>Name: ____________________ &nbsp; Student ID: ____________________</p>
+</header>
+
+<div class="abstract"><strong>Abstract.</strong> A Naive Bayes classifier with add-&alpha; smoothing was implemented from scratch and used to classify 11,914 customer reviews (six topics) as positive or negative. Trained on the first 80% of the shuffled data, it reaches <strong>81.5%</strong> accuracy on the held-out 20%.</div>
+
+<h2>I. Data and Setup</h2>
+<p>The file <code>all_sentiment_shuffled.txt</code> has one tokenized, lowercased review per line (topic, polarity, id, words). The topic and id are discarded. The first 80% (9,531 reviews: 4,847 pos, 4,684 neg) is used for training and the last 20% (2,383 reviews) for evaluation. The training vocabulary has 52,392 word types. Code: <code>nb.py</code>; raw output: <code>output.txt</code>.</p>
+
+<h2>II. Method</h2>
+<p><code>train_nb</code> stores the class priors P(c) and the per-class word counts. The smoothed likelihood is</p>
+<p style="text-align:center">P(w | c) = (count(w, c) + &alpha;) / (N<sub>c</sub> + &alpha;(V + 1)),</p>
+<p>where N<sub>c</sub> is the total number of word tokens in class c and V the vocabulary size; the extra +1 gives unseen words a nonzero probability, so scoring never fails. <code>score_doc_label</code> returns log P(c) + &Sigma;<sub>w</sub> log P(w | c) (log probabilities avoid underflow). <code>classify_nb</code> returns the arg-max label, <code>classify_documents</code> maps it over a list, and <code>accuracy</code> is the fraction of correct predictions. Class labels are not hard-coded.</p>
+
+<h2>III. Sanity Checks</h2>
+<table>
+<tr><th>Document</th><th>P(doc, pos)</th><th>P(doc, neg)</th></tr>
+<tr><td>["great"]</td><td>0.001321</td><td>0.000528</td></tr>
+<tr><td>["bad"]</td><td>0.000172</td><td>0.000455</td></tr>
+</table>
+<p>"great" scores higher as positive and "bad" higher as negative, as expected. (&alpha; = 1.) The document <code>['a','top-quality','performance']</code> contains unseen words and scores without error (log scores: neg &minus;27.04, pos &minus;26.37).</p>
+
+<h2>IV. Results</h2>
+<p><strong>Test accuracy with &alpha; = 1: 0.8154</strong> (440 of 2,383 documents misclassified). Effect of the smoothing parameter:</p>
+<table>
+<tr><th>&alpha;</th><th>0.1</th><th>0.5</th><th>1.0</th><th>2.0</th></tr>
+<tr><td>Accuracy</td><td>0.7935</td><td>0.8091</td><td>0.8154</td><td>0.8154</td></tr>
+</table>
+<p>Little smoothing hurts because rare words get extreme, unreliable probabilities; accuracy plateaus around &alpha; = 1&ndash;2.</p>
+
+<h2>V. Error Analysis</h2>
+<p>Examples of confidently wrong predictions (margin = log-score of predicted label minus log-score of true label):</p>
+<ul>
+<li><strong>Negation.</strong> "this was <em>not a waste</em> of brad's time or mine . good job !" (true pos, predicted neg, margin 3.7). The bag-of-words model sees "waste" and "not" as negative evidence and cannot see that "not" reverses "waste".</li>
+<li><strong>Criticism inside a positive review.</strong> "excellent service , and the product worked extremely well . the only criticism i would have is the cost of postage . it was ridiculous ..." (true pos, predicted neg, margin 4.7). Several negative words ("criticism", "ridiculous") outweigh the praise even though the overall verdict is positive.</li>
+<li><strong>Mostly factual or off-topic text.</strong> The ZoneAlarm review ("if i did n't already have norton antivirus , i 'd use the antivirus , too", true pos, margin 8.1) and the MacBook review (margin 3.8) are largely descriptive; the few sentiment words are weak, and words like "norton" and "did n't" carry negative statistics from other reviews.</li>
+<li><strong>Long reviews.</strong> The largest margins (up to 127) are on reviews with over 1,000 tokens, e.g. a negative camera review ("sadly , the camera is not up to filling this role") predicted positive. Naive Bayes adds evidence from every word as if words were independent, so a long review that describes features favorably before delivering a negative verdict accumulates a large wrong-direction score.</li>
+</ul>
+
+<h2>VI. Optional Tasks</h2>
+<h3>A. Six-category topic classifier</h3><div class="blank">Not attempted.</div>
+<h3>B. Learning curve</h3><div class="blank">Not attempted.</div>
+<h3>C. Informative features</h3><div class="blank">Not attempted.</div>
+<h3>D. Naive Bayes for numerical data (iris)</h3><div class="blank">Not attempted.</div>
+<h3>E. scikit-learn classifier</h3><div class="blank">Not attempted.</div>
+<h3>F. Improved features (negation, bigrams)</h3><div class="blank">Not attempted.</div>
+<h3>G. Domain sensitivity</h3><div class="blank">Not attempted.</div>
+</main>
+</body>
+</html>

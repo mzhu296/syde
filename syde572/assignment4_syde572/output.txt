@@ -1,0 +1,31 @@
+train=9531 eval=2383 Counter({'pos': 4847, 'neg': 4684})
+vocab size 52392
+
+Sanity check 1 (length-1 documents, probabilities):
+  P([great], neg) = 0.000528
+  P([great], pos) = 0.001321
+  P([bad], neg) = 0.000455
+  P([bad], pos) = 0.000172
+Sanity check 2: {'neg': -27.038, 'pos': -26.366}
+  classify ['great'] -> pos
+  classify ['bad'] -> neg
+  classify ['i', 'love', 'it'] -> pos
+  classify ['waste', 'of', 'money'] -> neg
+
+Test accuracy: 0.8154
+  alpha=0.1: 0.7935
+  alpha=0.5: 0.8091
+  alpha=1.0: 0.8154
+  alpha=2.0: 0.8154
+
+440 errors. Most confident wrong, short docs (<=40 tokens):
+  margin=8.09 len=37 true=pos pred=neg: i bought zonealarm internet security suite for the included zonealarm pro firewall ( it cost much less that way ) . if i did n't already have norton antivirus , i 'd use the antivirus , too
+  margin=5.50 len=35 true=pos pred=neg: this movie is a reallllllllllllly scary movie . the only part i did n't like was that pervert mikks in the beginning . be warned of grossness . that is all i need to say
+  margin=4.73 len=40 true=pos pred=neg: excellent service , and the product worked extremely well . the only criticism i would have is the cost of postage . it was ridiculous , the product came in a big parcel , and inside was a dvd .
+  margin=3.78 len=37 true=pos pred=neg: i needed this for my new macbook laptop that will give me apple and windows on the same machine . the laptop works fine , the pocketbook is thinner . you do what you have to do
+  margin=3.72 len=15 true=pos pred=neg: this was not a waste of brad 's time or mine . good job !
+  margin=3.13 len=40 true=pos pred=neg: another hot release , top 5 in 2005 so far . no one even metions track 7 produced by one and only el-producto and track 8 by belief . hot cd recommend to those who do n't listin to bull
+Most confident wrong, any length:
+  margin=127.14 len=2644 true=neg pred=pos: we bought this camera thinking that it would be our do-all " eurocam " for an upcoming trip to europe . it promised a sufficient range of performance and features to easily meet our needs on such a trip . sadly , the camera is not up to filling this role . we will need to take another camera along ...
+  margin=91.01 len=1210 true=neg pred=pos: i grew up reading harold evan 's sunday times - in the late 1970s it provided a window on the world that few other papers could . i particularly remember comprehensive coverage of egyptian president sadats historic visit to jerusalem ; ongoing coverage of soviet dissidents and a very welcome ( i 'm irish ) editorial urging britain to consider ...
+  margin=67.99 len=491 true=pos pred=neg: i 've been using norton antivirus 2002 with annual updates of patches forever with norton internet security 2003. now that it 's time to renewal norton antivirus , i thought i switch to trend micro internet secuirty 2005 after all the glowing wins it received from certain mainstream computer magazines . i like norton 2002 but it was a memory ...

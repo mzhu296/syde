@@ -6,109 +6,455 @@
   <meta name="description" content="SYDE 572 Assignment 4: Naive Bayes sentiment classification.">
   <title>SYDE 572 Assignment 4</title>
   <style>
-    :root { --ink:#111; --muted:#4b5563; --rule:#9ca3af; --accent:#075985; --paper:#fff; --canvas:#e9edf1; --soft:#f4f7f9; }
+    :root {
+      --ink: #111;
+      --muted: #4b5563;
+      --rule: #9ca3af;
+      --light-rule: #d1d5db;
+      --accent: #075985;
+      --paper: #fff;
+      --canvas: #e9edf1;
+      --soft: #f4f7f9;
+      --result: #eef6fa;
+    }
+
     * { box-sizing: border-box; }
-    body { margin:0; color:var(--ink); background:var(--canvas); font-family:"Times New Roman",Times,serif; font-size:16px; line-height:1.52; }
-    .paper { width:min(900px,calc(100% - 2rem)); margin:2rem auto 4rem; padding:clamp(1.5rem,6vw,4rem); background:var(--paper); box-shadow:0 16px 44px rgba(15,23,42,.14); }
-    header { text-align:center; }
-    .course { margin:0 0 .75rem; font-family:Arial,sans-serif; font-size:.78rem; font-weight:700; letter-spacing:.13em; text-transform:uppercase; }
-    h1 { font-size:clamp(1.7rem,4.4vw,2.4rem); font-weight:400; line-height:1.12; margin:0 0 .85rem; }
-    h2 { font-size:1.15rem; margin:2rem 0 .5rem; text-transform:uppercase; letter-spacing:.04em; }
-    h3 { font-size:1rem; font-style:italic; margin:1.2rem 0 .3rem; }
-    table { border-collapse:collapse; margin:.8rem auto; font-size:.95rem; }
-    th,td { border-top:1px solid var(--rule); border-bottom:1px solid var(--rule); padding:.3rem .9rem; text-align:center; }
-    pre { background:var(--soft); padding:.8rem 1rem; overflow-x:auto; font-size:.82rem; line-height:1.4; }
-    code { font-size:.9em; }
-    .blank { border:1.5px dashed var(--rule); color:var(--muted); padding:.7rem 1rem; font-family:Arial,sans-serif; font-size:.85rem; }
-    .abstract { border-top:1.5px solid var(--ink); border-bottom:1px solid var(--rule); padding:1rem 1.25rem; margin:1.5rem 0; }
-  </style>
+    html { scroll-behavior: smooth; scroll-padding-top: 4.5rem; }
+    body {
+      margin: 0;
+      color: var(--ink);
+      background: var(--canvas);
+      font-family: "Times New Roman", Times, serif;
+      font-size: 16px;
+      line-height: 1.52;
+    }
+    a { color: var(--accent); text-underline-offset: .16em; }
+    a:hover { color: #9a3412; }
+    img { max-width: 100%; }
+
+    .review-bar {
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 1rem;
+      padding: .65rem max(1rem, calc((100% - 1040px) / 2));
+      border-bottom: 1px solid #cbd5e1;
+      background: rgba(248, 250, 252, .96);
+      font-family: Arial, Helvetica, sans-serif;
+      font-size: .86rem;
+      backdrop-filter: blur(10px);
+    }
+    .review-bar strong { letter-spacing: .04em; text-transform: uppercase; }
+    .review-bar nav { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: .75rem; }
+    .review-bar a { font-weight: 700; text-decoration: none; }
+
+    .paper {
+      width: min(1040px, calc(100% - 2rem));
+      margin: 2rem auto 4rem;
+      padding: clamp(2rem, 6vw, 4.75rem);
+      background: var(--paper);
+      box-shadow: 0 16px 44px rgba(15, 23, 42, .14);
+    }
+    .paper-header { text-align: center; }
+    .paper-header .course {
+      margin: 0 0 .75rem;
+      font-family: Arial, Helvetica, sans-serif;
+      font-size: .78rem;
+      font-weight: 700;
+      letter-spacing: .13em;
+      text-transform: uppercase;
+    }
+    h1 {
+      max-width: 760px;
+      margin: 0 auto .85rem;
+      font-size: clamp(1.85rem, 4.4vw, 2.7rem);
+      font-weight: 400;
+      line-height: 1.12;
+    }
+    .author-line { margin: 0 0 2rem; font-size: 1rem; }
+
+    .abstract {
+      max-width: 820px;
+      margin: 0 auto 2rem;
+      padding: 1rem 1.25rem;
+      border-top: 1.5px solid var(--ink);
+      border-bottom: 1px solid var(--rule);
+      text-align: justify;
+    }
+    .abstract p { margin: 0 0 .6rem; text-indent: 0; }
+    .abstract p:last-child { margin-bottom: 0; }
+    .label { font-variant: small-caps; font-weight: 700; letter-spacing: .04em; }
+
+    .contents {
+      margin: 2rem 0 2.5rem;
+      padding: 1rem 1.2rem;
+      border-left: 3px solid var(--accent);
+      background: var(--soft);
+      font-family: Arial, Helvetica, sans-serif;
+      font-size: .9rem;
+    }
+    .contents strong { display: block; margin-bottom: .4rem; text-transform: uppercase; letter-spacing: .06em; }
+    .contents ol { columns: 2; margin: 0; padding-left: 1.3rem; }
+    .contents li { margin: .25rem 0; padding-right: 1rem; break-inside: avoid; }
+    .contents a { color: #1f2937; }
+
+    section { margin: 0 0 2.5rem; scroll-margin-top: 5rem; }
+    h2, h3, h4 { break-after: avoid; }
+    h2 {
+      margin: 2.8rem 0 1rem;
+      border-bottom: 1px solid var(--ink);
+      font-family: Arial, Helvetica, sans-serif;
+      font-size: 1.08rem;
+      line-height: 1.35;
+      letter-spacing: .045em;
+      text-align: center;
+      text-transform: uppercase;
+    }
+    h3 {
+      margin: 1.8rem 0 .55rem;
+      font-size: 1rem;
+      font-style: italic;
+      font-weight: 700;
+    }
+    h4 { margin: 1.2rem 0 .35rem; font-size: .95rem; }
+    section > p, .prose > p {
+      margin: .55rem 0;
+      text-align: justify;
+      text-indent: 1.35rem;
+    }
+    section > p.no-indent, .no-indent { text-indent: 0; }
+
+    .equation {
+      margin: 1rem 0;
+      padding: .35rem 1rem;
+      overflow-x: auto;
+      border-left: 2px solid var(--rule);
+      font-size: 1.02rem;
+      text-align: center;
+    }
+    .result-box {
+      margin: 1rem 0;
+      padding: .8rem 1rem;
+      border-top: 1.5px solid var(--accent);
+      border-bottom: 1px solid var(--accent);
+      background: var(--result);
+      text-align: center;
+    }
+    .method-note {
+      margin: 1rem 0;
+      padding: .75rem 1rem;
+      border-left: 3px solid #a16207;
+      background: #fffbeb;
+      text-align: justify;
+    }
+
+    .table-wrap { margin: 1.25rem 0 1.8rem; overflow-x: auto; }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      border-top: 1.8px solid #000;
+      border-bottom: 1.8px solid #000;
+      font-family: "Times New Roman", Times, serif;
+      font-size: .875rem;
+      line-height: 1.3;
+      font-variant-numeric: tabular-nums;
+    }
+    caption {
+      padding: 0 0 .5rem;
+      font-size: .82rem;
+      line-height: 1.25;
+      text-align: center;
+      text-transform: uppercase;
+    }
+    caption mjx-container { text-transform: none; }
+    thead { border-bottom: 1px solid #000; }
+    th, td { padding: .42rem .52rem; text-align: center; vertical-align: middle; }
+    th { font-weight: 700; }
+    tbody tr + tr { border-top: .5px solid var(--light-rule); }
+    tbody tr:last-child { font-weight: 600; }
+
+    .figure-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1.4rem; margin: 1.5rem 0 2rem; }
+    figure { margin: 0; break-inside: avoid; }
+    figure.wide { grid-column: 1 / -1; }
+    figure img { display: block; width: 100%; height: auto; border: 1px solid var(--light-rule); background: white; }
+    figcaption {
+      margin-top: .48rem;
+      font-size: .86rem;
+      line-height: 1.35;
+      text-align: justify;
+    }
+    .fig-label { font-variant: small-caps; font-weight: 700; }
+
+    .downloads {
+      display: flex;
+      flex-wrap: wrap;
+      gap: .55rem;
+      margin: 1rem 0 1.4rem;
+      font-family: Arial, Helvetica, sans-serif;
+      font-size: .82rem;
+    }
+    .downloads a {
+      display: inline-flex;
+      align-items: center;
+      min-height: 2.25rem;
+      padding: .42rem .7rem;
+      border: 1px solid #94a3b8;
+      background: #f8fafc;
+      color: #0f172a;
+      font-weight: 700;
+      text-decoration: none;
+    }
+    .downloads a:hover { border-color: var(--accent); color: var(--accent); }
+    .print-only { display: none; }
+    .pdf-frame { width: 100%; min-height: 620px; border: 1px solid var(--rule); background: var(--soft); }
+    .small { color: var(--muted); font-size: .88rem; }
+    .references { padding-left: 1.4rem; font-size: .92rem; }
+    .references li { margin-bottom: .55rem; }
+
+    @media (max-width: 760px) {
+      .review-bar { align-items: flex-start; flex-direction: column; }
+      .review-bar nav { justify-content: flex-start; }
+      .paper { width: 100%; margin: 0; padding: 1.5rem 1rem 3rem; box-shadow: none; }
+      .contents ol { columns: 1; }
+      .figure-grid { grid-template-columns: 1fr; }
+      figure.wide { grid-column: auto; }
+      .pdf-frame { min-height: 480px; }
+      th, td { min-width: 6.2rem; }
+    }
+
+    @media print {
+      @page { size: letter; margin: .65in; }
+      body { background: white; font-size: 10pt; line-height: 1.28; }
+      .review-bar, .contents, .screen-only { display: none !important; }
+      .print-only { display: block; }
+      .downloads { display: flex !important; gap: .3rem; margin: .5rem 0 .7rem; font-size: 7.5pt; }
+      .downloads a { min-height: 0; padding: .2rem .35rem; background: white; }
+      /* Wide content: let it use the full width and shrink rather than being clipped */
+      .equation, .table-wrap { overflow: visible; }
+      .equation { padding: .3rem .5rem; }
+      .equation mjx-container[display="true"] { font-size: 82% !important; }
+      th, td { padding: .3rem .3rem; }
+      .paper { width: auto; margin: 0; padding: 0; box-shadow: none; }
+      h1 { font-size: 20pt; }
+      h2 { font-size: 11pt; }
+      section { margin-bottom: 1.3rem; }
+      section > p, .prose > p { orphans: 3; widows: 3; }
+      .figure-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .55rem; margin: .7rem 0 1rem; page-break-inside: avoid; }
+      figure { margin: 0 0 .7rem; page-break-inside: avoid; }
+      table { font-size: 8pt; }
+      .table-wrap, .result-box, .equation { page-break-inside: avoid; }
+      a { color: inherit; text-decoration: none; }
+    }
+  </style><style>tbody tr:last-child{font-weight:400}@media print{figure img{max-height:6.3in;width:auto;max-width:100%;margin:0 auto}}</style>
 </head>
 <body>
-<main class="paper">
-<header>
-  <p class="course">SYDE 572 · Assignment 4</p>
-  <h1>Text Classification with Naive Bayes</h1>
-  <p>Name: ____________________ &nbsp; Student ID: ____________________</p>
-</header>
+  <div class="review-bar">
+    <strong>SYDE 572 · Assignment 4</strong>
+    <nav aria-label="Review page links">
+      <a href="../index.html">Course home</a>
+      <a href="../assignment1/ieee.html">Assignment 1</a><a href="../assignment2_syde572/ieee.html">Assignment 2</a><a href="../assignment3_syde572/ieee.html">Assignment 3</a>
+      <a href="#method">Method</a><a href="#results">Results</a><a href="#errors">Errors</a><a href="#optional">Optional</a><a href="#files">Files</a>
+    </nav>
+  </div>
+  <main class="paper">
+    <header class="paper-header">
+      <p class="course">SYDE 572 · Introduction to Pattern Recognition · Assignment 4</p>
+      <h1>Text Classification with Naive Bayes</h1>
+      <p class="author-line">Assignment Report</p>
+    </header>
+    <div class="abstract">
+      <p><span class="label">Abstract—</span>This report implements a Naive Bayes classifier from scratch with add-&alpha; smoothing and applies it to the sentiment polarity (positive/negative) of 11,914 customer reviews from six product topics. Trained on the first 80% of the shuffled data, the classifier reaches 81.5% accuracy on the held-out 20%. An error analysis attributes mistakes to negation, mixed-sentiment text, factual text and very long reviews. Optional experiments show a 90.5% topic classifier, a learning curve that flattens near 81%, bigram features that raise accuracy to 85.7%, a linear SVM at 85.2%, and a 16-point accuracy drop when a camera classifier is tested on book reviews.</p>
+      <p><span class="label">Index Terms—</span>Naive Bayes, sentiment classification, smoothing, bigrams, learning curve, domain adaptation.</p>
+    </div>
+    <nav class="contents" aria-label="Table of contents"><strong>Contents</strong><ol>
+      <li><a href="#setup">Data and setup</a></li><li><a href="#method">Method</a></li><li><a href="#checks">Sanity checks</a></li>
+      <li><a href="#results">Results</a></li><li><a href="#errors">Error analysis</a></li><li><a href="#optional">Optional tasks</a></li>
+      <li><a href="#code">Code</a></li><li><a href="#files">Supporting files</a></li></ol></nav>
 
-<div class="abstract"><strong>Abstract.</strong> A Naive Bayes classifier with add-&alpha; smoothing was implemented from scratch and used to classify 11,914 customer reviews (six topics) as positive or negative. Trained on the first 80% of the shuffled data, it reaches <strong>81.5%</strong> accuracy on the held-out 20%.</div>
+    <section id="setup">
+      <h2>I. Data and Setup</h2>
+      <p>The file <code>all_sentiment_shuffled.txt</code> has one tokenized, lowercased review per line (topic, polarity, document id, words). The topic and id are discarded for the sentiment task. The first 80% (9,531 reviews: 4,847 positive, 4,684 negative) is used for training and the last 20% (2,383 reviews) for evaluation. The training vocabulary has 52,392 word types. The required part uses only the Python standard library; the optional tasks use NumPy, pandas, Matplotlib and scikit-learn (<code>requirements.txt</code>).</p>
+    </section>
 
-<h2>I. Data and Setup</h2>
-<p>The file <code>all_sentiment_shuffled.txt</code> has one tokenized, lowercased review per line (topic, polarity, id, words). The topic and id are discarded. The first 80% (9,531 reviews: 4,847 pos, 4,684 neg) is used for training and the last 20% (2,383 reviews) for evaluation. The training vocabulary has 52,392 word types. Code: <code>nb.py</code>; raw output: <code>output.txt</code>.</p>
+    <section id="method">
+      <h2>II. Method</h2>
+      <p><code>train_nb</code> stores the class priors P(c) and the per-class word counts. The smoothed likelihood is P(w | c) = (count(w, c) + &alpha;) / (N<sub>c</sub> + &alpha;(V + 1)), where N<sub>c</sub> is the total number of word tokens in class c and V the vocabulary size; the extra +1 gives unseen words a nonzero probability, so scoring never fails. <code>score_doc_label</code> returns log P(c) + &Sigma;<sub>w</sub> log P(w | c); log probabilities avoid numeric underflow. <code>classify_nb</code> returns the arg-max label, <code>classify_documents</code> maps it over a list, and <code>accuracy</code> is the fraction of correct predictions. Class labels are not hard-coded, so the same code is reused for the topic task.</p>
+    </section>
 
-<h2>II. Method</h2>
-<p><code>train_nb</code> stores the class priors P(c) and the per-class word counts. The smoothed likelihood is</p>
-<p style="text-align:center">P(w | c) = (count(w, c) + &alpha;) / (N<sub>c</sub> + &alpha;(V + 1)),</p>
-<p>where N<sub>c</sub> is the total number of word tokens in class c and V the vocabulary size; the extra +1 gives unseen words a nonzero probability, so scoring never fails. <code>score_doc_label</code> returns log P(c) + &Sigma;<sub>w</sub> log P(w | c) (log probabilities avoid underflow). <code>classify_nb</code> returns the arg-max label, <code>classify_documents</code> maps it over a list, and <code>accuracy</code> is the fraction of correct predictions. Class labels are not hard-coded.</p>
+    <section id="checks">
+      <h2>III. Sanity Checks</h2>
+      <div class="table-wrap"><table><caption>Table I. Joint probability of one-word documents (&alpha; = 1)</caption><thead><tr><th>Document</th><th>P(doc, pos)</th><th>P(doc, neg)</th></tr></thead><tbody><tr><td>[“great”]</td><td>0.001321</td><td>0.000528</td></tr><tr><td>[“bad”]</td><td>0.000172</td><td>0.000455</td></tr></tbody></table></div>
+      <p>“great” scores higher as positive and “bad” higher as negative, as expected. The document <code>['a', 'top-quality', 'performance']</code> contains unseen words and scores without error (log scores: negative &minus;27.04, positive &minus;26.37).</p>
+    </section>
 
-<h2>III. Sanity Checks</h2>
-<table>
-<tr><th>Document</th><th>P(doc, pos)</th><th>P(doc, neg)</th></tr>
-<tr><td>["great"]</td><td>0.001321</td><td>0.000528</td></tr>
-<tr><td>["bad"]</td><td>0.000172</td><td>0.000455</td></tr>
-</table>
-<p>"great" scores higher as positive and "bad" higher as negative, as expected. (&alpha; = 1.) The document <code>['a','top-quality','performance']</code> contains unseen words and scores without error (log scores: neg &minus;27.04, pos &minus;26.37).</p>
+    <section id="results">
+      <h2>IV. Results</h2>
+      <div class="result-box"><strong>Test accuracy (&alpha; = 1): 0.8154</strong> — 440 of 2,383 evaluation documents are misclassified.</div>
+      <div class="table-wrap"><table><caption>Table II. Effect of the smoothing parameter on test accuracy</caption><thead><tr><th>&alpha; = 0.1</th><th>&alpha; = 0.5</th><th>&alpha; = 1</th><th>&alpha; = 2</th></tr></thead><tbody><tr><td>0.7935</td><td>0.8091</td><td>0.8154</td><td>0.8154</td></tr></tbody></table></div>
+      <p>Little smoothing hurts because rare words get extreme, unreliable probabilities; accuracy plateaus around &alpha; = 1&ndash;2.</p>
+    </section>
 
-<h2>IV. Results</h2>
-<p><strong>Test accuracy with &alpha; = 1: 0.8154</strong> (440 of 2,383 documents misclassified). Effect of the smoothing parameter:</p>
-<table>
-<tr><th>&alpha;</th><th>0.1</th><th>0.5</th><th>1.0</th><th>2.0</th></tr>
-<tr><td>Accuracy</td><td>0.7935</td><td>0.8091</td><td>0.8154</td><td>0.8154</td></tr>
-</table>
-<p>Little smoothing hurts because rare words get extreme, unreliable probabilities; accuracy plateaus around &alpha; = 1&ndash;2.</p>
+    <section id="errors">
+      <h2>V. Error Analysis</h2>
+      <p>Examples of confidently wrong predictions (margin = log-score of the predicted label minus log-score of the true label):</p>
+      <ul>
+        <li><strong>Negation.</strong> “this was <em>not a waste</em> of brad's time or mine . good job !” (true positive, predicted negative, margin 3.7). The model sees “waste” and “not” as negative evidence and cannot see that “not” reverses “waste”.</li>
+        <li><strong>Criticism inside a positive review.</strong> “excellent service , and the product worked extremely well . the only criticism i would have is the cost of postage . it was ridiculous …” (margin 4.7). Several negative words outweigh the praise even though the verdict is positive.</li>
+        <li><strong>Mostly factual or off-topic text.</strong> The ZoneAlarm review (“if i did n't already have norton antivirus , i 'd use the antivirus , too”, margin 8.1) and the MacBook review (margin 3.8) are largely descriptive; the few sentiment words are weak, and words such as “norton” and “did n't” carry negative statistics from other reviews.</li>
+        <li><strong>Long reviews.</strong> The largest margins (up to 127) are on reviews with over 1,000 tokens, e.g. a negative camera review (“sadly , the camera is not up to filling this role”) predicted positive. Naive Bayes adds evidence from every word as if words were independent, so a long review that praises features before a negative verdict accumulates a large wrong-direction score.</li>
+      </ul>
+    </section>
 
-<h2>V. Error Analysis</h2>
-<p>Examples of confidently wrong predictions (margin = log-score of predicted label minus log-score of true label):</p>
-<ul>
-<li><strong>Negation.</strong> "this was <em>not a waste</em> of brad's time or mine . good job !" (true pos, predicted neg, margin 3.7). The bag-of-words model sees "waste" and "not" as negative evidence and cannot see that "not" reverses "waste".</li>
-<li><strong>Criticism inside a positive review.</strong> "excellent service , and the product worked extremely well . the only criticism i would have is the cost of postage . it was ridiculous ..." (true pos, predicted neg, margin 4.7). Several negative words ("criticism", "ridiculous") outweigh the praise even though the overall verdict is positive.</li>
-<li><strong>Mostly factual or off-topic text.</strong> The ZoneAlarm review ("if i did n't already have norton antivirus , i 'd use the antivirus , too", true pos, margin 8.1) and the MacBook review (margin 3.8) are largely descriptive; the few sentiment words are weak, and words like "norton" and "did n't" carry negative statistics from other reviews.</li>
-<li><strong>Long reviews.</strong> The largest margins (up to 127) are on reviews with over 1,000 tokens, e.g. a negative camera review ("sadly , the camera is not up to filling this role") predicted positive. Naive Bayes adds evidence from every word as if words were independent, so a long review that describes features favorably before delivering a negative verdict accumulates a large wrong-direction score.</li>
-</ul>
+    <section id="optional">
+      <h2>VI. Optional Tasks</h2>
+      <p>All code is in <code>optional.py</code>; raw output is in <code>output/optional_output.txt</code>. The same 80/20 split is used.</p>
 
-<h2>VI. Optional Tasks</h2>
-<p>All code is in <code>optional.py</code> (run in the <code>syde572</code> conda env; <code>requirements.txt</code>), raw output in <code>output/optional_output.txt</code>. Same 80/20 split as before.</p>
+      <h3>A. Six-category topic classifier</h3>
+      <p>The same code with topic labels gives <strong>90.5%</strong> accuracy (chance &asymp; 17%). The main confusion is health reviews predicted as camera (54 of 434), plausibly because both discuss consumer products and share vocabulary such as “returned”, “works” and “easy”; books versus dvd is the next largest (27 and 14).</p>
 
-<h3>A. Six-category topic classifier</h3>
-<p>The same Naive Bayes code with topic labels instead of polarity gives <strong>90.5%</strong> accuracy (chance &asymp; 17%). The main confusion is health reviews predicted as camera (54 of 434), plausibly because both discuss consumer products and "returned/works/easy"-type vocabulary; books vs. dvd is the next largest (27 and 14).</p>
+      <h3>B. Learning curve</h3>
+      <p>Accuracy rises quickly and flattens: 73.3% with 10% of the training data, 78.8% at 30%, 80.2% at 50%, and about 81% from 70% on (mean of 5 random subsets per size; standard deviation &le; 0.017). More data would give only small further gains.</p>
+      <figure class="wide" style="width:62%;margin-left:auto;margin-right:auto"><img src="./output/learning_curve.png" alt="Learning curve" loading="lazy"><figcaption><span class="fig-label">Fig. 1.</span> Test accuracy versus training-set size (mean &plusmn; std over 5 random subsets).</figcaption></figure>
 
-<h3>B. Learning curve</h3>
-<p>Accuracy rises quickly and flattens: 73.3% with 10% of the training data, 78.8% at 30%, 80.2% at 50%, and about 81% from 70% on (mean of 5 random subsets per size; std &le; 0.017). More data would give only small further gains.</p>
-<p style="text-align:center"><img src="output/learning_curve.png" alt="Learning curve" width="480"></p>
+      <h3>C. Informative features</h3>
+      <p><code>print_top_nb(k, model)</code> ranks words by log P(w | pos) &minus; log P(w | neg) with heavy smoothing (&alpha; = 50, which suppresses rare words). Top 20 each: <strong>positive</strong> — excellent, easy, season, amazing, highly, wonderful, illustrator, lenses, great, perfect, favorite, best, allows, pluto, fantastic, photoshop, pleased, lens, love, zoom; <strong>negative</strong> — waste, worst, boring, horrible, support, poor, customer, warranty, terrible, refund, unfortunately, disappointing, worse, error, nothing, bad, garbage, disappointed, disappointment, repair. Many are generic sentiment words, but some are domain artifacts: “lenses”, “photoshop” and “pluto” are positive and “support”, “warranty” and “repair” negative because of how those topics' reviews are distributed, not because the words are intrinsically polar. Per-topic lists in the output file show this directly (camera negatives: warranty, repair, return, service; dvd positives: season, batman, buffy).</p>
+      <div class="figure-grid">
+        <figure><img src="./output/informative_words.png" alt="Most informative words" loading="lazy"><figcaption><span class="fig-label">Fig. 2.</span> The 15 most positive and 15 most negative words.</figcaption></figure>
+        <figure><img src="./output/word_scatter.png" alt="Polar word scatter" loading="lazy"><figcaption><span class="fig-label">Fig. 3.</span> Polar words: horizontal position is the polarity score, marker size is word frequency (vertical position is random jitter).</figcaption></figure>
+      </div>
 
-<h3>C. Informative features</h3>
-<p><code>print_top_nb(k, model)</code> ranks words by log P(w|pos) &minus; log P(w|neg) with heavy smoothing (&alpha; = 50, which suppresses rare words). Top 20 each:</p>
-<p><strong>Positive:</strong> excellent, easy, season, amazing, highly, wonderful, illustrator, lenses, great, perfect, favorite, best, allows, pluto, fantastic, photoshop, pleased, lens, love, zoom.<br>
-<strong>Negative:</strong> waste, worst, boring, horrible, support, poor, customer, warranty, terrible, refund, unfortunately, disappointing, worse, error, nothing, bad, garbage, disappointed, disappointment, repair.</p>
-<p>Many are generic sentiment words, but some are domain artifacts: "lenses/zoom/photoshop/illustrator/pluto/season" are positive and "support/customer/warranty/repair/error" negative because of how those topics' reviews are distributed, not because the words are intrinsically polar. Per-topic lists (in the output file) show this directly, e.g. camera negatives: warranty, repair, return, service; dvd positives: season, batman, buffy.</p>
-<p style="text-align:center"><img src="output/informative_words.png" alt="Informative words" width="420"> <img src="output/word_scatter.png" alt="Word scatter" width="480"></p>
+      <h3>D. Naive Bayes for numerical data (iris)</h3>
+      <p>Class-conditional Gaussians were fit by maximum likelihood (sample mean and standard deviation for each of 4 features &times; 3 classes) and scored with log pdfs plus the log prior. On a random 40-flower evaluation set the accuracy is <strong>100%</strong>, identical to scikit-learn's <code>GaussianNB</code>. The iris classes are nearly separable and 40 test points give a noisy estimate.</p>
 
-<h3>D. Naive Bayes for numerical data (iris)</h3>
-<p>Class-conditional Gaussians were fit by maximum likelihood (sample mean and standard deviation for each of 4 features &times; 3 classes) and scored with log pdfs plus the log prior. On a random 40-flower evaluation set the accuracy is <strong>100%</strong>, identical to scikit-learn's <code>GaussianNB</code>. (The iris classes are nearly separable, and with only 40 test points this is a noisy estimate.)</p>
+      <h3>E. scikit-learn classifiers</h3>
+      <div class="table-wrap"><table><caption>Table III. Test accuracy of TF-IDF classifiers versus the own Naive Bayes</caption><thead><tr><th>Classifier</th><th>Test accuracy</th></tr></thead><tbody><tr><td>Own Naive Bayes (counts)</td><td>0.8154</td></tr><tr><td>LinearSVC</td><td>0.8523</td></tr><tr><td>MLP (SelectKBest k = 1000, 50 epochs, not fully converged)</td><td>0.8351</td></tr></tbody></table></div>
+      <p>The linear SVM beats Naive Bayes by about 3.7 points, since it learns discriminative weights instead of assuming independent words.</p>
 
-<h3>E. scikit-learn classifiers</h3>
-<table>
-<tr><th>Classifier (TF-IDF features)</th><th>Test accuracy</th></tr>
-<tr><td>Own Naive Bayes</td><td>0.8154</td></tr>
-<tr><td>LinearSVC</td><td>0.8523</td></tr>
-<tr><td>MLP (SelectKBest k = 1000, 50 epochs, did not fully converge)</td><td>0.8351</td></tr>
-</table>
-<p>The linear SVM beats Naive Bayes by about 3.7 points, since it learns discriminative weights instead of assuming independent words.</p>
+      <h3>F. Improved features</h3>
+      <div class="table-wrap"><table><caption>Table IV. Test accuracy of Naive Bayes with different feature sets</caption><thead><tr><th>Features</th><th>&alpha; = 0.5</th><th>&alpha; = 1</th></tr></thead><tbody><tr><td>Unigrams (baseline)</td><td>0.8091</td><td>0.8154</td></tr><tr><td>+ negation marking (Pang et al.)</td><td>0.8091</td><td>0.8086</td></tr><tr><td>+ bigrams</td><td>0.8561</td><td>0.8569</td></tr><tr><td>+ negation + bigrams</td><td>0.8573</td><td>0.8552</td></tr></tbody></table></div>
+      <p>Bigrams give a clear gain of about 4 points (81.5% &rarr; 85.7%), since pairs such as “not good” and “waste of” capture local negation and phrases. Negation marking (prefix <code>NOT_</code> on words after not/n't/no/never until punctuation) did not help alone: it splits each word's counts across two features, which dilutes the statistics with this modest amount of data. Combined with bigrams it is about equal to bigrams only.</p>
 
-<h3>F. Improved features</h3>
-<table>
-<tr><th>Features</th><th>&alpha; = 0.5</th><th>&alpha; = 1</th></tr>
-<tr><td>Unigrams (baseline)</td><td>0.8091</td><td>0.8154</td></tr>
-<tr><td>+ negation marking (Pang et al.)</td><td>0.8091</td><td>0.8086</td></tr>
-<tr><td>+ bigrams</td><td>0.8561</td><td>0.8569</td></tr>
-<tr><td>+ negation + bigrams</td><td>0.8573</td><td>0.8552</td></tr>
-</table>
-<p>Bigrams give a clear gain of about 4 points (81.5% &rarr; 85.7%), since pairs like "not good" and "waste of" capture local negation and phrases. Negation marking (prefix <code>NOT_</code> on words after not/n't/no/never until punctuation) did not help alone here: it splits the counts of each word across two features, which dilutes the statistics with this modest amount of data. Combined with bigrams it is about equal to bigrams only.</p>
+      <h3>G. Domain sensitivity</h3>
+      <p>Each topic was split 80/20 separately; classifiers were trained on one topic and tested on every topic's test set (the diagonal is in-domain).</p>
+      <figure class="wide" style="width:60%;margin-left:auto;margin-right:auto"><img src="./output/domain_matrix.png" alt="Train/test topic accuracy matrix" loading="lazy"><figcaption><span class="fig-label">Fig. 4.</span> Accuracy when training on one topic (rows) and testing on another (columns).</figcaption></figure>
+      <p>The camera classifier reaches <strong>86.8%</strong> on camera test reviews but <strong>70.5%</strong> on book reviews, a drop of 16.3 points (about 9 points below the 79.8% that a book classifier achieves on its own domain). In general in-domain accuracy (diagonal, 75&ndash;87%) is higher than every off-diagonal entry in its row, with the worst transfers around 58&ndash;60% (software &rarr; books/dvd), because sentiment vocabulary is partly domain-specific (e.g. “boring” in books and dvd, “support” and “warranty” for products).</p>
+    </section>
 
-<h3>G. Domain sensitivity</h3>
-<p>Each topic was split 80/20 separately; classifiers were trained on one topic and tested on every topic's test set (diagonal = in-domain).</p>
-<p style="text-align:center"><img src="output/domain_matrix.png" alt="Domain matrix" width="460"></p>
-<p>Camera classifier: <strong>86.8%</strong> on camera test reviews but <strong>70.5%</strong> on book reviews, a drop of 16.3 points; the book classifier itself reaches 79.8% in-domain, so relative to the book in-domain accuracy the cross-domain camera classifier loses about 9 points. In general in-domain accuracy (diagonal, 75&ndash;87%) is higher than every off-diagonal entry in its row, with the worst transfers around 58&ndash;60% (software &rarr; books/dvd), because sentiment vocabulary is partly domain-specific (e.g., "boring" in books/dvd, "support"/"warranty" in products).</p>
-</main>
+    <section id="code">
+      <h2>VII. Code</h2>
+      <p>Required part (<code>nb.py</code>):</p>
+      <pre style="overflow-x:auto;font-size:.72rem;line-height:1.35;background:#f6f8fa;border:1px solid var(--light-rule);padding:.8rem;">&quot;&quot;&quot;SYDE 572 Assignment 4: Naive Bayes sentiment classification (required part).&quot;&quot;&quot;
+import math
+from collections import Counter
+
+DATA = &#x27;SYDE572 assn4 file/all_sentiment_shuffled.txt&#x27;
+ALPHA = 1.0  # Laplace/add-alpha smoothing
+
+
+def read_documents(doc_file):
+    docs, labels = [], []
+    with open(doc_file, encoding=&#x27;utf-8&#x27;) as f:
+        for line in f:
+            words = line.strip().split()
+            docs.append(words[3:])
+            labels.append(words[1])
+    return docs, labels
+
+
+def train_nb(documents, labels, alpha=ALPHA):
+    &quot;&quot;&quot;Returns model: log priors, per-class word counts, totals, vocab size.&quot;&quot;&quot;
+    n = len(labels)
+    class_counts = Counter(labels)
+    word_counts = {c: Counter() for c in class_counts}
+    for doc, y in zip(documents, labels):
+        word_counts[y].update(doc)
+    vocab = set()
+    for c in word_counts:
+        vocab.update(word_counts[c])
+    return {
+        &#x27;classes&#x27;: sorted(class_counts),
+        &#x27;log_prior&#x27;: {c: math.log(class_counts[c] / n) for c in class_counts},
+        &#x27;counts&#x27;: word_counts,
+        &#x27;totals&#x27;: {c: sum(word_counts[c].values()) for c in class_counts},
+        &#x27;V&#x27;: len(vocab),
+        &#x27;alpha&#x27;: alpha,
+    }
+
+
+def score_doc_label(document, label, model):
+    &quot;&quot;&quot;log P(label) + sum_w log P(w | label), add-alpha smoothed.
+    Unseen words get alpha / (N_c + alpha*V) (never crashes).&quot;&quot;&quot;
+    a, V = model[&#x27;alpha&#x27;], model[&#x27;V&#x27;]
+    cnt, tot = model[&#x27;counts&#x27;][label], model[&#x27;totals&#x27;][label]
+    denom = tot + a * (V + 1)  # +1 slot for unknown words
+    s = model[&#x27;log_prior&#x27;][label]
+    for w in document:
+        s += math.log((cnt[w] + a) / denom)
+    return s
+
+
+def classify_nb(document, model):
+    return max(model[&#x27;classes&#x27;], key=lambda c: score_doc_label(document, c, model))
+
+
+def classify_documents(docs, model):
+    return [classify_nb(d, model) for d in docs]
+
+
+def accuracy(true_labels, guessed_labels):
+    return sum(t == g for t, g in zip(true_labels, guessed_labels)) / len(true_labels)
+
+
+if __name__ == &#x27;__main__&#x27;:
+    all_docs, all_labels = read_documents(DATA)
+    sp = int(0.8 * len(all_docs))
+    train_docs, train_labels = all_docs[:sp], all_labels[:sp]
+    eval_docs, eval_labels = all_docs[sp:], all_labels[sp:]
+    print(f&#x27;train={len(train_docs)} eval={len(eval_docs)}&#x27;, Counter(train_labels))
+
+    model = train_nb(train_docs, train_labels)
+    print(&#x27;vocab size&#x27;, model[&#x27;V&#x27;])
+
+    print(&#x27;\nSanity check 1 (length-1 documents, probabilities):&#x27;)
+    for w in [&#x27;great&#x27;, &#x27;bad&#x27;]:
+        for c in model[&#x27;classes&#x27;]:
+            print(f&#x27;  P([{w}], {c}) = {math.exp(score_doc_label([w], c, model)):.6f}&#x27;)
+    print(&#x27;Sanity check 2:&#x27;, {c: round(score_doc_label([&#x27;a&#x27;, &#x27;top-quality&#x27;, &#x27;performance&#x27;], c, model), 3)
+                              for c in model[&#x27;classes&#x27;]})
+    for d in ([&#x27;great&#x27;], [&#x27;bad&#x27;], [&#x27;i&#x27;, &#x27;love&#x27;, &#x27;it&#x27;], [&#x27;waste&#x27;, &#x27;of&#x27;, &#x27;money&#x27;]):
+        print(&#x27;  classify&#x27;, d, &#x27;-&gt;&#x27;, classify_nb(d, model))
+
+    preds = classify_documents(eval_docs, model)
+    print(f&#x27;\nTest accuracy: {accuracy(eval_labels, preds):.4f}&#x27;)
+    for a in (0.1, 0.5, 1.0, 2.0):
+        m = train_nb(train_docs, train_labels, a)
+        print(f&#x27;  alpha={a}: {accuracy(eval_labels, classify_documents(eval_docs, m)):.4f}&#x27;)
+
+    # Error analysis: wrong predictions with the largest confidence margin, short docs
+    errs = []
+    for d, y, p in zip(eval_docs, eval_labels, preds):
+        if y != p:
+            sc = {c: score_doc_label(d, c, model) for c in model[&#x27;classes&#x27;]}
+            errs.append((sc[p] - sc[y], len(d), y, p, d))
+    print(f&#x27;\n{len(errs)} errors. Most confident wrong, short docs (&lt;=40 tokens):&#x27;)
+    for margin, n, y, p, d in sorted([e for e in errs if e[1] &lt;= 40], reverse=True)[:6]:
+        print(f&#x27;  margin={margin:.2f} len={n} true={y} pred={p}: {&quot; &quot;.join(d)}&#x27;)
+    print(&#x27;Most confident wrong, any length:&#x27;)
+    for margin, n, y, p, d in sorted(errs, reverse=True)[:3]:
+        print(f&#x27;  margin={margin:.2f} len={n} true={y} pred={p}: {&quot; &quot;.join(d[:60])} ...&#x27;)
+</pre>
+    </section>
+
+    <section id="files">
+      <h2>VIII. Supporting Files</h2>
+      <div class="downloads">
+        <a href="./SYDE572 assn4.pdf">Assignment handout</a><a href="./nb.py">nb.py</a><a href="./optional.py">optional.py</a><a href="./requirements.txt">requirements.txt</a><a href="./output.txt">output.txt</a><a href="./output/optional_output.txt">optional_output.txt</a><a href="./README.md">README.md</a>
+      </div>
+      <p class="small">Run from this folder with <code>python nb.py</code> and <code>python optional.py</code>; the optional script writes its figures to <code>output/</code>.</p>
+    </section>
+  </main>
 </body>
 </html>

@@ -67,13 +67,48 @@
 </ul>
 
 <h2>VI. Optional Tasks</h2>
-<h3>A. Six-category topic classifier</h3><div class="blank">Not attempted.</div>
-<h3>B. Learning curve</h3><div class="blank">Not attempted.</div>
-<h3>C. Informative features</h3><div class="blank">Not attempted.</div>
-<h3>D. Naive Bayes for numerical data (iris)</h3><div class="blank">Not attempted.</div>
-<h3>E. scikit-learn classifier</h3><div class="blank">Not attempted.</div>
-<h3>F. Improved features (negation, bigrams)</h3><div class="blank">Not attempted.</div>
-<h3>G. Domain sensitivity</h3><div class="blank">Not attempted.</div>
+<p>All code is in <code>optional.py</code> (run in the <code>syde572</code> conda env; <code>requirements.txt</code>), raw output in <code>output/optional_output.txt</code>. Same 80/20 split as before.</p>
+
+<h3>A. Six-category topic classifier</h3>
+<p>The same Naive Bayes code with topic labels instead of polarity gives <strong>90.5%</strong> accuracy (chance &asymp; 17%). The main confusion is health reviews predicted as camera (54 of 434), plausibly because both discuss consumer products and "returned/works/easy"-type vocabulary; books vs. dvd is the next largest (27 and 14).</p>
+
+<h3>B. Learning curve</h3>
+<p>Accuracy rises quickly and flattens: 73.3% with 10% of the training data, 78.8% at 30%, 80.2% at 50%, and about 81% from 70% on (mean of 5 random subsets per size; std &le; 0.017). More data would give only small further gains.</p>
+<p style="text-align:center"><img src="output/learning_curve.png" alt="Learning curve" width="480"></p>
+
+<h3>C. Informative features</h3>
+<p><code>print_top_nb(k, model)</code> ranks words by log P(w|pos) &minus; log P(w|neg) with heavy smoothing (&alpha; = 50, which suppresses rare words). Top 20 each:</p>
+<p><strong>Positive:</strong> excellent, easy, season, amazing, highly, wonderful, illustrator, lenses, great, perfect, favorite, best, allows, pluto, fantastic, photoshop, pleased, lens, love, zoom.<br>
+<strong>Negative:</strong> waste, worst, boring, horrible, support, poor, customer, warranty, terrible, refund, unfortunately, disappointing, worse, error, nothing, bad, garbage, disappointed, disappointment, repair.</p>
+<p>Many are generic sentiment words, but some are domain artifacts: "lenses/zoom/photoshop/illustrator/pluto/season" are positive and "support/customer/warranty/repair/error" negative because of how those topics' reviews are distributed, not because the words are intrinsically polar. Per-topic lists (in the output file) show this directly, e.g. camera negatives: warranty, repair, return, service; dvd positives: season, batman, buffy.</p>
+<p style="text-align:center"><img src="output/informative_words.png" alt="Informative words" width="420"> <img src="output/word_scatter.png" alt="Word scatter" width="480"></p>
+
+<h3>D. Naive Bayes for numerical data (iris)</h3>
+<p>Class-conditional Gaussians were fit by maximum likelihood (sample mean and standard deviation for each of 4 features &times; 3 classes) and scored with log pdfs plus the log prior. On a random 40-flower evaluation set the accuracy is <strong>100%</strong>, identical to scikit-learn's <code>GaussianNB</code>. (The iris classes are nearly separable, and with only 40 test points this is a noisy estimate.)</p>
+
+<h3>E. scikit-learn classifiers</h3>
+<table>
+<tr><th>Classifier (TF-IDF features)</th><th>Test accuracy</th></tr>
+<tr><td>Own Naive Bayes</td><td>0.8154</td></tr>
+<tr><td>LinearSVC</td><td>0.8523</td></tr>
+<tr><td>MLP (SelectKBest k = 1000, 50 epochs, did not fully converge)</td><td>0.8351</td></tr>
+</table>
+<p>The linear SVM beats Naive Bayes by about 3.7 points, since it learns discriminative weights instead of assuming independent words.</p>
+
+<h3>F. Improved features</h3>
+<table>
+<tr><th>Features</th><th>&alpha; = 0.5</th><th>&alpha; = 1</th></tr>
+<tr><td>Unigrams (baseline)</td><td>0.8091</td><td>0.8154</td></tr>
+<tr><td>+ negation marking (Pang et al.)</td><td>0.8091</td><td>0.8086</td></tr>
+<tr><td>+ bigrams</td><td>0.8561</td><td>0.8569</td></tr>
+<tr><td>+ negation + bigrams</td><td>0.8573</td><td>0.8552</td></tr>
+</table>
+<p>Bigrams give a clear gain of about 4 points (81.5% &rarr; 85.7%), since pairs like "not good" and "waste of" capture local negation and phrases. Negation marking (prefix <code>NOT_</code> on words after not/n't/no/never until punctuation) did not help alone here: it splits the counts of each word across two features, which dilutes the statistics with this modest amount of data. Combined with bigrams it is about equal to bigrams only.</p>
+
+<h3>G. Domain sensitivity</h3>
+<p>Each topic was split 80/20 separately; classifiers were trained on one topic and tested on every topic's test set (diagonal = in-domain).</p>
+<p style="text-align:center"><img src="output/domain_matrix.png" alt="Domain matrix" width="460"></p>
+<p>Camera classifier: <strong>86.8%</strong> on camera test reviews but <strong>70.5%</strong> on book reviews, a drop of 16.3 points; the book classifier itself reaches 79.8% in-domain, so relative to the book in-domain accuracy the cross-domain camera classifier loses about 9 points. In general in-domain accuracy (diagonal, 75&ndash;87%) is higher than every off-diagonal entry in its row, with the worst transfers around 58&ndash;60% (software &rarr; books/dvd), because sentiment vocabulary is partly domain-specific (e.g., "boring" in books/dvd, "support"/"warranty" in products).</p>
 </main>
 </body>
 </html>
